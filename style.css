@@ -428,6 +428,13 @@ h1 em { color: #d9c1ad; font-style: normal; }
 	transform: translateY(-2px);
 }
 
+@media (max-width: 800px) {
+	.approach-main { min-height: auto; }
+	.approach-content { height: auto; }
+	.approach-facts { position: static; margin-top: 32px; }
+	.approach-button { position: static; margin-top: 32px; }
+}
+
 body { font-family: var(--font-sans); }
 
 h1 {
