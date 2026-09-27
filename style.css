@@ -683,7 +683,7 @@ h1 {
 
 	.hero {
 		width: 100%;
-		min-height: max(720px, 100svh);
+		min-height: max(720px, calc(100svh + 32px));
 		display: flex;
 		flex-direction: column;
 		padding: 90px 0 56px;
@@ -743,21 +743,22 @@ h1 {
 
 @media (max-width: 800px) {
 	.header {
-		min-height: 74px;
+		min-height: 78px;
 		padding: 8px 16px;
+		gap: 8px;
 		background: rgba(26, 21, 17, .94);
 	}
 	.brand-lockup { gap: 8px; }
-	.brand-lockup img { width: 56px; height: 56px; transform: none; }
+	.brand-lockup img { width: 60px; height: 60px; transform: none; }
 	.brand-lockup span { transform: none; }
-	.brand-lockup strong { font-size: 13px; }
-	.brand-lockup small { font-size: 9px; }
+	.brand-lockup strong { font-size: 14px; }
+	.brand-lockup small { font-size: 10px; }
 	.header-button { padding: 10px 13px; font-size: 12px; }
 	.header-button .calendar-icon { width: 15px; height: 15px; }
 
 	.hero {
 		width: 100%;
-		min-height: max(720px, 100svh);
+		min-height: max(720px, calc(100svh + 32px));
 		display: flex;
 		flex-direction: column;
 		padding: 104px 0 62px;
@@ -776,7 +777,7 @@ h1 {
 		flex: 0 0 auto;
 		width: 100vw;
 		max-width: none;
-		height: min(29svh, 280px);
+		height: min(34svh, 320px);
 		margin: 18px calc(50% - 50vw) 0;
 		object-fit: cover;
 		object-position: center;
@@ -815,6 +816,6 @@ h1 {
 @media (max-width: 430px) {
 	.hero h1 { font-size: 34px; }
 	.hero-copy { width: calc(100% - 32px); max-width: 390px; }
-	.hero-photo { height: min(29svh, 280px); }
+	.hero-photo { height: min(34svh, 320px); }
 }
 
