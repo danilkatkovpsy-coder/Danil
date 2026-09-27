@@ -741,23 +741,17 @@ h1 {
 	.hero-benefits .icon svg { width: 22px; height: 22px; }
 }
 
-@media (max-width: 430px) {
-	.hero h1 { font-size: 36px; }
-	.hero-copy { width: calc(100% - 40px); }
-	.hero-photo { height: min(23svh, 220px); }
-}
-
 @media (max-width: 800px) {
 	.header {
-		min-height: 68px;
-		padding: 8px 18px;
+		min-height: 74px;
+		padding: 8px 16px;
 		background: rgba(26, 21, 17, .94);
 	}
 	.brand-lockup { gap: 8px; }
-	.brand-lockup img { width: 48px; height: 48px; transform: none; }
+	.brand-lockup img { width: 56px; height: 56px; transform: none; }
 	.brand-lockup span { transform: none; }
-	.brand-lockup strong { font-size: 12px; }
-	.brand-lockup small { font-size: 8px; }
+	.brand-lockup strong { font-size: 13px; }
+	.brand-lockup small { font-size: 9px; }
 	.header-button { padding: 10px 13px; font-size: 12px; }
 	.header-button .calendar-icon { width: 15px; height: 15px; }
 
@@ -766,7 +760,7 @@ h1 {
 		min-height: max(720px, 100svh);
 		display: flex;
 		flex-direction: column;
-		padding: 104px 0 78px;
+		padding: 104px 0 62px;
 	}
 	.hero::before {
 		inset: -20px;
@@ -782,7 +776,7 @@ h1 {
 		flex: 0 0 auto;
 		width: 100vw;
 		max-width: none;
-		height: min(27svh, 260px);
+		height: min(29svh, 280px);
 		margin: 18px calc(50% - 50vw) 0;
 		object-fit: cover;
 		object-position: center;
@@ -794,8 +788,8 @@ h1 {
 		position: relative;
 		top: auto;
 		left: auto;
-		width: calc(100% - 44px);
-		max-width: 356px;
+		width: calc(100% - 32px);
+		max-width: 390px;
 		margin: 0 auto;
 	}
 	.hero .eyebrow { margin-bottom: 16px; font-size: 9px; line-height: 1.4; letter-spacing: .2em; }
@@ -806,6 +800,7 @@ h1 {
 		position: relative;
 		inset: auto;
 		z-index: 2;
+		transform: translateY(8px);
 		margin: auto 22px 0;
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -818,8 +813,8 @@ h1 {
 }
 
 @media (max-width: 430px) {
-	.hero h1 { font-size: 36px; }
-	.hero-copy { width: calc(100% - 40px); }
-	.hero-photo { height: min(23svh, 220px); }
+	.hero h1 { font-size: 34px; }
+	.hero-copy { width: calc(100% - 32px); max-width: 390px; }
+	.hero-photo { height: min(29svh, 280px); }
 }
 
