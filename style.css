@@ -197,12 +197,6 @@ h1 em { color: #d9c1ad; font-style: normal; }
 	.approach-page { min-height: auto; display: block; padding: 7px 0; }.approach-main, .quote-card { min-height: 620px; border-radius: 0; }.approach-content { padding: 55px 24px; }.approach-content h2 { font-size: 45px; }.approach-intro { font-size: 14px; }.approach-facts { right: 24px; bottom: 145px; left: 24px; grid-template-columns: repeat(2,1fr); gap: 18px 12px; }.approach-facts strong { font-size: 11px; }.approach-facts small { font-size: 9px; }.approach-button { bottom: 55px; left: 24px; }.quote-card { min-height: 460px; }.quote-content { padding: 100px 28px 30px; }.quote-content p { font-size: 28px; }
 }
 
-@media (max-width: 430px) {
-	.header-button { padding: 10px 13px; font-size: 9px; }.calendar-icon { width: 13px; height: 13px; }
-	.hero-copy { top: 16%; }
-	.eyebrow { font-size: 7px; }
-	h1 { font-size: 40px; }
-	.intro { font-size: 11px; }
 	.hero-benefits { gap: 6px; }
 
 @media (min-width: 801px) {
@@ -407,6 +401,7 @@ h1 em { color: #d9c1ad; font-style: normal; }
 .contact-social-area { transform: translateX(-40px); }
 @media (max-width: 800px) { .contact-social-area { transform: none; } }
 .reviews-carousel { display: grid; grid-template-columns: 42px minmax(0, 1fr) 42px; align-items: center; gap: 12px; }.reviews-viewport { overflow: hidden; }.reviews-grid { display: flex; gap: 0; transition: transform .35s ease; }.reviews-grid article { flex: 0 0 100%; min-height: 255px; }.review-arrow { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid rgba(67,50,37,.22); border-radius: 50%; background: transparent; color: #5f5750; font-size: 20px; cursor: pointer; }.review-arrow:hover { background: #fffdfa; }.review-stars { margin-bottom: 17px; color: #c39858; font-size: 16px; letter-spacing: 3px; }.review-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }.review-dots button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 50%; background: #c9b9aa; cursor: pointer; }.review-dots button.active { background: #7d5a4a; transform: scale(1.25); }
+@media (max-width: 800px) { .reviews-carousel { grid-template-columns: minmax(0, 1fr); }.review-arrow { display: none; }.reviews-viewport { touch-action: pan-y; } }
 @media (max-width: 800px) { .reviews-carousel { grid-template-columns: 30px minmax(0, 1fr) 30px; gap: 7px; }.review-arrow { width: 30px; height: 30px; font-size: 16px; }.review-stars { font-size: 14px; } }
 .reviews-grid { display: flex; gap: 14px; }.reviews-grid article { flex: 0 0 calc((100% - 28px) / 3); }.reviews-viewport { min-width: 0; }.review-dots button[hidden] { display: none; }
 @media (max-width: 800px) { .reviews-grid article { flex-basis: 100%; } }
@@ -817,5 +812,20 @@ h1 {
 	.hero h1 { font-size: 34px; }
 	.hero-copy { width: calc(100% - 32px); max-width: 390px; }
 	.hero-photo { height: min(34svh, 320px); }
+}
+
+.contact-socials .facebook { opacity: 1; cursor: pointer; }
+.contact-socials .social { width: 42px; height: 42px; flex: 0 0 42px; }
+.contact-socials .social svg { width: 22px; height: 22px; }
+.contact-socials .facebook { font-size: 24px; }
+
+@media (max-width: 800px) {
+	.contact-socials { gap: 12px; }
+}
+
+@media (max-width: 800px) {
+	.reviews-carousel { grid-template-columns: minmax(0, 1fr); }
+	.review-arrow { display: none; }
+	.reviews-viewport { touch-action: pan-y; }
 }
 
