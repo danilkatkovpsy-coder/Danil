@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Данил Катков — психолог</title>
 	<meta name="description" content="Данил Катков — психолог, КПТ-подход, онлайн-консультации.">
+	<link rel="icon" type="image/png" href="images/favicon.png">
 	<link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -143,14 +144,22 @@
 		const menuToggle = document.querySelector('.menu-toggle');
 		const siteNav = document.querySelector('#site-nav');
 		const setMenuOpen = (isOpen) => {
-			siteHeader.classList.toggle('menu-open', isOpen);
-			menuToggle.setAttribute('aria-expanded', String(isOpen));
-			menuToggle.setAttribute('aria-label', isOpen ? 'Закрыть меню' : 'Открыть меню');
-			siteNav.style.visibility = isOpen ? 'visible' : 'hidden';
-			siteNav.style.opacity = isOpen ? '1' : '0';
-			siteNav.style.transform = isOpen ? 'translateY(0)' : 'translateY(-8px)';
-			siteNav.style.pointerEvents = isOpen ? 'auto' : 'none';
-			document.body.classList.toggle('menu-open', isOpen);
+			const menuIsOpen = isOpen && window.innerWidth <= 800;
+			siteHeader.classList.toggle('menu-open', menuIsOpen);
+			menuToggle.setAttribute('aria-expanded', String(menuIsOpen));
+			menuToggle.setAttribute('aria-label', menuIsOpen ? 'Закрыть меню' : 'Открыть меню');
+			if (window.innerWidth <= 800) {
+				siteNav.style.visibility = menuIsOpen ? 'visible' : 'hidden';
+				siteNav.style.opacity = menuIsOpen ? '1' : '0';
+				siteNav.style.transform = menuIsOpen ? 'translateY(0)' : 'translateY(-8px)';
+				siteNav.style.pointerEvents = menuIsOpen ? 'auto' : 'none';
+			} else {
+				siteNav.style.removeProperty('visibility');
+				siteNav.style.removeProperty('opacity');
+				siteNav.style.removeProperty('transform');
+				siteNav.style.removeProperty('pointer-events');
+			}
+			document.body.classList.toggle('menu-open', menuIsOpen);
 		};
 		menuToggle.addEventListener('click', () => setMenuOpen(menuToggle.getAttribute('aria-expanded') !== 'true'));
 		siteHeader.querySelectorAll('nav a').forEach((link) => link.addEventListener('click', () => setMenuOpen(false)));
