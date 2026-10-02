@@ -303,8 +303,8 @@ h1 em { color: #d9c1ad; font-style: normal; }
 		object-fit: cover;
 		object-position: 68% center;
 		opacity: .62;
-		-webkit-mask-image: none;
-		mask-image: none;
+		-webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 24%);
+		mask-image: linear-gradient(to bottom, transparent 0%, #000 24%);
 	}
 }
 .site-footer::before { display: none; }
@@ -408,7 +408,7 @@ h1 em { color: #d9c1ad; font-style: normal; }
 @media (max-width: 800px) { .reviews-grid article { flex-basis: 100%; } }
 .footer-bottom { position: relative; min-height: 52px; display: flex; align-items: center; justify-content: flex-start; padding: 12px 68px; background: var(--dark); color: #c5b9ae; font-size: 12px; text-align: left; }
 .footer-bottom::before { position: absolute; top: 8px; right: 0; left: 0; border-top: 1px solid rgba(255,255,255,.2); content: ""; }
-@media (max-width: 800px) { .footer-content { width: calc(100% - 32px); grid-template-columns: 1fr 1fr; gap: 40px 24px; padding: 48px 24px 42px; }.footer-brand { grid-column: 1 / -1; }.footer-brand p { margin-top: 22px; }.footer-bottom { min-height: 48px; padding: 14px 24px; font-size: 10px; } }
+@media (max-width: 800px) { .footer-content { width: calc(100% - 32px); grid-template-columns: 1fr 1fr; gap: 40px 24px; padding: 48px 24px 42px; }.footer-brand { grid-column: 1 / -1; }.footer-nav { display: none; }.footer-details { grid-column: 1 / -1; }.footer-brand p { margin-top: 22px; }.footer-bottom { min-height: 48px; padding: 14px 24px; font-size: 10px; } }
 @media (min-width: 801px) {
     .about-page,
     .services-page,
