@@ -931,6 +931,17 @@ h1 {
 .site-footer .footer-details p { font-size: 16px; }
 
 @media (max-width: 800px) {
+	.site-footer .footer-brand,
+	.site-footer .footer-details {
+		justify-items: center;
+		text-align: center;
+	}
+
+	.site-footer .footer-bottom {
+		justify-content: center;
+		text-align: center;
+	}
+
 	.site-footer .footer-details a[href^="mailto"] {
 		overflow-wrap: anywhere;
 	}
