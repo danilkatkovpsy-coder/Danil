@@ -617,6 +617,13 @@ body.menu-open { overflow: hidden; }
 }
 
 @media (max-width: 800px) {
+	.approach-page {
+		display: flex;
+		flex-direction: column;
+		gap: 30px;
+		padding-top: 30px;
+		padding-bottom: 30px;
+	}
 	.approach-main { min-height: auto; }
 	.approach-content { height: auto; }
 	.approach-facts { position: static; margin-top: 32px; }
