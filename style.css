@@ -377,6 +377,7 @@ h1 em { color: #d9c1ad; font-style: normal; }
 }
 .services-page { isolation: isolate; background: transparent !important; }
 .services-page::before { position: absolute; z-index: -1; top: 0; bottom: 0; left: 50%; width: 100vw; content: ""; transform: translateX(-50%); background: #e8e0d7; }
+.services-page::after { content: ""; position: absolute; z-index: 0; top: 0; left: 50%; width: 100vw; height: 24px; pointer-events: none; transform: translateX(-50%); background: linear-gradient(180deg, #f7f3ee, rgba(232, 224, 215, 0)); }
 .site-footer { position: relative; z-index: 1; background: var(--dark); color: #f7f1e9; }
 .footer-content { width: min(1240px, calc(100% - 32px)); margin: 0 auto; display: grid; grid-template-columns: 1.1fr .75fr 1fr; gap: 90px; padding: 44px 68px 32px; }
 .footer-brand { display: grid; align-content: start; }.footer-brand strong { font-size: 20px; letter-spacing: .12em; }.footer-brand span { margin-top: 5px; color: #bdb2a8; font-size: 9px; letter-spacing: .25em; }.footer-brand p { margin: 30px 0 0; color: #c5b9ae; font-size: 14px; line-height: 1.5; }
