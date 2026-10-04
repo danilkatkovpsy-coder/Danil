@@ -1,6 +1,6 @@
 # Supabase backend
 
-The app has Supabase email sign-in and stores clients and invoices in the organization database. Purchases, expenses, company settings, and automatic invoice email are not connected yet.
+The app stores clients, invoices, purchases, expenses, suppliers, supplier invoices, company details, invoice appearance settings, and invoice email templates in the organization database after all migrations are applied. Invoice email uses the `send-invoice` Edge Function and Resend; delivery remains unavailable until the server secrets are configured and the function is deployed.
 
 ## First setup
 
@@ -8,9 +8,13 @@ The app has Supabase email sign-in and stores clients and invoices in the organi
 2. Choose a region in the EU. Generate a strong database password, save it in a password manager, and do not put it in this repository or send it in chat.
 3. Wait until the project is ready. Open **SQL Editor**, create a query, paste the contents of `migrations/20261003000100_accounting_core.sql`, and run it. The migration creates the tables and enables Row Level Security.
 4. Create a second query and run `migrations/20261003000200_cloud_invoice_writes.sql`. It adds invoice snapshots and an atomic, organization-scoped operation for saving invoice lines. Run each migration only once.
-5. In **Authentication > Sign In / Providers**, verify that the Email provider is enabled. Hosted Supabase projects require email confirmation by default. In **URL Configuration**, set the production Site URL to `https://danilkatkovpsy-coder.github.io/Generar-Accounting/` and add that URL plus `http://127.0.0.1:8000/` to the allowed redirect URLs.
-6. Open the project's **Connect** dialog or **Settings > API Keys** and copy the **Project URL** and public **publishable** key (or legacy `anon` key). These are intended for browser apps. Never share the database password, a `service_role` key, or a secret API key.
-7. Do not upload real client or accounting data until authentication and database access have been connected and tested.
+5. Create a third query and run `migrations/20261003000300_organization_accounting_data.sql`. It adds organization-scoped storage for purchases, expenses, suppliers, supplier invoices, and invoice appearance settings; it also adds company contact and bank fields. Existing browser-only data is copied to the organization the first time an authorized user signs in after this migration.
+6. Run `migrations/20261004000100_organization_member_read_grants.sql` to grant the member-list read required by authenticated app sessions.
+7. Run `migrations/20261004000200_invoice_email_delivery_service_grants.sql` to grant the Edge Function the minimum access needed to record email delivery status.
+8. Run `migrations/20261004000300_invoice_email_template_key.sql` to allow cloud storage of the single customizable invoice email template used with either interface language.
+9. In **Authentication > Sign In / Providers**, verify that the Email provider is enabled. Hosted Supabase projects require email confirmation by default. In **URL Configuration**, set the production Site URL to `https://arvesemu.ee/` and add `https://arvesemu.ee/**`, `https://www.arvesemu.ee/**`, and `http://127.0.0.1:8000/**` to the allowed redirect URLs. These allow the confirmation and password-reset links to return to the site.
+10. Open the project's **Connect** dialog or **Settings > API Keys** and copy the **Project URL** and public **publishable** key (or legacy `anon` key). These are intended for browser apps. Never share the database password, a `service_role` key, or a secret API key.
+11. Do not upload real client or accounting data until all six migrations have been applied and authentication, database access, and email delivery have been tested.
 
 The `create_organization(name, registration_code)` RPC creates an organization for the signed-in user and makes that user its owner. Team invitations need a server-side endpoint; clients must not be allowed to write directly to `organization_members`.
 
