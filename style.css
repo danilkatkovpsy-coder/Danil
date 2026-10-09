@@ -471,8 +471,57 @@ h1 em { color: #d9c1ad; font-style: normal; }
 	transform: translateY(-2px);
 }
 
+.approach-booking { position: absolute; right: 7%; bottom: 57px; left: 7%; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; }
+.approach-booking .approach-button { position: static; margin: 0; }
+.session-price { display: flex; align-items: baseline; gap: 8px; margin: 0; }
+.session-price strong { color: #f2e8de; font-size: 30px; line-height: 1; font-weight: 600; white-space: nowrap; }
+.session-price span { color: #eee3da; font-size: 13px; }
+.approach-price-note { margin: 8px 0 0; color: #eee3da; font-size: 12px; line-height: 1.4; }
+#packages, #contact { scroll-margin-top: 100px; }
+@media (max-width: 800px) {
+	.approach-booking { position: static; margin-top: 32px; }
+	#contact .contact-social-area { min-width: 0; justify-items: start; text-align: left; }
+	#contact .contact-social-area h3 { max-width: 100%; font-size: 18px; line-height: 1.4; }
+	#contact .contact-socials { max-width: 100%; flex-wrap: wrap; justify-content: flex-start; gap: 12px; }
+}
+
 .menu-toggle { display: none; }
 body.menu-open { overflow: hidden; }
+
+.packages-page { width: calc(100% - 13cm); margin: 0 auto; padding: 32px 0 64px; color: #27231f; }
+.packages-heading { margin-bottom: 28px; }
+.packages-heading .services-eyebrow { margin-bottom: 14px; }
+.packages-heading h2 { margin: 0 0 12px; font-size: 36px; line-height: 1.15; font-weight: 500; letter-spacing: 0; }
+.packages-heading > p:last-child { margin: 0; color: #756b63; font-size: 14px; line-height: 1.5; }
+.packages-booking { margin: 0 0 24px; color: #756b63; font-size: 18px; line-height: 1.5; font-weight: 400; }
+.packages-booking strong { color: #27231f; font-size: 26px; font-weight: 600; white-space: nowrap; }
+#consultation-options { scroll-margin-top: 100px; }
+.packages-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.package-card { display: flex; flex-direction: column; min-width: 0; padding: 26px 22px; border: 1px solid #ded5cb; border-radius: 8px; background: #fffdfa; }
+.package-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-height: 60px; align-content: start; }
+.package-top h3 { margin: 0; font-size: 20px; line-height: 1.3; font-weight: 600; }
+.package-badge { padding: 5px 9px; border-radius: 4px; background: #eee8e1; color: #665d56; font-size: 12px; line-height: 1.3; white-space: nowrap; }
+.package-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin: 22px 0 12px; font-size: 36px; line-height: 1.1; font-weight: 600; }
+.package-price span { color: #756b63; font-size: 13px; font-weight: 400; }
+.package-rate { margin: 0 0 24px; color: #756b63; font-size: 14px; line-height: 1.6; }
+.package-bottom { margin-top: auto; padding-top: 20px; border-top: 1px solid #ece5de; }
+.package-saving { margin: 0 0 18px; color: #756b63; font-size: 14px; line-height: 1.4; }
+.package-button { display: flex; justify-content: center; align-items: center; min-height: 46px; padding: 12px 16px; border: 1px solid #caa07d; border-radius: 999px; background: #e9d1bd; color: #29221d; font-size: 14px; font-weight: 600; transition: background .2s ease; }
+.package-button:hover { background: #f1dece; }
+.package-button:focus-visible { outline: 3px solid #8f6047; outline-offset: 4px; }
+.package-card-best { border-color: #9cae9f; }
+.package-card-best .package-badge { background: #e4eee5; color: #356448; }
+.package-card-best .package-saving { color: #356448; font-weight: 600; }
+@media (min-width: 801px) and (max-width: 1100px) {
+	.packages-page { width: calc(100% - 48px); }
+}
+@media (max-width: 800px) {
+	.packages-page { width: calc(100% - 48px); padding: 36px 0 48px; }
+	.packages-heading h2 { font-size: 30px; }
+	.packages-grid { grid-template-columns: 1fr; gap: 14px; }
+	.package-top { min-height: 0; justify-content: space-between; }
+	.package-price { margin-top: 24px; }
+}
 
 @media (min-width: 801px) {
 	#reviews.reviews-page {
