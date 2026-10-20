@@ -792,7 +792,7 @@
 					const button = document.createElement('button');
 					button.type = 'button';
 					button.className = 'booking-slot';
-					button.textContent = `${formatBookingTime(slot.start)}–${formatBookingTime(slot.end)}`;
+					button.textContent = formatBookingTime(slot.start);
 					button.addEventListener('click', () => {
 						bookingStart.value = slot.start;
 						bookingEnd.value = slot.end;
@@ -1239,7 +1239,7 @@
 				bookingResultPlatform.textContent = selectedPlatform === 'WhatsApp' ? 'Видео / аудио · WhatsApp' : `Онлайн · ${selectedPlatform}`;
 				bookingResultConnection.textContent = data.connectionNotice || '';
 				document.getElementById('booking-result-email').textContent = data.clientEmailSent
-					? 'Подтверждение и файл для календаря отправлены на ваш email.'
+					? 'Подтверждение и кнопка добавления в календарь отправлены на ваш email.'
 					: 'Запись сохранена, но доставка письма не подтверждена. Свяжитесь с нами, если письмо не придёт.';
 				bookingResultBalance.hidden = !packageNeedsVoucher;
 				if (packageNeedsVoucher) bookingResultBalanceText.textContent = `Пакет из ${data.totalSessions} консультаций\nОсталось ${data.remainingSessions} из ${data.totalSessions} консультаций`;
