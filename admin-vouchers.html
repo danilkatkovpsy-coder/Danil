@@ -87,6 +87,7 @@
 		</div>
 		<section id="order-list" class="order-list" role="tabpanel" aria-labelledby="tab-applications" aria-label="Список заявок и ваучеров"></section>
 	</main>
+	<script src="site-api.js"></script>
 	<script>
 		const adminForm = document.getElementById('admin-form');
 		const adminKey = document.getElementById('admin-key');
@@ -100,7 +101,7 @@
 		let activeTab = 'applications';
 		const requestAgeLimit = 7 * 24 * 60 * 60 * 1000;
 		const adminRequest = async (url, options = {}) => {
-			const response = await fetch(url, { ...options, headers: { ...(options.headers || {}), 'x-admin-key': adminKey.value } });
+			const response = await window.siteFetch(url, { ...options, headers: { ...(options.headers || {}), 'x-admin-key': adminKey.value } });
 			const data = await response.json();
 			if (!response.ok) throw new Error(data.error || 'Не удалось выполнить запрос.');
 			return data;
@@ -112,7 +113,7 @@
 				: new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Tallinn' }).format(new Date(timestamp));
 		};
 		const downloadInvoice = async (order) => {
-			const response = await fetch(`/api/admin/package-orders/${encodeURIComponent(order.id)}/invoice`, { headers: { 'x-admin-key': adminKey.value } });
+			const response = await window.siteFetch(`/api/admin/package-orders/${encodeURIComponent(order.id)}/invoice`, { headers: { 'x-admin-key': adminKey.value } });
 			if (!response.ok) {
 				const data = await response.json().catch(() => ({}));
 				throw new Error(data.error || 'Не удалось скачать счет.');
@@ -238,20 +239,29 @@
 				const sendButton = document.createElement('button');
 				sendButton.type = 'button';
 				sendButton.textContent = order.invoiceEmailSent ? 'Отправить повторно' : 'Сформировать и отправить';
+				let deliveryId;
 				sendButton.addEventListener('click', async () => {
 					sendButton.disabled = true;
 					adminStatus.classList.remove('is-error');
 					adminStatus.textContent = 'Формируем счет и отправляем email...';
 					try {
-						const result = await adminRequest(`/api/admin/package-orders/${encodeURIComponent(order.id)}/invoice`, { method: 'POST' });
+						if (order.invoiceEmailSent) {
+							if (!window.confirm('Повторно отправить счет покупателю?')) return;
+							deliveryId ||= crypto.randomUUID();
+						}
+						const suffix = deliveryId ? `?deliveryId=${deliveryId}` : '';
+						const result = await adminRequest(`/api/admin/package-orders/${encodeURIComponent(order.id)}/invoice${suffix}`, { method: 'POST' });
 						let message = `Счет ${result.invoiceNumber} сформирован.`;
 						if (result.emailSentNow) message += ' Отправлен покупателю.';
 						else if (!result.smtpConfigured) message += ' SMTP не настроен, email не отправлен.';
+						else if (result.invoiceEmailSent) message += ' Уже отправлен покупателю.';
 						else message += ' Не удалось отправить email.';
 						await loadOrders(message);
 					} catch (error) {
 						adminStatus.textContent = error.message;
 						adminStatus.classList.add('is-error');
+						sendButton.disabled = false;
+					} finally {
 						sendButton.disabled = false;
 					}
 				});

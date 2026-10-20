@@ -442,7 +442,9 @@
 			});
 		}
 	</script>
+	<script src="site-api.js"></script>
 	<script type="module">
+		const fetch = window.siteFetch;
 		import intlTelInput from '/vendor/intl-tel-input/js/intlTelInput.mjs';
 		window.googleCalendarConfig = { apiBase: '', timezone: 'Europe/Tallinn' };
 		const bookingLabels = { free: 'Первая бесплатная консультация', single: 'Индивидуальная консультация', five: 'Пакет из 5 консультаций', ten: 'Пакет из 10 консультаций' };
