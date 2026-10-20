@@ -68,7 +68,7 @@
 			<a class="about-button" href="#services">Узнать больше <svg class="about-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7 17 17M9 17h8V9"></path></svg></a>
 		</div>
 		<div class="about-aside">
-			<div class="diploma-wrap" data-name="диплом"><p class="diploma-label">ДИПЛОМ</p><button class="diploma-frame diploma-trigger" data-name="увеличить диплом" type="button" aria-label="Увеличить диплом"><img src="images/diplom.png" alt="Диплом Данила Каткова"><span class="zoom-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"></circle><path d="m16 16 4.5 4.5"></path></svg>Нажмите, чтобы увеличить</span></button></div>
+			<div class="diploma-wrap" data-name="диплом"><p class="diploma-label">ДИПЛОМ</p><button class="diploma-frame diploma-trigger" data-name="увеличить диплом" type="button" aria-label="Увеличить диплом"><img src="images/diplom.jpg" alt="Диплом Данила Каткова"><span class="zoom-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"></circle><path d="m16 16 4.5 4.5"></path></svg>Нажмите, чтобы увеличить</span></button></div>
 		<div class="about-facts">
 			<div class="about-fact">
 				<span class="about-fact-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="1052 796 200 200"><path fill="currentColor" stroke="none" d="M1151.998 921.75c-4.129 0-8.17-.771-12.01-2.292l-50.167-19.888v32.066c0 15.562 27.836 28.174 62.178 28.174s62.181-12.612 62.181-28.174v-32.067l-50.172 19.889c-3.84 1.521-7.881 2.292-12.01 2.292Z"/><path fill="currentColor" stroke="none" d="m1248.592 867.082-87.989-34.878a24.36 24.36 0 0 0-17.208 0l-87.988 34.878a5.4 5.4 0 0 0 0 10.033l12.317 4.882v34.925a10.34 10.34 0 0 0-.67 16.639l-3.751 18.007a8.67 8.67 0 0 0 8.027 10.897h4.449a8.67 8.67 0 0 0 8.027-10.897l-3.752-18.007a10.34 10.34 0 0 0-.669-16.639v-30.303l63.729 25.264a24.35 24.35 0 0 0 17.771 0l87.709-34.768a5.4 5.4 0 0 0-.002-10.033Z"/></svg></span>
@@ -237,7 +237,7 @@
 							<div class="booking-calendar-weekdays-row" aria-hidden="true"><span></span><div class="booking-calendar-grid booking-calendar-weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div><span></span></div>
 							<div class="booking-week-row"><button id="booking-week-prev" class="booking-week-nav" type="button" aria-label="Предыдущая неделя">‹</button><div id="booking-calendar-days" class="booking-calendar-grid" role="group" aria-label="Дни недели"></div><button id="booking-week-next" class="booking-week-nav" type="button" aria-label="Следующая неделя">›</button></div>
 						</section>
-						<div class="booking-slots-block"><label>Выберите время</label><div id="booking-slots-row" class="booking-slots-row"><button id="booking-slots-prev" class="booking-slots-nav" type="button" aria-label="Предыдущие варианты времени" hidden>‹</button><div id="booking-slots" class="booking-slots" aria-live="polite"></div><button id="booking-slots-next" class="booking-slots-nav" type="button" aria-label="Следующие варианты времени" hidden>›</button></div><div class="booking-selected-time" aria-live="polite"><span>Время записи</span><strong id="booking-selected-time-value">Не выбрано</strong></div></div>
+						<div class="booking-slots-block"><label>Выберите время <small class="booking-timezone"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><ellipse cx="12" cy="12" rx="4" ry="9"></ellipse><path d="M3 12h18"></path></svg><span>Все время указано по времени Таллина</span></small></label><div id="booking-slots-row" class="booking-slots-row"><button id="booking-slots-prev" class="booking-slots-nav" type="button" aria-label="Предыдущие варианты времени" hidden>‹</button><div id="booking-slots" class="booking-slots" aria-live="polite"></div><button id="booking-slots-next" class="booking-slots-nav" type="button" aria-label="Следующие варианты времени" hidden>›</button></div><div class="booking-selected-time" aria-live="polite"><span>Время записи · Таллин</span><strong id="booking-selected-time-value">Не выбрано</strong></div></div>
 						</div>
 						<div id="booking-step-two" class="booking-step booking-step-two" hidden>
 						<button id="booking-step-back" class="booking-step-back" type="button" hidden>‹ Назад</button>
@@ -268,6 +268,7 @@
 						<div class="booking-result-check" aria-hidden="true">✓</div>
 						<h4>Вы успешно записаны!</h4>
 						<p class="booking-result-caption">Консультация подтверждена.</p>
+						<p id="booking-result-email" class="booking-result-connection" role="status"></p>
 						<p id="booking-result-connection" class="booking-result-connection"></p>
 						<div class="booking-result-details">
 							<p><span aria-hidden="true">▦</span><strong id="booking-result-date"></strong></p>
@@ -328,6 +329,12 @@
 			</div>
 		</div>
 	</div>
+	<dialog class="purchase-confirmation" id="purchase-confirmation" aria-labelledby="purchase-confirmation-title" aria-describedby="purchase-confirmation-message">
+		<h3 id="purchase-confirmation-title"></h3>
+		<p id="purchase-confirmation-message"></p>
+		<p>После оплаты Вы получите ваучер для записи на консультацию по выбранному пакету.</p>
+		<form method="dialog"><button class="purchase-submit" autofocus>Понятно</button></form>
+	</dialog>
 	<footer class="site-footer" data-name="подвал сайта">
 		<div class="footer-content">
 			<div class="footer-brand" data-name="бренд подвала"><img src="images/logo.png" alt="Логотип"><strong>Данил Катков</strong><span>психолог, кпт-подход</span><p>Психологическая поддержка<br>для более осознанной и<br>гармоничной жизни.</p></div>
@@ -338,7 +345,7 @@
 	</footer>
 	<div class="diploma-modal" role="dialog" aria-modal="true" aria-label="Диплом Данила Каткова">
 		<button class="modal-close" type="button" aria-label="Закрыть диплом">×</button>
-		<img src="images/diplom.png" alt="Диплом Данила Каткова">
+		<img src="images/diplom.jpg" alt="Диплом Данила Каткова">
 	</div>
 	<script>
 		const aboutFacts = document.querySelector('.about-facts');
@@ -548,6 +555,27 @@
 		const purchasePackageName = document.getElementById('purchase-package-name');
 		const purchaseSummary = document.getElementById('package-purchase-summary');
 		const purchaseStatus = document.getElementById('package-purchase-status');
+		const purchaseConfirmation = document.getElementById('purchase-confirmation');
+		let modalScrollPosition = null;
+		const updateModalScrollLock = () => {
+			const isOpen = bookingModal.classList.contains('is-open') || purchaseModal.classList.contains('is-open') || purchaseConfirmation.open;
+			if (isOpen && modalScrollPosition === null) {
+				modalScrollPosition = window.scrollY;
+				document.body.style.top = `-${modalScrollPosition}px`;
+				document.body.classList.add('modal-open');
+			} else if (!isOpen && modalScrollPosition !== null) {
+				const scrollPosition = modalScrollPosition;
+				document.body.classList.remove('modal-open');
+				document.body.style.top = '';
+				modalScrollPosition = null;
+				window.scrollTo({ top: scrollPosition, behavior: 'instant' });
+			}
+		};
+		purchaseConfirmation.addEventListener('close', updateModalScrollLock);
+		purchaseConfirmation.addEventListener('cancel', (event) => {
+			event.preventDefault();
+			purchaseConfirmation.close();
+		});
 		const purchasePackages = {
 			five: { title: bookingLabels.five, price: '225 €', count: '5 × 50 минут', duration: '50 минут каждая встреча', saving: 'Экономия 20 €', rate: '(45 € за консультацию)' },
 			ten: { title: bookingLabels.ten, price: '420 €', count: '10 × 50 минут', duration: '50 минут каждая встреча', saving: 'Экономия 70 €', rate: '(42 € за консультацию)' },
@@ -618,6 +646,8 @@
 			const minimumDate = new Date(`${bookingDate.min}T12:00:00`);
 			const previousMonthStart = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth() - 1, 1, 12);
 			bookingCalendarMonthPrev.disabled = previousMonthStart < new Date(minimumDate.getFullYear(), minimumDate.getMonth(), 1, 12);
+			const maximumDate = new Date(`${bookingDate.max}T12:00:00`);
+			bookingCalendarMonthNext.disabled = displayedMonth.getFullYear() === maximumDate.getFullYear() && displayedMonth.getMonth() === maximumDate.getMonth();
 			bookingCalendarMonthGrid.hidden = !bookingMonthCalendarOpen;
 			bookingCalendarMonthGrid.replaceChildren();
 			['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].forEach((dayName) => {
@@ -643,7 +673,7 @@
 				const button = document.createElement('button');
 				button.type = 'button';
 				button.className = 'booking-month-day';
-				button.disabled = dateValue < bookingDate.min;
+				button.disabled = dateValue < bookingDate.min || dateValue > bookingDate.max;
 				button.classList.toggle('selected', dateValue === bookingDate.value);
 				button.setAttribute('aria-pressed', String(dateValue === bookingDate.value));
 				button.textContent = String(dayNumber);
@@ -664,7 +694,7 @@
 				const button = document.createElement('button');
 				button.type = 'button';
 				button.className = 'booking-day';
-				button.disabled = dateValue < bookingDate.min;
+				button.disabled = dateValue < bookingDate.min || dateValue > bookingDate.max;
 				button.classList.toggle('selected', dateValue === bookingDate.value);
 				button.setAttribute('aria-pressed', String(dateValue === bookingDate.value));
 				const dayNumber = document.createElement('span');
@@ -681,6 +711,7 @@
 				bookingCalendarDays.append(button);
 			}
 			bookingWeekPrev.disabled = formatBookingDateValue(bookingWeekStart) <= formatBookingDateValue(getBookingWeekStart(bookingDate.min));
+			bookingWeekNext.disabled = formatBookingDateValue(bookingWeekStart) >= formatBookingDateValue(getBookingWeekStart(bookingDate.max));
 		};
 		bookingCalendarMonthToggle.addEventListener('click', () => {
 			bookingMonthCalendarOpen = !bookingMonthCalendarOpen;
@@ -691,6 +722,7 @@
 			const targetMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + offset, 1, 12);
 			const minimumDate = new Date(`${bookingDate.min}T12:00:00`);
 			if (targetMonth < new Date(minimumDate.getFullYear(), minimumDate.getMonth(), 1, 12)) return;
+			if (formatBookingDateValue(targetMonth) > bookingDate.max) return;
 			bookingDate.value = formatBookingDateValue(targetMonth < minimumDate ? minimumDate : targetMonth);
 			bookingWeekStart = getBookingWeekStart(bookingDate.value);
 			renderBookingCalendar();
@@ -830,7 +862,13 @@
 			bookingEmail.readOnly = false;
 			bookingName.required = !packageUsesVoucher;
 			bookingEmail.required = !packageUsesVoucher;
-			bookingDate.min = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+			const todayParts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Tallinn', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+			const today = Object.fromEntries(todayParts.map(({ type, value }) => [type, value]));
+			bookingDate.min = `${today.year}-${today.month}-${today.day}`;
+			const maximumDate = new Date(Number(today.year), Number(today.month) - 1 + 6, 1, 12);
+			const lastDay = new Date(maximumDate.getFullYear(), maximumDate.getMonth() + 1, 0).getDate();
+			maximumDate.setDate(Math.min(Number(today.day), lastDay));
+			bookingDate.max = formatBookingDateValue(maximumDate);
 			bookingDate.value = bookingDate.min;
 			bookingWeekStart = getBookingWeekStart(bookingDate.value);
 			bookingMonthCalendarOpen = false;
@@ -842,6 +880,8 @@
 			setBookingMobileStep(1);
 			bookingModal.classList.add('is-open');
 			bookingModal.setAttribute('aria-hidden', 'false');
+			updateModalScrollLock();
+			bookingDialog.scrollTop = 0;
 			loadBookingSlots(true);
 			document.querySelector('.booking-close').focus();
 		};
@@ -860,11 +900,14 @@
 			purchaseStatus.classList.remove('is-error', 'is-success');
 			purchaseModal.classList.add('is-open');
 			purchaseModal.setAttribute('aria-hidden', 'false');
-			document.getElementById('purchase-name').focus();
+			updateModalScrollLock();
+			purchaseModal.querySelector('.purchase-dialog').scrollTop = 0;
+			purchaseModal.querySelector('.purchase-close').focus({ preventScroll: true });
 		};
 		const closePurchase = () => {
 			purchaseModal.classList.remove('is-open');
 			purchaseModal.setAttribute('aria-hidden', 'true');
+			updateModalScrollLock();
 			purchaseForm.reset();
 			purchaseStatus.textContent = '';
 		};
@@ -872,6 +915,7 @@
 			bookingModal.classList.remove('is-open');
 			bookingDialog.classList.remove('is-confirmed');
 			bookingModal.setAttribute('aria-hidden', 'true');
+			updateModalScrollLock();
 			bookingForm.reset();
 			bookingForm.hidden = false;
 			bookingResult.hidden = true;
@@ -924,6 +968,7 @@
 		}
 		document.addEventListener('keydown', (event) => {
 			if (event.key !== 'Escape') return;
+			if (purchaseConfirmation.open) return;
 			if (purchaseModal.classList.contains('is-open')) closePurchase();
 			else if (bookingModal.classList.contains('is-open')) closeBooking();
 		});
@@ -987,13 +1032,14 @@
 			const platform = bookingResultPlatform.textContent.replace(/^Онлайн · /, '');
 			const calendarContent = [
 				'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Danil Katkov//Consultation//RU', 'CALSCALE:GREGORIAN',
+				'X-WR-TIMEZONE:Europe/Tallinn',
 				'BEGIN:VEVENT',
 				`UID:${escapeCalendarText(bookingAddCalendar.dataset.eventId || `${Date.now()}@danilpsy.ee`)}`,
 				`DTSTAMP:${formatCalendarDate(new Date())}`,
 				`DTSTART:${formatCalendarDate(bookingStart.value)}`,
 				`DTEND:${formatCalendarDate(bookingEnd.value)}`,
 				`SUMMARY:${escapeCalendarText('Консультация с Данилом Катковым')}`,
-				`DESCRIPTION:${escapeCalendarText(`Индивидуальная онлайн-консультация. Платформа: ${platform}`)}`,
+				`DESCRIPTION:${escapeCalendarText(`По Таллинскому времени: ${bookingResultDate.textContent}, ${formatBookingTime(bookingStart.value)}–${formatBookingTime(bookingEnd.value)} (Europe/Tallinn). Индивидуальная онлайн-консультация. Платформа: ${platform}`)}`,
 				'END:VEVENT', 'END:VCALENDAR', '',
 			].join('\r\n');
 			const file = new Blob([calendarContent], { type: 'text/calendar;charset=utf-8' });
@@ -1066,8 +1112,11 @@
 					: data.invoiceGenerated
 						? 'PDF-счет сформирован и доступен администратору; отправить его на email пока не удалось.'
 						: 'Не удалось сформировать счет; администратор сможет повторить попытку.';
-				purchaseStatus.textContent = `Заявка ${data.orderNumber || data.orderId} сохранена. Счет ${data.invoiceNumber || ''}: ${invoiceDelivery} После оплаты Вы получите ваучер для записи на консультацию по выбранному пакету.`;
-				purchaseStatus.classList.add('is-success');
+				document.getElementById('purchase-confirmation-title').textContent = `Заявка ${data.orderNumber || data.orderId} сохранена`;
+				document.getElementById('purchase-confirmation-message').textContent = `Счет ${data.invoiceNumber || ''}. ${invoiceDelivery}`;
+				purchaseConfirmation.showModal();
+				closePurchase();
+				if (bookingModal.classList.contains('is-open')) closeBooking();
 			} catch (error) {
 				purchaseStatus.textContent = error.message;
 				purchaseStatus.classList.add('is-error');
@@ -1180,7 +1229,7 @@
 			}
 			const submitButton = bookingForm.querySelector('[type="submit"]');
 			submitButton.disabled = true;
-			bookingStatus.textContent = 'Создаем событие в Google Calendar...';
+			bookingStatus.textContent = 'Сохраняем запись...';
 			bookingStatus.hidden = false;
 			bookingStatus.classList.remove('is-error', 'is-success');
 			try {
@@ -1193,9 +1242,12 @@
 				bookingSubtitle.textContent = 'Онлайн · 50 минут';
 				bookingSubtitle.hidden = true;
 				bookingResultDate.textContent = confirmedDate;
-				bookingResultTime.textContent = `${formatBookingTime(bookingStart.value)}–${formatBookingTime(bookingEnd.value)} (50 минут)`;
+				bookingResultTime.textContent = `${formatBookingTime(bookingStart.value)}–${formatBookingTime(bookingEnd.value)} · Таллин (50 минут)`;
 				bookingResultPlatform.textContent = selectedPlatform === 'WhatsApp' ? 'Видео / аудио · WhatsApp' : `Онлайн · ${selectedPlatform}`;
 				bookingResultConnection.textContent = data.connectionNotice || '';
+				document.getElementById('booking-result-email').textContent = data.clientEmailSent
+					? 'Подтверждение и файл для календаря отправлены на ваш email.'
+					: 'Запись сохранена, но доставка письма не подтверждена. Свяжитесь с нами, если письмо не придёт.';
 				bookingResultBalance.hidden = !packageNeedsVoucher;
 				if (packageNeedsVoucher) bookingResultBalanceText.textContent = `Пакет из ${data.totalSessions} консультаций\nОсталось ${data.remainingSessions} из ${data.totalSessions} консультаций`;
 				bookingAddCalendar.dataset.eventId = data.eventId || '';

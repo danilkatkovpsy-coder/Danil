@@ -54,6 +54,29 @@
 		.voucher-delete-button { width: 42px; padding: 8px; background: #8a3b33; border-color: #8a3b33; }
 		.voucher-delete-button svg { width: 18px; height: 18px; }
 		.voucher-editor .is-danger { background: #8a3b33; border-color: #8a3b33; }
+		main:has(#calendar-section:not([hidden])) { width: min(1050px, calc(100% - 32px)); }
+		#calendar-section[hidden], #vouchers-section[hidden] { display: none; }
+		#section-calendar[aria-pressed="false"], #section-vouchers[aria-pressed="false"] { background: #fffdfa; color: #315f4f; }
+		#calendar-status.is-error { color: #8a3b33; }
+		.calendar-navigation { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+		.calendar-navigation h2 { font-size: 20px; text-transform: capitalize; }
+		.calendar-grid, .calendar-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+		.calendar-weekdays { margin-bottom: 6px; text-align: center; color: #756b63; }
+		.calendar-day { display: grid; min-width: 0; min-height: 64px; padding: 6px 2px; background: #fffdfa; color: #292621; }
+		.calendar-day small { min-height: 17px; font-size: 11px; }
+		.calendar-day.is-closed { background: #e8e1da; }
+		.calendar-day[aria-pressed="true"] { outline: 2px solid #315f4f; outline-offset: -2px; background: #dfece2; }
+		.calendar-card { display: grid; gap: 14px; margin-top: 20px; padding: 18px; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; }
+		.calendar-card h2, .calendar-card h3, .calendar-card p { margin: 0; }
+		details.calendar-card { display: block; }
+		.calendar-card summary { cursor: pointer; font-weight: 600; }
+		details.calendar-card[open] > :not(summary) { margin-top: 14px; }
+		.calendar-form { display: grid; gap: 10px; }
+		.calendar-form select { min-height: 42px; padding: 8px; font: inherit; color: #292621; background: white; border: 1px solid #d7cec5; border-radius: 4px; }
+		.calendar-week-row { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 8px; margin: 10px 0; }
+		.calendar-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+		#calendar-day-form p, #calendar-mail-queue p { font-size: 13px; }
+		.calendar-card .order-card { overflow-wrap: anywhere; }
 		@media (max-width: 560px) {
 			main { margin: 24px auto; }
 			h1 { font-size: 25px; }
@@ -65,12 +88,17 @@
 <body>
 	<main>
 		<p class="eyebrow"><a href="/">ДАНИЛ КАТКОВ · САЙТ</a></p>
-		<h1>Заявки на пакеты</h1>
+		<h1>Управление сайтом</h1>
 		<form id="admin-form" class="admin-login">
-			<label for="admin-key">Ключ управления ваучерами<input id="admin-key" type="password" autocomplete="current-password" required></label>
-			<button type="submit">Загрузить заявки</button>
+			<label for="admin-key">Ключ администратора<input id="admin-key" type="password" autocomplete="current-password" required></label>
+			<button type="submit">Войти / обновить</button>
 		</form>
 		<p id="admin-status" aria-live="polite"></p>
+		<nav class="admin-tabs" aria-label="Разделы управления">
+			<button id="section-vouchers" type="button" aria-pressed="true">Управление ваучерами</button>
+			<button id="section-calendar" type="button" aria-pressed="false">Календарь</button>
+		</nav>
+		<div id="vouchers-section">
 		<nav class="admin-tabs" role="tablist" aria-label="Заявки и ваучеры">
 			<button class="admin-tab" id="tab-applications" type="button" role="tab" aria-controls="order-list" aria-selected="true" data-tab="applications">Заявки <span class="admin-tab-count">0</span></button>
 			<button class="admin-tab" id="tab-active" type="button" role="tab" aria-controls="order-list" aria-selected="false" tabindex="-1" data-tab="active">Активные ваучеры <span class="admin-tab-count">0</span></button>
@@ -86,6 +114,59 @@
 			</form>
 		</div>
 		<section id="order-list" class="order-list" role="tabpanel" aria-labelledby="tab-applications" aria-label="Список заявок и ваучеров"></section>
+		</div>
+		<section id="calendar-section" hidden aria-label="Календарь и журнал записей">
+			<p>Все даты и время — <strong>Таллин (Europe/Tallinn)</strong>. Запись на сайте открыта на 6 месяцев вперёд.</p>
+			<p id="calendar-status" role="status"></p>
+			<div class="calendar-navigation">
+				<button id="calendar-prev" type="button" aria-label="Предыдущий месяц">‹</button>
+				<h2 id="calendar-month"></h2>
+				<button id="calendar-next" type="button" aria-label="Следующий месяц">›</button>
+			</div>
+			<div class="calendar-weekdays" aria-hidden="true"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+			<div id="calendar-grid" class="calendar-grid" aria-label="Дни месяца"></div>
+			<section class="calendar-card">
+				<h2 id="calendar-day-title">Расписание дня</h2>
+				<form id="calendar-day-form">
+					<label>Время начала консультаций (через запятую)<input id="calendar-day-times" placeholder="09:00, 10:00, 15:00"></label>
+					<p>Пустое поле закрывает день для новых записей. Уже созданные встречи не отменяются.</p>
+					<div class="calendar-actions"><button type="submit">Сохранить день</button><button id="calendar-day-close" type="button">Закрыть день</button><button id="calendar-day-reset" type="button">Вернуть недельное расписание</button></div>
+				</form>
+				<div id="calendar-day-events" class="order-list"></div>
+			</section>
+			<details class="calendar-card">
+				<summary>Недельное расписание</summary>
+				<p>Укажите часы начала через запятую. Пустое поле — выходной. Индивидуальные настройки дат имеют приоритет.</p>
+				<div id="calendar-week-editor"></div>
+			</details>
+			<details class="calendar-card">
+				<summary>Закрыть интервал / отпуск</summary>
+				<form id="calendar-block-form" class="calendar-form">
+					<label>Начало (Таллин)<input name="start" type="datetime-local" required></label>
+					<label>Конец (Таллин)<input name="end" type="datetime-local" required></label>
+					<label>Причина<input name="label" maxlength="200" placeholder="Отпуск / перерыв"></label>
+					<button type="submit">Закрыть интервал</button>
+				</form>
+			</details>
+			<details class="calendar-card">
+				<summary>Добавить запись вручную</summary>
+				<form id="calendar-create-form" class="calendar-form">
+					<label>Дата и время (из открытого расписания, Таллин)<input name="start" type="datetime-local" required></label>
+					<label>Имя<input name="name" maxlength="120" required></label>
+					<label>Email<input name="email" type="email" maxlength="254" required></label>
+					<label>Услуга<select name="packageName"><option value="single">Индивидуальная консультация</option><option value="free">Знакомство</option><option value="five">Ваучер на 5 встреч</option><option value="ten">Ваучер на 10 встреч</option></select></label>
+					<label>Код ваучера (для пакета)<input name="voucherCode" maxlength="32"></label>
+					<label>Платформа<select name="platform"><option>Zoom</option><option>Microsoft Teams</option></select></label>
+					<button type="submit">Создать и отправить письмо</button>
+				</form>
+			</details>
+			<section class="calendar-card">
+				<h2>Журнал записей за выбранный месяц</h2>
+				<label>Поиск по имени / email<input id="calendar-search" type="search"></label>
+				<div id="calendar-journal" class="order-list"></div>
+			</section>
+			<section class="calendar-card"><h2>Письма, требующие проверки</h2><p>Письма отправляются автоматически при создании, переносе и отмене. Если отправка не подтверждена, повторите её здесь в течение 23 часов. Позже сначала проверьте доставку в Resend, чтобы не отправить дубликат.</p><div id="calendar-mail-queue" class="order-list"></div></section>
+		</section>
 	</main>
 	<script src="site-api.js"></script>
 	<script>
@@ -483,8 +564,9 @@
 		};
 		adminForm.addEventListener('submit', (event) => {
 			event.preventDefault();
-			loadOrders();
+			if (document.getElementById('calendar-section').hidden) loadOrders();
 		});
 	</script>
+	<script src="admin-calendar.js"></script>
 </body>
 </html>

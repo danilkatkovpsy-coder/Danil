@@ -11,7 +11,6 @@
 	const pending = new Map();
 	window.siteFetch = async (input, init = {}) => {
 		const url = new URL(input, location.origin);
-		if (local) return fetch(input, init);
 		let endpoint = endpoints[url.pathname];
 		if (url.pathname.startsWith('/api/admin/')) endpoint = `admin/${url.pathname.slice('/api/admin/'.length)}`;
 		if (!endpoint) throw new Error('Неизвестный адрес API.');
@@ -24,7 +23,7 @@
 			if (!pending.has(fingerprint)) pending.set(fingerprint, crypto.randomUUID());
 			options.body = JSON.stringify({ ...body, requestId: pending.get(fingerprint) });
 		}
-		const response = await fetch(`${remote}/${endpoint}${url.search}`, options);
+		const response = await fetch(local ? input : `${remote}/${endpoint}${url.search}`, options);
 		// Keep IDs for the lifetime of this page, including repeated successful submits.
 		// Editing the form creates a different fingerprint and a new request.
 		return response;
