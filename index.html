@@ -646,8 +646,6 @@
 			const minimumDate = new Date(`${bookingDate.min}T12:00:00`);
 			const previousMonthStart = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth() - 1, 1, 12);
 			bookingCalendarMonthPrev.disabled = previousMonthStart < new Date(minimumDate.getFullYear(), minimumDate.getMonth(), 1, 12);
-			const maximumDate = new Date(`${bookingDate.max}T12:00:00`);
-			bookingCalendarMonthNext.disabled = displayedMonth.getFullYear() === maximumDate.getFullYear() && displayedMonth.getMonth() === maximumDate.getMonth();
 			bookingCalendarMonthGrid.hidden = !bookingMonthCalendarOpen;
 			bookingCalendarMonthGrid.replaceChildren();
 			['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].forEach((dayName) => {
@@ -673,7 +671,7 @@
 				const button = document.createElement('button');
 				button.type = 'button';
 				button.className = 'booking-month-day';
-				button.disabled = dateValue < bookingDate.min || dateValue > bookingDate.max;
+				button.disabled = dateValue < bookingDate.min;
 				button.classList.toggle('selected', dateValue === bookingDate.value);
 				button.setAttribute('aria-pressed', String(dateValue === bookingDate.value));
 				button.textContent = String(dayNumber);
@@ -694,7 +692,7 @@
 				const button = document.createElement('button');
 				button.type = 'button';
 				button.className = 'booking-day';
-				button.disabled = dateValue < bookingDate.min || dateValue > bookingDate.max;
+				button.disabled = dateValue < bookingDate.min;
 				button.classList.toggle('selected', dateValue === bookingDate.value);
 				button.setAttribute('aria-pressed', String(dateValue === bookingDate.value));
 				const dayNumber = document.createElement('span');
@@ -711,7 +709,6 @@
 				bookingCalendarDays.append(button);
 			}
 			bookingWeekPrev.disabled = formatBookingDateValue(bookingWeekStart) <= formatBookingDateValue(getBookingWeekStart(bookingDate.min));
-			bookingWeekNext.disabled = formatBookingDateValue(bookingWeekStart) >= formatBookingDateValue(getBookingWeekStart(bookingDate.max));
 		};
 		bookingCalendarMonthToggle.addEventListener('click', () => {
 			bookingMonthCalendarOpen = !bookingMonthCalendarOpen;
@@ -722,7 +719,6 @@
 			const targetMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + offset, 1, 12);
 			const minimumDate = new Date(`${bookingDate.min}T12:00:00`);
 			if (targetMonth < new Date(minimumDate.getFullYear(), minimumDate.getMonth(), 1, 12)) return;
-			if (formatBookingDateValue(targetMonth) > bookingDate.max) return;
 			bookingDate.value = formatBookingDateValue(targetMonth < minimumDate ? minimumDate : targetMonth);
 			bookingWeekStart = getBookingWeekStart(bookingDate.value);
 			renderBookingCalendar();
@@ -796,12 +792,13 @@
 					const button = document.createElement('button');
 					button.type = 'button';
 					button.className = 'booking-slot';
-					button.textContent = formatBookingTime(slot.start);
+					button.textContent = `${formatBookingTime(slot.start)}–${formatBookingTime(slot.end)}`;
 					button.addEventListener('click', () => {
 						bookingStart.value = slot.start;
 						bookingEnd.value = slot.end;
 						const selectedDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: window.googleCalendarConfig.timezone }).format(new Date(slot.start));
-						bookingSelectedTime.textContent = `${selectedDate}, ${formatBookingTime(slot.start)}`;
+						bookingSelectedTime.textContent = `${selectedDate}, ${formatBookingTime(slot.start)}–${formatBookingTime(slot.end)}`;
+						bookingSubtitle.textContent = `Онлайн · ${Math.round((Date.parse(slot.end)-Date.parse(slot.start))/60000)} мин.`;
 						bookingSlots.querySelectorAll('.booking-slot').forEach((item) => item.classList.toggle('selected', item === button));
 						renderBookingMobileStep();
 					});
@@ -865,10 +862,6 @@
 			const todayParts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Tallinn', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
 			const today = Object.fromEntries(todayParts.map(({ type, value }) => [type, value]));
 			bookingDate.min = `${today.year}-${today.month}-${today.day}`;
-			const maximumDate = new Date(Number(today.year), Number(today.month) - 1 + 6, 1, 12);
-			const lastDay = new Date(maximumDate.getFullYear(), maximumDate.getMonth() + 1, 0).getDate();
-			maximumDate.setDate(Math.min(Number(today.day), lastDay));
-			bookingDate.max = formatBookingDateValue(maximumDate);
 			bookingDate.value = bookingDate.min;
 			bookingWeekStart = getBookingWeekStart(bookingDate.value);
 			bookingMonthCalendarOpen = false;
@@ -1242,7 +1235,7 @@
 				bookingSubtitle.textContent = 'Онлайн · 50 минут';
 				bookingSubtitle.hidden = true;
 				bookingResultDate.textContent = confirmedDate;
-				bookingResultTime.textContent = `${formatBookingTime(bookingStart.value)}–${formatBookingTime(bookingEnd.value)} · Таллин (50 минут)`;
+				bookingResultTime.textContent = `${formatBookingTime(bookingStart.value)}–${formatBookingTime(bookingEnd.value)} · Таллин (${Math.round((Date.parse(bookingEnd.value)-Date.parse(bookingStart.value))/60000)} мин.)`;
 				bookingResultPlatform.textContent = selectedPlatform === 'WhatsApp' ? 'Видео / аудио · WhatsApp' : `Онлайн · ${selectedPlatform}`;
 				bookingResultConnection.textContent = data.connectionNotice || '';
 				document.getElementById('booking-result-email').textContent = data.clientEmailSent

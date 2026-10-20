@@ -12,7 +12,20 @@
 		h1 { margin: 8px 0 22px; color: #1d2c27; font-size: 30px; }
 		.eyebrow { margin: 0; color: #756b63; font-size: 12px; font-weight: 700; }
 		.admin-login, .order-card { padding: 18px; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; }
-		.admin-login { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; }
+		.admin-login { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; margin-top: clamp(48px, 12vh, 120px); }
+		[hidden], .admin-login[hidden] { display: none !important; }
+		.admin-header { display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
+		.admin-site-link { display: inline-flex; align-items: center; min-height: 42px; margin-right: auto; padding: 8px 14px; border: 1px solid #d7cec5; border-radius: 6px; background: #fffdfa; color: #315f4f; font-weight: 600; text-decoration: none; }
+		.admin-site-link:hover { background: #e8f0e9; }
+		.admin-site-link:focus-visible { outline: 2px solid #789888; outline-offset: 2px; }
+		.admin-account { position: relative; }
+		.admin-account-toggle { display: inline-flex; align-items: center; gap: 8px; background: #fffdfa; color: #315f4f; }
+		.admin-account-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+		.admin-account-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 10; display: grid; gap: 8px; width: 210px; padding: 12px; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; box-shadow: 0 8px 24px #2926211a; }
+		.admin-account-menu p { margin: 0; font-size: 13px; }
+		.admin-notifications-toggle { position: relative; padding: 10px; }
+		#admin-notifications-count { position: absolute; top: -6px; right: -7px; min-width: 20px; padding: 1px 5px; border-radius: 10px; background: #8a3b33; color: #fff; font-size: 11px; text-align: center; }
+		#admin-notifications-status { color: #8a3b33; }
 		label { display: grid; gap: 6px; color: #514940; font-size: 13px; font-weight: 600; }
 		input, button { min-height: 42px; border: 1px solid #d7cec5; border-radius: 4px; font: inherit; }
 		input { width: 100%; padding: 9px 11px; background: #fff; color: #292621; }
@@ -20,6 +33,8 @@
 		button:disabled { opacity: .6; cursor: wait; }
 		#admin-status { min-height: 22px; margin: 14px 0; color: #315f4f; }
 		#admin-status.is-error { color: #8a3b33; }
+		main:has(#admin-workspace:not([hidden]) #calendar-section:not([hidden])) #admin-status:not(.is-error),
+		#calendar-status:empty { display: none; }
 		.order-list { display: grid; gap: 12px; }
 		.order-card { display: grid; gap: 12px; }
 		.order-card h2 { margin: 0; font-size: 18px; }
@@ -56,15 +71,29 @@
 		.voucher-editor .is-danger { background: #8a3b33; border-color: #8a3b33; }
 		main:has(#calendar-section:not([hidden])) { width: min(1050px, calc(100% - 32px)); }
 		#calendar-section[hidden], #vouchers-section[hidden] { display: none; }
-		#section-calendar[aria-pressed="false"], #section-vouchers[aria-pressed="false"] { background: #fffdfa; color: #315f4f; }
+		.admin-sidebar { display: grid; align-content: start; gap: 8px; margin: 0 0 24px; padding: 16px; border-radius: 6px; background: #1d2c27; }
+		.admin-sidebar-title { margin: 0 10px 12px; color: #bacbc2; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+		.admin-sidebar-brand { display: flex; align-items: center; gap: 12px; margin: 0 10px 12px; padding-bottom: 18px; border-bottom: 1px solid #bdb2a840; color: #bdb2a8; font-size: 23px; font-weight: 700; letter-spacing: .04em; text-decoration: none; }
+		.admin-sidebar-brand img { width: 42px; height: 42px; padding: 3px; object-fit: contain; border-radius: 50%; background: #201b16; }
+		.admin-sidebar > button { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: transparent; color: #e6eee9; text-align: left; }
+		.admin-sidebar > button[aria-pressed="true"] { background: #365d4e; color: #fff; box-shadow: inset 3px 0 #b7cfb6; }
+		.admin-sidebar > button:hover { background: #2d493e; }
+		.admin-sidebar button:focus-visible, .admin-sidebar-brand:focus-visible { outline: 2px solid #b7cfb6; outline-offset: 2px; }
+		.admin-sidebar svg { flex: 0 0 20px; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+		@media (min-width: 761px) {
+			main:has(#admin-workspace:not([hidden])) { width: auto; margin: 28px 32px 40px 264px; }
+			.admin-sidebar { position: fixed; inset: 0 auto 0 0; width: 232px; margin: 0; padding: 28px 12px; border-radius: 0; overflow-y: auto; }
+		}
 		#calendar-status.is-error { color: #8a3b33; }
 		.calendar-navigation { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 		.calendar-navigation h2 { font-size: 20px; text-transform: capitalize; }
+		.calendar-day-navigation { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+		.calendar-day-navigation h2 { text-align: center; font-size: clamp(16px, 2vw, 22px); }
 		.calendar-grid, .calendar-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
 		.calendar-weekdays { margin-bottom: 6px; text-align: center; color: #756b63; }
 		.calendar-day { display: grid; min-width: 0; min-height: 64px; padding: 6px 2px; background: #fffdfa; color: #292621; }
 		.calendar-day small { min-height: 17px; font-size: 11px; }
-		.calendar-day.is-closed { background: #e8e1da; }
+		.calendar-day.is-closed { background: #d5d5d5; color: #737373; border-color: #bcbcbc; }
 		.calendar-day[aria-pressed="true"] { outline: 2px solid #315f4f; outline-offset: -2px; background: #dfece2; }
 		.calendar-card { display: grid; gap: 14px; margin-top: 20px; padding: 18px; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; }
 		.calendar-card h2, .calendar-card h3, .calendar-card p { margin: 0; }
@@ -73,10 +102,132 @@
 		details.calendar-card[open] > :not(summary) { margin-top: 14px; }
 		.calendar-form { display: grid; gap: 10px; }
 		.calendar-form select { min-height: 42px; padding: 8px; font: inherit; color: #292621; background: white; border: 1px solid #d7cec5; border-radius: 4px; }
-		.calendar-week-row { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 8px; margin: 10px 0; }
+		.calendar-week-row { display: grid; gap: 8px; margin: 16px 0; padding-bottom: 16px; border-bottom: 1px solid #e6ded5; }
+		.calendar-week-row > button { justify-self: start; }
 		.calendar-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
 		#calendar-day-form p, #calendar-mail-queue p { font-size: 13px; }
+		.calendar-time-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
+		.calendar-time-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 5px 3px 14px; border: 1px solid #c7d8cc; border-radius: 24px; background: #e8f0e9; color: #315f4f; font-size: 14px; font-weight: 600; }
+		.calendar-time-chip button { width: 34px; min-height: 34px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #315f4f; font-size: 20px; }
+		.calendar-time-chip button:hover { background: #d3e2d7; }
+		#calendar-day-form > .calendar-time-chips, .calendar-week-row > div > .calendar-time-chips { position: relative; }
+		.calendar-time-picker summary { display: grid; place-items: center; width: 42px; height: 42px; border: 1px dashed #789888; border-radius: 50%; color: #315f4f; font-size: 25px; cursor: pointer; list-style: none; }
+		.calendar-time-picker summary::-webkit-details-marker { display: none; }
+		.calendar-time-options { position: absolute; top: calc(100% + 8px); left: 0; z-index: 5; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 222px; max-height: 230px; overflow-y: auto; padding: 10px; border: 1px solid #ded5cb; border-radius: 10px; background: #fffdfa; box-shadow: 0 8px 24px #29262126; }
+		.calendar-time-options button { min-height: 36px; padding: 5px; background: #f4f0eb; color: #315f4f; font-size: 13px; }
+		.calendar-custom-time-toggle, .calendar-custom-time { grid-column: 1 / -1; }
+		.calendar-custom-time { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; padding-top: 10px; border-top: 1px solid #ded5cb; }
+		.calendar-custom-time input { min-width: 0; padding: 6px; }
+		.calendar-custom-time > button, .calendar-custom-time-error { grid-column: 1 / -1; }
+		.calendar-custom-time-error { color: #8a3b33; font-size: 12px; }
+		.calendar-custom-time-error:empty { display: none; }
 		.calendar-card .order-card { overflow-wrap: anywhere; }
+		.calendar-overview { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 20px; }
+		.calendar-mini { width: 100%; min-width: 0; margin-bottom: 16px; padding: 8px; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; }
+		#admin-workspace:has(#calendar-section[hidden]) .calendar-mini { display: none; }
+		#admin-workspace:has(#calendar-section[hidden]) #calendar-add { display: none; }
+		#calendar-add { margin-bottom: 8px; background: #365d4e; justify-content: center; }
+		.calendar-create-times { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+		#calendar-create-form, #calendar-create-form label, #calendar-create-form input, #calendar-create-form select { min-width: 0; max-width: 100%; }
+		#calendar-create-status { margin: 0; color: #8a3b33; }
+		#calendar-create-status:empty { display: none; }
+		#calendar-create-dialog { width: min(600px, calc(100% - 24px)); padding: 26px; border-radius: 16px; background: #f8f4ef; box-shadow: 0 24px 70px #201b1640; }
+		body:has(#calendar-create-dialog[open]) { overflow: hidden; }
+		#calendar-create-dialog { position: fixed; inset: 0; margin: auto; height: min(780px, 90dvh); overflow: hidden; overscroll-behavior: contain; }
+		#calendar-create-dialog[open] { display: grid; grid-template-rows: auto auto minmax(0, 1fr); }
+		#calendar-create-title { margin: 0 0 20px; color: #312d2a; font-size: 24px; }
+		#calendar-create-close { min-height: 32px; padding: 4px 10px; border: 0; background: #ece5dd; color: #514940; font-size: 13px; }
+		#calendar-create-form { gap: 16px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 4px; }
+		#calendar-create-form::-webkit-scrollbar { display: none; }
+		@media (min-width: 640px) {
+			#calendar-create-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; gap: 12px 16px; }
+			#calendar-create-form > .calendar-create-select-field:first-child,
+			#calendar-create-voucher, #calendar-create-telegram,
+			#calendar-create-status, #calendar-create-form > [type="submit"] { grid-column: 1 / -1; }
+		}
+		#calendar-create-form input, #calendar-create-form select { min-height: 46px; border-radius: 8px; border-color: #ded5cb; background-color: #fffdfa; }
+		#calendar-create-form select { appearance: none; padding: 10px 34px 10px 12px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23756b63' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; cursor: pointer; }
+		#calendar-create-form input:focus-visible, #calendar-create-form select:focus-visible { outline: 2px solid #789888; outline-offset: 2px; }
+		#calendar-create-form small { color: #756b63; font-size: 12px; font-weight: 400; }
+		#calendar-create-form .calendar-create-check { display: flex; align-items: center; gap: 8px; }
+		.calendar-create-select-field { display: grid; gap: 6px; min-width: 0; color: #514940; font-size: 13px; font-weight: 600; }
+		.calendar-create-select summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 46px; padding: 10px 12px; border: 1px solid #ded5cb; border-radius: 8px; background: #fffdfa; cursor: pointer; list-style: none; }
+		.calendar-create-select summary::-webkit-details-marker { display: none; }
+		.calendar-create-select summary::after { content: '⌄'; color: #756b63; }
+		.calendar-create-select[open] summary { border-color: #789888; }
+		.calendar-create-select[open] summary::after { transform: rotate(180deg); }
+		.calendar-create-select-options { position: fixed; inset: auto; display: grid; gap: 4px; margin: 0; padding: 6px; overflow-y: auto; scrollbar-width: none; border: 1px solid #ded5cb; border-radius: 10px; background: #fffdfa; box-shadow: 0 8px 24px #29262125; }
+		.calendar-create-select-options:not(:popover-open) { display: none; }
+		.calendar-create-select-options::-webkit-scrollbar { display: none; }
+		.calendar-create-select-options button { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 10px 12px; border: 0; border-radius: 6px; background: transparent; color: #514940; font-size: 13px; text-align: left; }
+		.calendar-create-select-options button:hover { background: #f0ebe4; }
+		.calendar-create-select-options button[aria-pressed="true"] { background: #e8f0e9; color: #234b3d; }
+		.calendar-create-select-options button[aria-pressed="true"]::after { content: '✓'; }
+		.calendar-create-select :focus-visible { outline: 2px solid #789888; outline-offset: 2px; }
+		#calendar-create-form [type="checkbox"] { width: 18px; min-height: 18px; height: 18px; accent-color: #315f4f; }
+		#calendar-create-form [type="submit"] { min-height: 48px; border-radius: 8px; }
+		.calendar-mini .calendar-navigation { gap: 4px; }
+		.calendar-mini .calendar-navigation h2 { font-size: 14px; }
+		.calendar-mini .calendar-navigation button { min-height: 30px; padding: 3px 9px; }
+		.calendar-mini .calendar-day { min-height: 32px; padding: 3px 0; gap: 0; border: 0; font-size: 12px; }
+		.calendar-mini .calendar-day.is-closed { background: #d5d5d5; color: #737373; }
+		.calendar-mini .calendar-day[aria-pressed="true"] { outline: 2px solid #315f4f; outline-offset: -2px; }
+		.calendar-mini .calendar-day small { min-height: 5px; height: 5px; overflow: hidden; font-size: 0; }
+		.calendar-mini .calendar-day small:not(:empty)::after { content: ''; display: block; width: 4px; height: 4px; margin: auto; border-radius: 50%; background: #315f4f; }
+		.calendar-mini .calendar-weekdays { font-size: 11px; }
+		.calendar-journal-panel { min-width: 0; }
+		.calendar-journal-panel h2 { margin: 0; font-size: 22px; }
+		.calendar-journal-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
+		#calendar-week-label { flex: 1 1 180px; font-size: 14px; }
+		#calendar-week-summary { display: inline-flex; align-items: center; min-height: 36px; margin: 0; padding: 6px 12px; border: 1px solid #c7d8cc; border-radius: 18px; background: #e8f0e9; color: #315f4f; font-size: 13px; font-weight: 700; white-space: nowrap; }
+		#calendar-search { flex: 0 1 220px; width: 220px; max-width: 100%; margin-left: auto; font-size: 13px; }
+		.calendar-journal-scroll { overflow-x: auto; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; }
+		.calendar-timeline { display: grid; grid-template-columns: 52px repeat(7, minmax(100px, 1fr)); min-width: 752px; }
+		.calendar-timeline-heading { position: sticky; top: 0; z-index: 3; padding: 10px 2px; border-bottom: 1px solid #ded5cb; border-right: 1px solid #e6ded5; background: #f0ebe4; color: #514940; text-align: center; font-size: 12px; }
+		.calendar-timeline-heading.is-selected { background: #dfece2; color: #234b3d; }
+		.calendar-timeline-hours, .calendar-timeline-day { position: relative; }
+		.calendar-timeline-hours { position: sticky; left: 0; z-index: 2; background: #fffdfa; }
+		.calendar-timeline-heading:first-child { left: 0; z-index: 4; }
+		.calendar-timeline-day { border-right: 1px solid #d0d0d0; background: repeating-linear-gradient(to bottom, transparent 0, transparent 29px, #dedede 29px, #dedede 30px, transparent 30px, transparent 59px, #d0d0d0 59px, #d0d0d0 60px), #e9e9e9; }
+		.calendar-hour { position: absolute; right: 6px; color: #756b63; font-size: 11px; }
+		.calendar-slot { position: absolute; left: 0; right: 0; background: repeating-linear-gradient(to bottom, transparent 0, transparent 29px, #eee8e0 29px, #eee8e0 30px, transparent 30px, transparent 59px, #ded5cb 59px, #ded5cb 60px), #fdfbf7; pointer-events: none; }
+		.calendar-journal-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 12px; color: #514940; font-size: 13px; }
+		.calendar-journal-legend span { display: inline-flex; align-items: center; gap: 6px; }
+		.calendar-journal-legend i { width: 16px; height: 16px; border: 1px solid #d0d0d0; border-radius: 3px; background: #e9e9e9; }
+		.calendar-journal-legend .is-open { border-color: #ded5cb; background: #fdfbf7; }
+		.calendar-timeline-event { position: absolute; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 0; padding: 4px; overflow: hidden; border: 1px solid #91b7a4; border-left: 3px solid #315f4f; border-radius: 4px; background: #d9ece2; color: #203e32; text-align: left; font-size: 11px; line-height: 1.25; overflow-wrap: anywhere; }
+		.calendar-timeline-event.is-free { background: #e3e8fa; border-color: #9faed5; color: #36466e; }
+		.calendar-timeline-event.is-block { background: #c6c6c6; border-color: #959595; color: #484848; }
+		.calendar-timeline-event.is-pending { background: #fff0ca; border-color: #c2a357; color: #6e581f; }
+		.calendar-timeline-event:focus-visible { outline: 2px solid #203e32; z-index: 2; }
+		.calendar-color-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+		.calendar-history-entry.is-created { background: #e2efe5; border-color: #c0d8c6; }
+		.calendar-history-entry.is-moved { background: #fff0ca; border-color: #e4d39c; }
+		.calendar-history-entry.is-cancelled { background: #f8e1e1; border-color: #e6bfbf; }
+		.calendar-history-entry p { overflow-wrap: anywhere; }
+		.calendar-color-field { display: grid; align-content: start; gap: 6px; color: #514940; font-size: 13px; font-weight: 600; }
+		.calendar-color-picker { position: relative; }
+		.calendar-color-picker summary { display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 8px 12px; border: 1px solid #d7cec5; border-radius: 8px; list-style: none; }
+		.calendar-color-picker summary::-webkit-details-marker { display: none; }
+		.calendar-color-picker summary::after { content: '▾'; color: #514940; }
+		.calendar-color-preview { width: 28px; height: 28px; border: 1px solid #0002; border-radius: 50%; }
+		.calendar-color-options { position: absolute; top: calc(100% + 6px); left: 0; z-index: 5; display: grid; grid-template-columns: repeat(4, 36px); gap: 10px; padding: 12px; border: 1px solid #d7cec5; border-radius: 12px; background: #fffdfa; box-shadow: 0 6px 20px #29262120; }
+		.calendar-color-options button { width: 36px; height: 36px; padding: 0; border: 1px solid #0002; border-radius: 50%; }
+		.calendar-color-options button[aria-pressed="true"] { outline: 2px solid #315f4f; outline-offset: 3px; }
+		.calendar-range-month { max-width: 380px; }
+		.calendar-range-day { min-height: 40px; padding: 4px; background: #fffdfa; color: #514940; }
+		.calendar-range-day.is-closed { background: #d5d5d5; border-color: #bcbcbc; color: #737373; }
+		.calendar-range-day.is-in-range { background: #c5dfcc; border-color: #98bda3; color: #234b35; }
+		.calendar-range-day[aria-pressed="true"] { background: #315f4f; color: #fff; }
+		#calendar-range-open[aria-pressed="false"], #calendar-range-close[aria-pressed="false"] { background: #fffdfa; color: #315f4f; }
+		#calendar-range-open, #calendar-range-close { display: inline-flex; align-items: center; gap: 10px; border: 2px solid #d7cec5; border-radius: 10px; }
+		#calendar-range-open::before, #calendar-range-close::before { content: ''; display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid currentColor; border-radius: 50%; }
+		#calendar-range-open[aria-pressed="true"], #calendar-range-close[aria-pressed="true"] { border-color: #1d3e31; background: #2d5647; color: #fff; box-shadow: 0 0 0 3px #2d564720; }
+		#calendar-range-open[aria-pressed="true"]::before, #calendar-range-close[aria-pressed="true"]::before { content: '✓'; background: #fff; color: #2d5647; }
+		#calendar-range-action { padding: 10px 12px; border-left: 3px solid #315f4f; border-radius: 4px; background: #e8f0e9; color: #234b3d; font-weight: 600; }
+		.calendar-details-dialog { width: min(560px, calc(100% - 32px)); max-height: 90dvh; padding: 20px; border: 1px solid #ded5cb; border-radius: 8px; background: #fffdfa; color: #292621; }
+		.calendar-details-dialog::backdrop { background: #19251f80; }
+		.calendar-details-dialog > button { display: block; margin: 0 0 12px auto; }
 		@media (max-width: 560px) {
 			main { margin: 24px auto; }
 			h1 { font-size: 25px; }
@@ -87,16 +238,46 @@
 </head>
 <body>
 	<main>
-		<p class="eyebrow"><a href="/">ДАНИЛ КАТКОВ · САЙТ</a></p>
-		<h1>Управление сайтом</h1>
+		<header class="admin-header">
+			<a class="admin-site-link" href="/" aria-label="danilpsy.ee - вернуться на сайт">danilpsy.ee</a>
+			<button id="admin-notifications-toggle" class="admin-account-toggle admin-notifications-toggle" type="button" aria-label="Уведомления" aria-haspopup="dialog" aria-controls="admin-notifications" hidden>
+				<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+				<span id="admin-notifications-count" hidden></span>
+			</button>
+			<div class="admin-account">
+				<button id="admin-account-toggle" class="admin-account-toggle" type="button" aria-expanded="false" aria-controls="admin-account-menu" aria-label="Учетная запись: вход" hidden>
+					<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg>
+					<span id="admin-account-label">Войти</span>
+				</button>
+				<div id="admin-account-menu" class="admin-account-menu" hidden>
+					<p id="admin-account-status" role="status">Вы не вошли</p>
+					<button id="admin-account-login" type="button">Войти</button>
+					<button id="admin-account-refresh" type="button" hidden>Обновить данные</button>
+					<button id="admin-account-logout" type="button" hidden>Выйти</button>
+				</div>
+			</div>
+		</header>
 		<form id="admin-form" class="admin-login">
 			<label for="admin-key">Ключ администратора<input id="admin-key" type="password" autocomplete="current-password" required></label>
-			<button type="submit">Войти / обновить</button>
+			<button type="submit">Войти</button>
 		</form>
 		<p id="admin-status" aria-live="polite"></p>
-		<nav class="admin-tabs" aria-label="Разделы управления">
-			<button id="section-vouchers" type="button" aria-pressed="true">Управление ваучерами</button>
-			<button id="section-calendar" type="button" aria-pressed="false">Календарь</button>
+		<div id="admin-workspace" hidden>
+		<nav class="admin-sidebar" aria-label="Разделы управления">
+			<a class="admin-sidebar-brand" href="/" aria-label="danilpsy - перейти на сайт"><img src="images/logo.png" alt=""><span>danilpsy</span></a>
+			<button id="calendar-add" type="button">+ Добавить запись</button>
+			<aside class="calendar-mini" aria-label="Календарь выбора даты">
+				<div class="calendar-navigation">
+					<button id="calendar-prev" type="button" aria-label="Предыдущий месяц">‹</button>
+					<h2 id="calendar-month"></h2>
+					<button id="calendar-next" type="button" aria-label="Следующий месяц">›</button>
+				</div>
+				<div class="calendar-weekdays" aria-hidden="true"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+				<div id="calendar-grid" class="calendar-grid" aria-label="Дни месяца"></div>
+			</aside>
+			<p class="admin-sidebar-title">Панель управления</p>
+			<button id="section-vouchers" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 5v14M12 10h5M12 14h3"/></svg><span>Управление ваучерами</span></button>
+			<button id="section-calendar" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18M7 15h2M13 15h2"/></svg><span>Календарь</span></button>
 		</nav>
 		<div id="vouchers-section">
 		<nav class="admin-tabs" role="tablist" aria-label="Заявки и ваучеры">
@@ -116,57 +297,137 @@
 		<section id="order-list" class="order-list" role="tabpanel" aria-labelledby="tab-applications" aria-label="Список заявок и ваучеров"></section>
 		</div>
 		<section id="calendar-section" hidden aria-label="Календарь и журнал записей">
-			<p>Все даты и время — <strong>Таллин (Europe/Tallinn)</strong>. Запись на сайте открыта на 6 месяцев вперёд.</p>
 			<p id="calendar-status" role="status"></p>
-			<div class="calendar-navigation">
-				<button id="calendar-prev" type="button" aria-label="Предыдущий месяц">‹</button>
-				<h2 id="calendar-month"></h2>
-				<button id="calendar-next" type="button" aria-label="Следующий месяц">›</button>
+			<div class="calendar-overview">
+			<section class="calendar-journal-panel" aria-label="Недельный журнал записей">
+				<h2>Журнал записей</h2>
+				<div class="calendar-journal-toolbar">
+					<button id="calendar-week-prev" type="button" aria-label="Предыдущая неделя">‹</button>
+					<button id="calendar-today" type="button">Сегодня</button>
+					<button id="calendar-week-next" type="button" aria-label="Следующая неделя">›</button>
+					<strong id="calendar-week-label"></strong>
+					<span id="calendar-week-summary" role="status"></span>
+					<input id="calendar-search" type="search" aria-label="Поиск по имени / email" placeholder="Поиск по имени / email">
+				</div>
+				<div class="calendar-journal-legend" aria-label="Обозначения в журнале">
+					<span><i class="is-open" aria-hidden="true"></i>Открыто по расписанию</span>
+					<span><i aria-hidden="true"></i>Закрыто</span>
+					<span>Цветные карточки - записи</span>
+				</div>
+				<div id="calendar-journal" class="calendar-journal-scroll" tabindex="0" aria-label="Расписание недели по часам, время Таллина"></div>
+			</section>
 			</div>
-			<div class="calendar-weekdays" aria-hidden="true"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
-			<div id="calendar-grid" class="calendar-grid" aria-label="Дни месяца"></div>
 			<section class="calendar-card">
-				<h2 id="calendar-day-title">Расписание дня</h2>
+				<div class="calendar-day-navigation">
+					<button id="calendar-day-prev" type="button" aria-label="Предыдущий день">‹</button>
+					<h2 id="calendar-day-title" aria-live="polite">Расписание дня</h2>
+					<button id="calendar-day-next" type="button" aria-label="Следующий день">›</button>
+				</div>
 				<form id="calendar-day-form">
-					<label>Время начала консультаций (через запятую)<input id="calendar-day-times" placeholder="09:00, 10:00, 15:00"></label>
-					<p>Пустое поле закрывает день для новых записей. Уже созданные встречи не отменяются.</p>
+					<p>Время начала консультаций · Таллин</p>
+					<div class="calendar-time-chips">
+						<div id="calendar-day-times" class="calendar-time-chips" role="group" aria-label="Выбранные часы"></div>
+						<details id="calendar-time-picker" class="calendar-time-picker">
+							<summary aria-label="Добавить время">+</summary>
+							<div id="calendar-time-options" class="calendar-time-options" role="group" aria-label="Выберите час"></div>
+						</details>
+					</div>
+					<p>Добавьте время кнопкой «+» или уберите крестиком. «Свое время» в конце списка позволяет указать начало и конец по минутам; по умолчанию - 50 минут. Без времени день закрыт. Уже созданные встречи не отменяются.</p>
 					<div class="calendar-actions"><button type="submit">Сохранить день</button><button id="calendar-day-close" type="button">Закрыть день</button><button id="calendar-day-reset" type="button">Вернуть недельное расписание</button></div>
 				</form>
 				<div id="calendar-day-events" class="order-list"></div>
 			</section>
 			<details class="calendar-card">
 				<summary>Недельное расписание</summary>
-				<p>Укажите часы начала через запятую. Пустое поле — выходной. Индивидуальные настройки дат имеют приоритет.</p>
+				<p>Добавляйте часы кнопкой «+» и удаляйте крестиком. В конце списка - «Свое время» с настраиваемым началом и концом; по умолчанию - 50 минут. Без времени - выходной. Индивидуальные настройки дат имеют приоритет.</p>
 				<div id="calendar-week-editor"></div>
-			</details>
-			<details class="calendar-card">
-				<summary>Закрыть интервал / отпуск</summary>
-				<form id="calendar-block-form" class="calendar-form">
-					<label>Начало (Таллин)<input name="start" type="datetime-local" required></label>
-					<label>Конец (Таллин)<input name="end" type="datetime-local" required></label>
-					<label>Причина<input name="label" maxlength="200" placeholder="Отпуск / перерыв"></label>
-					<button type="submit">Закрыть интервал</button>
+				<form id="calendar-period-form" class="calendar-form">
+					<h3>Применить к периоду</h3>
+					<p>Текущий график выше будет применен только к выбранным датам включительно. Дни с часами откроются, без часов - закроются. Другие периоды и существующие встречи не изменятся.</p>
+					<label>Первая дата<input name="from" type="date" required></label>
+					<label>Последняя дата<input name="through" type="date" required></label>
+					<p id="calendar-period-summary" role="status"></p>
+					<button type="submit">Применить к периоду</button>
 				</form>
 			</details>
 			<details class="calendar-card">
-				<summary>Добавить запись вручную</summary>
+				<summary>Открытие / закрытие дат</summary>
+				<form id="calendar-range-form" class="calendar-form">
+					<p>Выберите первую и последнюю дату периода. Обе даты включены.</p>
+					<div class="calendar-range-month">
+						<div class="calendar-navigation">
+							<button id="calendar-range-prev" type="button" aria-label="Предыдущий месяц периода">‹</button>
+							<h3 id="calendar-range-month"></h3>
+							<button id="calendar-range-next" type="button" aria-label="Следующий месяц периода">›</button>
+						</div>
+						<div class="calendar-weekdays" aria-hidden="true"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+						<div id="calendar-range-grid" class="calendar-grid" role="group" aria-label="Выбор периода"></div>
+					</div>
+					<p id="calendar-range-period" role="status">Период не выбран.</p>
+					<div class="calendar-actions" role="group" aria-label="Действие с периодом">
+						<button id="calendar-range-open" type="button" aria-pressed="false">Открыть даты</button>
+						<button id="calendar-range-close" type="button" aria-pressed="true">Закрыть даты</button>
+					</div>
+					<p id="calendar-range-action" role="status">Выбрано: закрыть даты. Изменения применятся после нажатия «Сохранить».</p>
+					<p>Открытие возвращает недельное расписание. Существующие встречи и отдельные блокировки времени сохраняются. Все остальные даты закрыты, пока вы сами их не откроете.</p>
+					<p id="calendar-range-status" role="status"></p>
+					<button id="calendar-range-save" type="submit" disabled>Сохранить</button>
+				</form>
+			</details>
+			<dialog id="calendar-create-dialog" class="calendar-details-dialog" aria-labelledby="calendar-create-title">
+				<button id="calendar-create-close" type="button">Закрыть</button>
+				<h2 id="calendar-create-title">Добавить запись</h2>
 				<form id="calendar-create-form" class="calendar-form">
-					<label>Дата и время (из открытого расписания, Таллин)<input name="start" type="datetime-local" required></label>
+					<div class="calendar-create-select-field"><span>Услуга</span><select name="packageName" aria-label="Услуга"><option value="free">Знакомство</option><option value="single">Индивидуальная консультация</option><option value="five">Ваучер на 5 встреч</option><option value="ten">Ваучер на 10 встреч</option></select></div>
+					<label id="calendar-create-voucher" hidden>Код ваучера<input name="voucherCode" maxlength="32" autocomplete="off" disabled><small>При сохранении спишется одна встреча. Имя и email будут взяты из ваучера.</small></label>
 					<label>Имя<input name="name" maxlength="120" required></label>
-					<label>Email<input name="email" type="email" maxlength="254" required></label>
-					<label>Услуга<select name="packageName"><option value="single">Индивидуальная консультация</option><option value="free">Знакомство</option><option value="five">Ваучер на 5 встреч</option><option value="ten">Ваучер на 10 встреч</option></select></label>
-					<label>Код ваучера (для пакета)<input name="voucherCode" maxlength="32"></label>
-					<label>Платформа<select name="platform"><option>Zoom</option><option>Microsoft Teams</option></select></label>
-					<button type="submit">Создать и отправить письмо</button>
+					<label>Дата<input name="date" type="date" required></label>
+					<div class="calendar-create-times">
+						<label>Начало<input name="startTime" type="time" required></label>
+						<label>Конец<input name="endTime" type="time" required></label>
+					</div>
+					<label>Email (необязательно)<input name="email" type="email" maxlength="254" placeholder="Если указан - отправим письмо"></label>
+					<label>Телефон<input name="phone" type="tel" maxlength="32" placeholder="+372…" autocomplete="tel"></label>
+					<div class="calendar-create-select-field"><span>Платформа</span><select name="platform" aria-label="Платформа"><option>Zoom</option><option>Microsoft Teams</option><option>Telegram</option><option>WhatsApp</option></select></div>
+					<div id="calendar-create-telegram" class="calendar-form" hidden>
+						<label>Имя пользователя Telegram<input name="telegramUsername" placeholder="@username" maxlength="33" pattern="@?[A-Za-z0-9_]{5,32}" disabled></label>
+						<label class="calendar-create-check"><input name="telegramContactByUser" type="checkbox" disabled>Клиент напишет первым (нет username)</label>
+					</div>
+					<p id="calendar-create-status" role="status"></p>
+					<button type="submit">Сохранить запись</button>
+				</form>
+			</dialog>
+			<dialog id="calendar-details" class="calendar-details-dialog" aria-label="Данные записи"><button id="calendar-details-close" type="button">Закрыть</button><div id="calendar-details-content"></div></dialog>
+			<details class="calendar-card">
+				<summary>Цвета записей</summary>
+				<form id="calendar-colors-form" class="calendar-form">
+					<p>Выберите готовый светлый цвет для каждого типа записи.</p>
+					<div class="calendar-color-fields">
+						<div class="calendar-color-field"><span>Знакомство</span><input name="free" type="hidden"><details class="calendar-color-picker" aria-label="Знакомство"></details></div>
+						<div class="calendar-color-field"><span>Индивидуальная консультация</span><input name="single" type="hidden"><details class="calendar-color-picker" aria-label="Индивидуальная консультация"></details></div>
+						<div class="calendar-color-field"><span>Пакет 5 встреч</span><input name="five" type="hidden"><details class="calendar-color-picker" aria-label="Пакет 5 встреч"></details></div>
+						<div class="calendar-color-field"><span>Пакет 10 встреч</span><input name="ten" type="hidden"><details class="calendar-color-picker" aria-label="Пакет 10 встреч"></details></div>
+					</div>
+					<button type="submit">Сохранить цвета</button>
 				</form>
 			</details>
-			<section class="calendar-card">
-				<h2>Журнал записей за выбранный месяц</h2>
-				<label>Поиск по имени / email<input id="calendar-search" type="search"></label>
-				<div id="calendar-journal" class="order-list"></div>
-			</section>
-			<section class="calendar-card"><h2>Письма, требующие проверки</h2><p>Письма отправляются автоматически при создании, переносе и отмене. Если отправка не подтверждена, повторите её здесь в течение 23 часов. Позже сначала проверьте доставку в Resend, чтобы не отправить дубликат.</p><div id="calendar-mail-queue" class="order-list"></div></section>
+			<details id="calendar-history" class="calendar-card">
+				<summary>История записей</summary>
+				<p>Все записи, переносы и отмены. Сначала последние изменения, время Таллина.</p>
+				<div class="calendar-actions"><button id="calendar-history-refresh" type="button">Обновить историю</button></div>
+				<p id="calendar-history-status" role="status"></p>
+				<div id="calendar-history-list" class="order-list"></div>
+				<button id="calendar-history-more" type="button" hidden>Показать еще</button>
+			</details>
 		</section>
+		</div>
+		<dialog id="admin-notifications" class="calendar-details-dialog" aria-labelledby="admin-notifications-title">
+			<button id="admin-notifications-close" type="button">Закрыть</button>
+			<h2 id="admin-notifications-title">Уведомления</h2>
+			<p>Здесь появятся письма, отправку которых нужно проверить. Повтор доступен в течение 23 часов. Позже сначала проверьте отправку в Resend, чтобы не отправить дубликат.</p>
+			<p id="admin-notifications-status" role="status"></p>
+			<div id="calendar-mail-queue" class="order-list"></div>
+		</dialog>
 	</main>
 	<script src="site-api.js"></script>
 	<script>
@@ -180,11 +441,86 @@
 		const giftVoucherForm = document.getElementById('gift-voucher-form');
 		let currentOrders = [];
 		let activeTab = 'applications';
+		let adminAuthenticated = false;
+		let adminSessionVersion = 0;
+		const accountToggle = document.getElementById('admin-account-toggle');
+		const accountMenu = document.getElementById('admin-account-menu');
+		const closeAccountMenu = () => {
+			accountMenu.hidden = true;
+			accountToggle.setAttribute('aria-expanded', 'false');
+		};
+		const setAdminAuthenticated = (authenticated) => {
+			adminAuthenticated = authenticated;
+			accountToggle.hidden = !authenticated;
+			document.querySelector('.admin-site-link').hidden = authenticated;
+			adminForm.hidden = authenticated;
+			document.getElementById('admin-workspace').hidden = !authenticated;
+			document.getElementById('admin-account-label').textContent = authenticated ? 'Администратор' : 'Войти';
+			document.getElementById('admin-account-status').textContent = authenticated ? 'Вы вошли как администратор' : 'Вы не вошли';
+			accountToggle.setAttribute('aria-label', authenticated ? 'Учетная запись: администратор' : 'Учетная запись: вход');
+			document.getElementById('admin-account-login').hidden = authenticated;
+			document.getElementById('admin-account-refresh').hidden = !authenticated;
+			document.getElementById('admin-account-logout').hidden = !authenticated;
+			document.getElementById('admin-notifications-toggle').hidden = !authenticated;
+			closeAccountMenu();
+		};
+		const logoutAdmin = () => {
+			adminSessionVersion++;
+			adminKey.value = '';
+			setAdminAuthenticated(false);
+			renderOrders([]);
+			orderList.replaceChildren();
+			giftVoucherForm.reset();
+			giftVoucherForm.hidden = true;
+			giftVoucherToggle.setAttribute('aria-expanded', 'false');
+			document.dispatchEvent(new Event('admin-logout'));
+		};
+		accountToggle.addEventListener('click', () => {
+			accountMenu.hidden = !accountMenu.hidden;
+			accountToggle.setAttribute('aria-expanded', String(!accountMenu.hidden));
+		});
+		document.addEventListener('click', (event) => {
+			if (!event.target.closest('.admin-account')) closeAccountMenu();
+		});
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape' && !accountMenu.hidden) {
+				closeAccountMenu();
+				accountToggle.focus();
+			}
+		});
+		document.getElementById('admin-account-login').addEventListener('click', () => {
+			closeAccountMenu();
+			adminKey.focus();
+		});
+		document.getElementById('admin-account-logout').addEventListener('click', () => {
+			logoutAdmin();
+			adminStatus.classList.remove('is-error');
+			adminStatus.textContent = 'Вы вышли. Ключ удален из этой страницы.';
+			adminKey.focus();
+		});
+		document.getElementById('admin-account-refresh').addEventListener('click', () => {
+			closeAccountMenu();
+			adminForm.requestSubmit();
+		});
 		const requestAgeLimit = 7 * 24 * 60 * 60 * 1000;
+		const adminMessage = value => value.replace(/\u0451/g,'е').replace(/\u0401/g,'Е').replace(/[\u2014\u2013]/g,'-');
 		const adminRequest = async (url, options = {}) => {
+			const sessionVersion = adminSessionVersion;
 			const response = await window.siteFetch(url, { ...options, headers: { ...(options.headers || {}), 'x-admin-key': adminKey.value } });
 			const data = await response.json();
+			for (const field of ['error','warning']) {
+				if (typeof data[field] === 'string') data[field] = adminMessage(data[field]);
+			}
+			if (sessionVersion !== adminSessionVersion) throw new Error('Сеанс завершен. Войдите снова.');
+			if (response.status === 401 || response.status === 403) logoutAdmin();
 			if (!response.ok) throw new Error(data.error || 'Не удалось выполнить запрос.');
+			if (!adminAuthenticated) {
+				setAdminAuthenticated(true);
+				adminStatus.classList.remove('is-error');
+				adminStatus.textContent = 'Вы вошли как администратор.';
+				accountToggle.focus();
+				document.dispatchEvent(new Event('admin-login'));
+			}
 			return data;
 		};
 		const formatAdminDateTime = (value) => {
@@ -194,12 +530,17 @@
 				: new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Tallinn' }).format(new Date(timestamp));
 		};
 		const downloadInvoice = async (order) => {
+			const sessionVersion = adminSessionVersion;
 			const response = await window.siteFetch(`/api/admin/package-orders/${encodeURIComponent(order.id)}/invoice`, { headers: { 'x-admin-key': adminKey.value } });
+			if (sessionVersion !== adminSessionVersion) throw new Error('Сеанс завершен. Войдите снова.');
+			if (response.status === 401 || response.status === 403) logoutAdmin();
 			if (!response.ok) {
 				const data = await response.json().catch(() => ({}));
 				throw new Error(data.error || 'Не удалось скачать счет.');
 			}
-			const url = URL.createObjectURL(await response.blob());
+			const invoice = await response.blob();
+			if (sessionVersion !== adminSessionVersion) throw new Error('Сеанс завершен. Войдите снова.');
+			const url = URL.createObjectURL(invoice);
 			const link = document.createElement('a');
 			link.href = url;
 			link.download = `Arve_${String(order.invoiceNumber || order.orderNumber).replace(/[^0-9/]/g, '').replace('/', '-')}.pdf`;
@@ -453,7 +794,7 @@
 								result.sessions.forEach((session) => {
 									const item = document.createElement('li');
 									const endTime = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Tallinn' }).format(new Date(session.end));
-									item.textContent = `${formatAdminDateTime(session.start)}–${endTime}${session.platform ? ` · ${session.platform}` : ''}`;
+									item.textContent = `${formatAdminDateTime(session.start)}-${endTime}${session.platform ? ` · ${session.platform}` : ''}`;
 									historyList.append(item);
 								});
 								historyPanel.append(historyList);
@@ -535,7 +876,7 @@
 			const submitButton = giftVoucherForm.querySelector('[type="submit"]');
 			submitButton.disabled = true;
 			adminStatus.classList.remove('is-error');
-			adminStatus.textContent = 'Создаём подарочный ваучер...';
+			adminStatus.textContent = 'Создаем подарочный ваучер...';
 			try {
 				const result = await adminRequest('/api/admin/vouchers/gift', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values) });
 				giftVoucherForm.reset();
