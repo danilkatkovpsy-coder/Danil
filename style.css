@@ -658,9 +658,10 @@ body.menu-open { overflow: hidden; }
 .booking-telegram-contact[hidden] { display: none; }
 .booking-voucher-layout { display: grid; gap: 8px; }
 .booking-voucher-info { display: flex; align-items: center; margin: 0; padding: 9px 12px; border: 1px solid #dfe9e1; border-radius: 6px; background: #f3f8f4; color: #4d5f57; font-size: 12px; line-height: 1.5; }
-.booking-voucher-entry { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; gap: 8px; }
-.booking-voucher-entry input { min-width: 0; }
-.booking-voucher-actions { display: flex; grid-column: 1 / -1; align-items: center; justify-content: flex-start; gap: 8px; }
+.booking-voucher-entry { display: grid; grid-template-columns: max-content 154px auto; align-items: center; gap: 8px; }
+.booking-voucher-entry input { width: 154px; max-width: 100%; min-width: 0; justify-self: start; }
+.booking-voucher-entry input::placeholder { font-size: 11px; }
+.booking-voucher-actions { display: flex; grid-column: 3; grid-row: 1; align-items: center; justify-content: flex-start; gap: 8px; }
 .booking-voucher-apply { min-height: 34px; padding: 0 14px; border: 1px solid #4d7360; border-radius: 6px; background: #edf5ee; color: #2a3f36; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .booking-voucher-apply:disabled { opacity: .6; cursor: wait; }
 .booking-voucher-status { min-height: 0; margin: 0; color: #2f5d3d; font-size: 12px; }
@@ -671,8 +672,8 @@ body.menu-open { overflow: hidden; }
 .booking-voucher-history span { font-size: 20px; line-height: 1; }
 @media (max-width: 560px) {
 	.booking-voucher-layout { grid-template-columns: minmax(0, 1fr); }
-	.booking-voucher-entry { grid-template-columns: max-content minmax(0, 1fr); gap: 6px; }
-	.booking-voucher-actions { width: 100%; }
+	.booking-voucher-entry { grid-template-columns: max-content 154px auto; gap: 6px; }
+	.booking-voucher-actions { width: auto; }
 	.booking-voucher-apply { flex: 1; }
 }
 .booking-platform-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
@@ -1605,11 +1606,10 @@ h1 {
 }
 
 @media (max-width: 800px) {
-	.hero-benefits { margin-right: 12px; margin-left: 12px; gap: 6px; transform: none; }
+	.hero-benefits { width: 100%; margin: 0; padding: 16px 12px 20px; gap: 6px; transform: none; border-top: 1px solid rgba(255, 255, 255, .18); background: #201b16; }
 	.hero-benefits div { display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 4px; text-align: center; font-size: 9px; line-height: 1.25; }
 	.hero-benefits div + div { padding-left: 0; }
 	.hero-benefits .icon { width: 24px; height: 24px; flex: 0 0 24px; place-items: center; }
 	.hero-benefits .icon svg { width: 22px; height: 22px; }
 	.hero-benefits span { display: block; width: 100%; min-width: 0; text-wrap: balance; }
 }
-

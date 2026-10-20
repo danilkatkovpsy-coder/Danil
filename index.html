@@ -230,7 +230,7 @@
 						<div class="booking-form-fields">
 						<input type="hidden" id="booking-package" name="packageName" value="single">
 						<input id="booking-date" name="date" type="hidden" required>
-						<div id="booking-voucher-field" class="booking-field" hidden><div class="booking-voucher-layout"><div class="booking-voucher-entry"><label for="booking-voucher">Код ваучера</label><input id="booking-voucher" name="voucherCode" type="text" placeholder="Введите код ваучера" autocomplete="off"><div class="booking-voucher-actions"><button id="booking-voucher-apply" type="button" class="booking-voucher-apply">Применить</button><button id="booking-voucher-history" class="booking-voucher-history" type="button" hidden>Мои записи <span aria-hidden="true">›</span></button></div></div><div id="booking-voucher-banner" class="booking-voucher-banner" role="status" aria-live="polite" hidden><span class="booking-voucher-banner-check" aria-hidden="true">✓</span><div class="booking-voucher-banner-copy"><strong>Ваучер активен</strong><span id="booking-voucher-banner-package"></span><small id="booking-voucher-banner-balance"></small></div></div><p class="booking-voucher-info">Если есть активный ваучер, введите его здесь.</p></div><p id="booking-voucher-status" class="booking-voucher-status" aria-live="polite"></p></div>
+						<div id="booking-voucher-field" class="booking-field" hidden><div class="booking-voucher-layout"><div class="booking-voucher-entry"><label for="booking-voucher">Код ваучера</label><input id="booking-voucher" name="voucherCode" type="text" placeholder="Введите код ваучера" autocomplete="off"><div class="booking-voucher-actions"><button id="booking-voucher-apply" type="button" class="booking-voucher-apply">Применить</button><button id="booking-voucher-history" class="booking-voucher-history" type="button" hidden>Мои записи <span aria-hidden="true">›</span></button></div></div><div id="booking-voucher-banner" class="booking-voucher-banner" role="status" aria-live="polite" hidden><span class="booking-voucher-banner-check" aria-hidden="true">✓</span><div class="booking-voucher-banner-copy"><strong>Ваучер активен</strong><span id="booking-voucher-banner-package"></span><small id="booking-voucher-banner-balance"></small></div></div><p class="booking-voucher-info">Введите код ваучера, чтобы записаться на консультацию по вашему пакету.</p></div><p id="booking-voucher-status" class="booking-voucher-status" aria-live="polite"></p></div>
 						<div id="booking-step-one" class="booking-step booking-step-one">
 						<section class="booking-calendar" aria-label="Выбор даты записи">
 							<div class="booking-calendar-header"><span class="booking-calendar-title">Выберите дату</span><div class="booking-calendar-month-control"><div class="booking-calendar-month-nav"><button id="booking-calendar-month-prev" class="booking-month-nav" type="button" aria-label="Предыдущий месяц">‹</button><button id="booking-calendar-month-toggle" class="booking-calendar-month-toggle" type="button" aria-expanded="false" aria-controls="booking-calendar-month-grid"><strong id="booking-calendar-month"></strong><span aria-hidden="true">⌄</span></button><button id="booking-calendar-month-next" class="booking-month-nav" type="button" aria-label="Следующий месяц">›</button></div><div id="booking-calendar-month-grid" class="booking-calendar-month-grid" role="group" aria-label="Дни месяца" hidden></div></div></div>
@@ -582,7 +582,7 @@
 				const showVoucher = bookingMobileStep === 1;
 				bookingVoucherField.hidden = !showVoucher;
 				bookingVoucherField.style.display = showVoucher ? 'grid' : 'none';
-				bookingClientFields.hidden = !appliedBookingVoucher || showFirstStep;
+				bookingClientFields.hidden = true;
 			}
 			const hasSelectedBookingTime = bookingDate.value && bookingStart.value && bookingEnd.value;
 			bookingStepNext.disabled = !hasSelectedBookingTime && !(packageNeedsVoucher && !appliedBookingVoucher);
@@ -963,13 +963,13 @@
 				bookingVoucherBannerPackage.textContent = bookingLabels[bookingPackage.value];
 				bookingVoucherBannerBalance.textContent = `Осталось ${data.remainingSessions} из ${data.totalSessions} консультаций`;
 				bookingVoucherBanner.hidden = false;
-				bookingName.value = data.name;
-				bookingEmail.value = data.email;
-				bookingName.readOnly = true;
-				bookingEmail.readOnly = true;
-				bookingName.required = true;
-				bookingEmail.required = true;
-				bookingClientFields.hidden = (bookingPackage.value === 'five' || bookingPackage.value === 'ten') && bookingMobileStep === 1;
+				bookingName.value = '';
+				bookingEmail.value = '';
+				bookingName.readOnly = false;
+				bookingEmail.readOnly = false;
+				bookingName.required = false;
+				bookingEmail.required = false;
+				bookingClientFields.hidden = true;
 				bookingVoucherStatus.textContent = '';
 				bookingVoucherStatus.classList.remove('is-success');
 			} catch (error) {
@@ -1153,11 +1153,11 @@
 				showBookingFormError('Выберите дату и время записи.', bookingWeekNext);
 				return;
 			}
-			if (!bookingName.value.trim()) {
+			if (!packageNeedsVoucher && !bookingName.value.trim()) {
 				showBookingFormError('Заполните поле «Имя».', bookingName);
 				return;
 			}
-			if (!bookingEmail.value.trim() || !bookingEmail.checkValidity()) {
+			if (!packageNeedsVoucher && (!bookingEmail.value.trim() || !bookingEmail.checkValidity())) {
 				showBookingFormError('Введите корректный email.', bookingEmail);
 				return;
 			}

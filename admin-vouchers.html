@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Управление пакетами - Данил Катков</title>
+	<style>
+		* { box-sizing: border-box; }
+		body { margin: 0; background: #f4f0eb; color: #292621; font: 15px/1.5 Arial, Helvetica, sans-serif; }
+		main { width: min(760px, calc(100% - 32px)); margin: 40px auto; }
+		a { color: #315f4f; }
+		h1 { margin: 8px 0 22px; color: #1d2c27; font-size: 30px; }
+		.eyebrow { margin: 0; color: #756b63; font-size: 12px; font-weight: 700; }
+		.admin-login, .order-card { padding: 18px; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; }
+		.admin-login { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; }
+		label { display: grid; gap: 6px; color: #514940; font-size: 13px; font-weight: 600; }
+		input, button { min-height: 42px; border: 1px solid #d7cec5; border-radius: 4px; font: inherit; }
+		input { width: 100%; padding: 9px 11px; background: #fff; color: #292621; }
+		button { padding: 8px 14px; background: #2d5647; color: #fff; font-weight: 600; cursor: pointer; }
+		button:disabled { opacity: .6; cursor: wait; }
+		#admin-status { min-height: 22px; margin: 14px 0; color: #315f4f; }
+		#admin-status.is-error { color: #8a3b33; }
+		.order-list { display: grid; gap: 12px; }
+		.order-card { display: grid; gap: 12px; }
+		.order-card h2 { margin: 0; font-size: 18px; }
+		.order-meta { margin: 0; color: #5e544f; }
+		.order-additional { margin: 0; padding: 10px; background: #f4f0eb; color: #514940; white-space: pre-wrap; }
+		.order-invoice { margin: 0; color: #514940; }
+		.order-invoice-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+		.order-invoice-actions button:disabled { opacity: .5; cursor: not-allowed; }
+		.admin-tabs { display: flex; gap: 4px; margin: 18px 0 14px; overflow-x: auto; border-bottom: 1px solid #d7cec5; }
+		.admin-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 8px 12px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: transparent; color: #514940; white-space: nowrap; }
+		.admin-tab[aria-selected="true"] { border-bottom-color: #315f4f; background: #eee5d8; color: #1d2c27; }
+		.admin-tab-count { min-width: 22px; padding: 1px 6px; border-radius: 10px; background: #ded5cb; text-align: center; font-size: 12px; }
+		.gift-voucher-tools { display: grid; gap: 10px; margin: 0 0 14px; }
+		.gift-voucher-tools[hidden], .gift-voucher-form[hidden] { display: none; }
+		.gift-voucher-toggle { justify-self: start; display: inline-flex; align-items: center; gap: 8px; }
+		.gift-voucher-toggle svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+		.gift-voucher-form { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(180px, 1.2fr) minmax(130px, .8fr) auto; align-items: end; gap: 10px; padding: 14px; border: 1px solid #ded5cb; border-radius: 4px; background: #fffdfa; }
+		.gift-voucher-form select { width: 100%; min-height: 42px; padding: 8px 10px; border: 1px solid #d7cec5; border-radius: 4px; background: #fff; color: #292621; font: inherit; }
+		.order-activate { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 10px; }
+		.order-activated { color: #315f4f; font-weight: 600; }
+		.order-card.is-overdue { border-color: #d9a39d; background: #fff0ef; }
+		.order-overdue { margin: 0; color: #8a3b33; font-size: 13px; font-weight: 700; }
+		.voucher-toolbar, .voucher-editor { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+		.voucher-editor { padding-top: 2px; }
+		.voucher-editor[hidden] { display: none; }
+		.voucher-history[hidden] { display: none; }
+		.voucher-history { padding: 12px; border-radius: 4px; background: #f4f0eb; }
+		.voucher-history-list { display: grid; gap: 7px; margin: 0; padding-left: 20px; color: #514940; font-size: 13px; }
+		.voucher-history-toggle { justify-self: start; min-height: 32px; padding: 5px 10px; background: #f4f0eb; color: #315f4f; font-size: 13px; line-height: 1.2; }
+		.voucher-edit-button, .voucher-delete-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+		.voucher-edit-button svg, .voucher-delete-button svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+		.voucher-delete-button { width: 42px; padding: 8px; background: #8a3b33; border-color: #8a3b33; }
+		.voucher-delete-button svg { width: 18px; height: 18px; }
+		.voucher-editor .is-danger { background: #8a3b33; border-color: #8a3b33; }
+		@media (max-width: 560px) {
+			main { margin: 24px auto; }
+			h1 { font-size: 25px; }
+			.admin-login, .order-activate { grid-template-columns: 1fr; }
+			.gift-voucher-form { grid-template-columns: 1fr; }
+		}
+	</style>
+</head>
+<body>
+	<main>
+		<p class="eyebrow"><a href="/">ДАНИЛ КАТКОВ · САЙТ</a></p>
+		<h1>Заявки на пакеты</h1>
+		<form id="admin-form" class="admin-login">
+			<label for="admin-key">Ключ управления ваучерами<input id="admin-key" type="password" autocomplete="current-password" required></label>
+			<button type="submit">Загрузить заявки</button>
+		</form>
+		<p id="admin-status" aria-live="polite"></p>
+		<nav class="admin-tabs" role="tablist" aria-label="Заявки и ваучеры">
+			<button class="admin-tab" id="tab-applications" type="button" role="tab" aria-controls="order-list" aria-selected="true" data-tab="applications">Заявки <span class="admin-tab-count">0</span></button>
+			<button class="admin-tab" id="tab-active" type="button" role="tab" aria-controls="order-list" aria-selected="false" tabindex="-1" data-tab="active">Активные ваучеры <span class="admin-tab-count">0</span></button>
+			<button class="admin-tab" id="tab-archive" type="button" role="tab" aria-controls="order-list" aria-selected="false" tabindex="-1" data-tab="archive">Архив <span class="admin-tab-count">0</span></button>
+		</nav>
+		<div id="gift-voucher-tools" class="gift-voucher-tools" hidden>
+			<button id="gift-voucher-toggle" class="gift-voucher-toggle" type="button" aria-expanded="false" aria-controls="gift-voucher-form"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 21V7"/><path d="M12 7H7.5a2.5 2.5 0 1 1 2.4-3.2C10.5 5 12 7 12 7Z"/><path d="M12 7h4.5a2.5 2.5 0 1 0-2.4-3.2C13.5 5 12 7 12 7Z"/></svg>Создать подарочный ваучер</button>
+			<form id="gift-voucher-form" class="gift-voucher-form" hidden>
+				<label for="gift-voucher-name">Имя получателя<input id="gift-voucher-name" name="name" type="text" maxlength="120" autocomplete="name" required></label>
+				<label for="gift-voucher-email">Email получателя<input id="gift-voucher-email" name="email" type="email" maxlength="254" autocomplete="email" required></label>
+				<label for="gift-voucher-package">Пакет<select id="gift-voucher-package" name="packageName" required><option value="five">5 консультаций · 225 €</option><option value="ten">10 консультаций · 420 €</option></select></label>
+				<button type="submit">Создать</button>
+			</form>
+		</div>
+		<section id="order-list" class="order-list" role="tabpanel" aria-labelledby="tab-applications" aria-label="Список заявок и ваучеров"></section>
+	</main>
+	<script>
+		const adminForm = document.getElementById('admin-form');
+		const adminKey = document.getElementById('admin-key');
+		const adminStatus = document.getElementById('admin-status');
+		const orderList = document.getElementById('order-list');
+		const adminTabs = [...document.querySelectorAll('.admin-tab')];
+		const giftVoucherTools = document.getElementById('gift-voucher-tools');
+		const giftVoucherToggle = document.getElementById('gift-voucher-toggle');
+		const giftVoucherForm = document.getElementById('gift-voucher-form');
+		let currentOrders = [];
+		let activeTab = 'applications';
+		const requestAgeLimit = 7 * 24 * 60 * 60 * 1000;
+		const adminRequest = async (url, options = {}) => {
+			const response = await fetch(url, { ...options, headers: { ...(options.headers || {}), 'x-admin-key': adminKey.value } });
+			const data = await response.json();
+			if (!response.ok) throw new Error(data.error || 'Не удалось выполнить запрос.');
+			return data;
+		};
+		const formatAdminDateTime = (value) => {
+			const timestamp = Date.parse(value || '');
+			return Number.isNaN(timestamp)
+				? 'не указана'
+				: new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Tallinn' }).format(new Date(timestamp));
+		};
+		const downloadInvoice = async (order) => {
+			const response = await fetch(`/api/admin/package-orders/${encodeURIComponent(order.id)}/invoice`, { headers: { 'x-admin-key': adminKey.value } });
+			if (!response.ok) {
+				const data = await response.json().catch(() => ({}));
+				throw new Error(data.error || 'Не удалось скачать счет.');
+			}
+			const url = URL.createObjectURL(await response.blob());
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = `Arve_${String(order.invoiceNumber || order.orderNumber).replace(/[^0-9/]/g, '').replace('/', '-')}.pdf`;
+			link.click();
+			setTimeout(() => URL.revokeObjectURL(url), 1000);
+		};
+		const runVoucherAction = async (button, order, endpoint, options, confirmation, successMessage) => {
+			if (!window.confirm(confirmation)) return;
+			button.disabled = true;
+			adminStatus.classList.remove('is-error');
+			adminStatus.textContent = 'Сохраняем изменения ваучера...';
+			try {
+				await adminRequest(endpoint, options);
+				await loadOrders(successMessage);
+			} catch (error) {
+				adminStatus.textContent = error.message;
+				adminStatus.classList.add('is-error');
+				button.disabled = false;
+			}
+		};
+		const makeVoucherActionButton = (order, label, endpointSuffix, options, confirmation, successMessage, isDanger = false) => {
+			const button = document.createElement('button');
+			button.type = 'button';
+			button.textContent = label;
+			if (isDanger) button.classList.add('is-danger');
+			button.addEventListener('click', () => runVoucherAction(
+				button,
+				order,
+				`/api/admin/vouchers/${encodeURIComponent(order.voucherCode)}${endpointSuffix}`,
+				options,
+				confirmation,
+				successMessage,
+			));
+			return button;
+		};
+		const renderOrders = (orders) => {
+			currentOrders = orders;
+			const tabOrders = {
+				applications: orders.filter((order) => order.status === 'pending' && !order.voucherCode),
+				active: orders.filter((order) => order.voucherCode && order.voucherStatus === 'active'),
+				archive: orders.filter((order) => order.voucherCode && ['exhausted', 'inactive'].includes(order.voucherStatus)),
+			};
+			adminTabs.forEach((tab) => {
+				tab.querySelector('.admin-tab-count').textContent = tabOrders[tab.dataset.tab].length;
+			});
+			adminTabs.forEach((tab) => {
+				const selected = tab.dataset.tab === activeTab;
+				tab.setAttribute('aria-selected', String(selected));
+				tab.tabIndex = selected ? 0 : -1;
+			});
+			giftVoucherTools.hidden = activeTab !== 'active';
+			orderList.setAttribute('aria-labelledby', `tab-${activeTab}`);
+			orderList.replaceChildren();
+			const visibleOrders = tabOrders[activeTab];
+			if (!visibleOrders.length) {
+				const empty = document.createElement('p');
+				empty.textContent = { applications: 'Ожидающих заявок пока нет.', active: 'Активных ваучеров пока нет.', archive: 'Архив пока пуст.' }[activeTab];
+				orderList.append(empty);
+				return;
+			}
+			if (activeTab === 'applications') {
+				visibleOrders.sort((first, second) => {
+					const firstCreated = Date.parse(first.createdAt || '') || 0;
+					const secondCreated = Date.parse(second.createdAt || '') || 0;
+					const firstOverdue = !firstCreated || Date.now() - firstCreated >= requestAgeLimit;
+					const secondOverdue = !secondCreated || Date.now() - secondCreated >= requestAgeLimit;
+					if (firstOverdue !== secondOverdue) return firstOverdue ? 1 : -1;
+					return secondCreated - firstCreated;
+				});
+			}
+			visibleOrders.forEach((order) => {
+				const card = document.createElement('article');
+				card.className = 'order-card';
+				const createdTime = Date.parse(order.createdAt || '');
+				const overdue = activeTab === 'applications' && (!createdTime || Date.now() - createdTime >= requestAgeLimit);
+				if (overdue) card.classList.add('is-overdue');
+				const heading = document.createElement('h2');
+				heading.textContent = order.source === 'gift' ? `Подарочный ваучер · ${order.packageTitle}` : `${order.packageTitle} · ${order.price}`;
+				const meta = document.createElement('p');
+				meta.className = 'order-meta';
+				meta.textContent = `${order.name} · ${order.email} · заявка ${order.orderNumber || order.id}`;
+				card.append(heading, meta);
+				if (order.source !== 'gift') {
+					const requestDate = document.createElement('p');
+					requestDate.className = 'order-meta';
+					requestDate.textContent = `Заявка отправлена: ${formatAdminDateTime(order.createdAt)}`;
+					card.append(requestDate);
+				}
+				if (overdue) {
+					const overdueNotice = document.createElement('p');
+					overdueNotice.className = 'order-overdue';
+					overdueNotice.textContent = 'Заявка не активирована больше 7 дней';
+					card.append(overdueNotice);
+				}
+				if (order.source !== 'gift') {
+				const invoiceStatus = document.createElement('p');
+				invoiceStatus.className = 'order-invoice';
+				invoiceStatus.textContent = `Счет ${order.invoiceNumber || 'не сформирован'} · PDF: ${order.invoiceGenerated ? 'готов' : 'не создан'} · email: ${order.invoiceEmailSent ? 'отправлен' : 'не отправлен'}`;
+				card.append(invoiceStatus);
+				const invoiceActions = document.createElement('div');
+				invoiceActions.className = 'order-invoice-actions';
+				const downloadButton = document.createElement('button');
+				downloadButton.type = 'button';
+				downloadButton.textContent = 'Скачать PDF';
+				downloadButton.disabled = !order.invoiceGenerated;
+				downloadButton.addEventListener('click', async () => {
+					downloadButton.disabled = true;
+					try {
+						await downloadInvoice(order);
+						adminStatus.textContent = `Счет ${order.invoiceNumber} скачан.`;
+					} catch (error) {
+						adminStatus.textContent = error.message;
+						adminStatus.classList.add('is-error');
+					} finally {
+						downloadButton.disabled = !order.invoiceGenerated;
+					}
+				});
+				const sendButton = document.createElement('button');
+				sendButton.type = 'button';
+				sendButton.textContent = order.invoiceEmailSent ? 'Отправить повторно' : 'Сформировать и отправить';
+				sendButton.addEventListener('click', async () => {
+					sendButton.disabled = true;
+					adminStatus.classList.remove('is-error');
+					adminStatus.textContent = 'Формируем счет и отправляем email...';
+					try {
+						const result = await adminRequest(`/api/admin/package-orders/${encodeURIComponent(order.id)}/invoice`, { method: 'POST' });
+						let message = `Счет ${result.invoiceNumber} сформирован.`;
+						if (result.emailSentNow) message += ' Отправлен покупателю.';
+						else if (!result.smtpConfigured) message += ' SMTP не настроен, email не отправлен.';
+						else message += ' Не удалось отправить email.';
+						await loadOrders(message);
+					} catch (error) {
+						adminStatus.textContent = error.message;
+						adminStatus.classList.add('is-error');
+						sendButton.disabled = false;
+					}
+				});
+				invoiceActions.append(downloadButton, sendButton);
+				card.append(invoiceActions);
+				}
+				if (order.additionalInfo) {
+					const additional = document.createElement('p');
+					additional.className = 'order-additional';
+					additional.textContent = order.additionalInfo;
+					card.append(additional);
+				}
+				if (order.status === 'pending') {
+					const activation = document.createElement('form');
+					activation.className = 'order-activate';
+					const codeLabel = document.createElement('label');
+					codeLabel.textContent = 'Код ваучера после оплаты';
+					const codeInput = document.createElement('input');
+					codeInput.name = 'code';
+					codeInput.placeholder = 'Введите код ваучера';
+					codeInput.minLength = 1;
+					codeInput.maxLength = 32;
+					codeInput.autocomplete = 'off';
+					codeInput.required = true;
+					codeLabel.append(codeInput);
+					const activateButton = document.createElement('button');
+					activateButton.type = 'submit';
+					activateButton.textContent = 'Активировать';
+					activation.append(codeLabel, activateButton);
+					activation.addEventListener('submit', async (event) => {
+						event.preventDefault();
+						if (!window.confirm(`Активировать ваучер ${codeInput.value.trim().toUpperCase()} для ${order.name}? После активации клиент сможет записываться на консультации.`)) return;
+						activateButton.disabled = true;
+						adminStatus.classList.remove('is-error');
+						adminStatus.textContent = 'Активируем ваучер...';
+						try {
+							const result = await adminRequest('/api/admin/vouchers/activate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id, code: codeInput.value }) });
+							await loadOrders(`Ваучер ${result.voucher.code} активирован для ${result.voucher.name}. Осталось сессий: ${result.voucher.remainingSessions}. Отправьте код покупателю.`);
+						} catch (error) {
+							adminStatus.textContent = error.message;
+							adminStatus.classList.add('is-error');
+							activateButton.disabled = false;
+						}
+					});
+					card.append(activation);
+					const applicationActions = document.createElement('div');
+					applicationActions.className = 'voucher-toolbar';
+					const deleteApplication = document.createElement('button');
+					deleteApplication.type = 'button';
+					deleteApplication.className = 'voucher-delete-button';
+					deleteApplication.title = 'Удалить заявку';
+					deleteApplication.setAttribute('aria-label', `Удалить заявку ${order.orderNumber || ''}`);
+					deleteApplication.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>';
+					deleteApplication.addEventListener('click', async () => {
+						if (!window.confirm(`Удалить заявку ${order.orderNumber || ''} от ${order.name}? Заявка и ее PDF-счет будут удалены без возможности восстановления.`)) return;
+						deleteApplication.disabled = true;
+						adminStatus.classList.remove('is-error');
+						adminStatus.textContent = 'Удаляем заявку...';
+						try {
+							await adminRequest(`/api/admin/package-orders/${encodeURIComponent(order.id)}`, { method: 'DELETE' });
+							await loadOrders(`Заявка ${order.orderNumber || ''} удалена.`);
+						} catch (error) {
+							adminStatus.textContent = error.message;
+							adminStatus.classList.add('is-error');
+							deleteApplication.disabled = false;
+						}
+					});
+					applicationActions.append(deleteApplication);
+					card.append(applicationActions);
+				} else if (order.voucherDeletedAt) {
+					const deleted = document.createElement('p');
+					deleted.className = 'order-activated';
+					deleted.textContent = `Ваучер удален из реестра (${order.deletedVoucherStatus || 'неактивный'}). Заявка сохранена.`;
+					card.append(deleted);
+				} else if (order.voucherCode && order.voucherStatus) {
+					const activated = document.createElement('p');
+					activated.className = 'order-activated';
+					const voucherState = { active: 'активен', exhausted: 'исчерпан', inactive: 'деактивирован' }[order.voucherStatus] || order.voucherStatus;
+					activated.textContent = `Ваучер ${order.voucherCode}: ${voucherState}, осталось ${order.voucherRemainingSessions} из ${order.voucherTotalSessions} консультаций.`;
+					card.append(activated);
+					const activationDate = document.createElement('p');
+					activationDate.className = 'order-meta';
+					activationDate.textContent = `Дата активации: ${formatAdminDateTime(order.voucherActivatedAt || order.activatedAt)}`;
+					card.append(activationDate);
+					const historyButton = document.createElement('button');
+					historyButton.type = 'button';
+					historyButton.className = 'voucher-history-toggle';
+					historyButton.textContent = 'История консультаций';
+					historyButton.setAttribute('aria-expanded', 'false');
+					const historyPanel = document.createElement('div');
+					historyPanel.className = 'voucher-history';
+					historyPanel.hidden = true;
+					historyButton.addEventListener('click', async () => {
+						historyPanel.hidden = !historyPanel.hidden;
+						historyButton.setAttribute('aria-expanded', String(!historyPanel.hidden));
+						if (historyPanel.hidden || historyPanel.dataset.loaded) return;
+						historyPanel.textContent = 'Загружаем историю...';
+						historyButton.disabled = true;
+						try {
+							const result = await adminRequest(`/api/admin/vouchers/${encodeURIComponent(order.voucherCode)}/history`);
+							historyPanel.replaceChildren();
+							historyPanel.dataset.loaded = 'true';
+							if (!result.sessions.length) {
+								historyPanel.textContent = 'Записей пока нет.';
+							} else {
+								const historyList = document.createElement('ol');
+								historyList.className = 'voucher-history-list';
+								result.sessions.forEach((session) => {
+									const item = document.createElement('li');
+									const endTime = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Tallinn' }).format(new Date(session.end));
+									item.textContent = `${formatAdminDateTime(session.start)}–${endTime}${session.platform ? ` · ${session.platform}` : ''}`;
+									historyList.append(item);
+								});
+								historyPanel.append(historyList);
+							}
+						} catch (error) {
+							historyPanel.textContent = error.message;
+						}
+						historyButton.disabled = false;
+					});
+					card.append(historyButton, historyPanel);
+					const voucherToolbar = document.createElement('div');
+					voucherToolbar.className = 'voucher-toolbar';
+					const voucherEditor = document.createElement('div');
+					voucherEditor.className = 'voucher-editor';
+					voucherEditor.hidden = true;
+					if (order.voucherStatus === 'active') {
+						const editButton = document.createElement('button');
+						editButton.type = 'button';
+						editButton.className = 'voucher-edit-button';
+						editButton.setAttribute('aria-expanded', 'false');
+						editButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg><span>Изменить</span>';
+						editButton.addEventListener('click', () => {
+							voucherEditor.hidden = !voucherEditor.hidden;
+							editButton.setAttribute('aria-expanded', String(!voucherEditor.hidden));
+						});
+						voucherToolbar.append(editButton);
+						voucherEditor.append(
+							makeVoucherActionButton(order, '+1 консультация', '/adjust', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'add' }) }, `Добавить одну консультацию к ваучеру ${order.voucherCode}? Остаток и общий лимит увеличатся на 1.`, `Ваучер ${order.voucherCode}: добавлена 1 консультация.`, false),
+							makeVoucherActionButton(order, '−1 консультация', '/adjust', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'remove' }) }, `Убрать одну неиспользованную консультацию из ваучера ${order.voucherCode}? Остаток и общий лимит уменьшатся на 1. Записи в календаре не изменятся.`, `Ваучер ${order.voucherCode}: убрана 1 консультация.`, false),
+							makeVoucherActionButton(order, 'Деактивировать', '/deactivate', { method: 'POST' }, `Деактивировать ваучер ${order.voucherCode}? Клиент больше не сможет использовать его для новых записей.`, `Ваучер ${order.voucherCode} деактивирован. Его можно удалить.`, true),
+						);
+					} else {
+						const deleteButton = makeVoucherActionButton(order, '', '', { method: 'DELETE' }, `Удалить неактивный ваучер ${order.voucherCode} без возможности восстановления? Заявка и история заказов сохранятся.`, `Неактивный ваучер ${order.voucherCode} удален.`, true);
+						deleteButton.className = 'voucher-delete-button';
+						deleteButton.title = 'Удалить ваучер';
+						deleteButton.setAttribute('aria-label', 'Удалить ваучер');
+						deleteButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>';
+						voucherToolbar.append(deleteButton);
+					}
+					card.append(voucherToolbar, voucherEditor);
+				} else {
+					const missing = document.createElement('p');
+					missing.className = 'order-activated';
+					missing.textContent = 'Для этой заявки нет ваучера.';
+					card.append(missing);
+				}
+				orderList.append(card);
+			});
+		};
+		const selectTab = (tab) => {
+			activeTab = tab;
+			renderOrders(currentOrders);
+		};
+		adminTabs.forEach((tab, index) => {
+			tab.addEventListener('click', () => selectTab(tab.dataset.tab));
+			tab.addEventListener('keydown', (event) => {
+				let nextIndex = index;
+				if (event.key === 'ArrowRight') nextIndex = (index + 1) % adminTabs.length;
+				else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + adminTabs.length) % adminTabs.length;
+				else if (event.key === 'Home') nextIndex = 0;
+				else if (event.key === 'End') nextIndex = adminTabs.length - 1;
+				else return;
+				event.preventDefault();
+				adminTabs[nextIndex].focus();
+				selectTab(adminTabs[nextIndex].dataset.tab);
+			});
+		});
+		giftVoucherToggle.addEventListener('click', () => {
+			giftVoucherForm.hidden = !giftVoucherForm.hidden;
+			giftVoucherToggle.setAttribute('aria-expanded', String(!giftVoucherForm.hidden));
+			if (!giftVoucherForm.hidden) document.getElementById('gift-voucher-name').focus();
+		});
+		giftVoucherForm.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			const formData = new FormData(giftVoucherForm);
+			const values = { name: String(formData.get('name') || '').trim(), email: String(formData.get('email') || '').trim(), packageName: String(formData.get('packageName') || '') };
+			const sessions = values.packageName === 'ten' ? 10 : 5;
+			if (!window.confirm(`Создать подарочный ваучер на ${sessions} консультаций для ${values.name}? Ваучер будет активен сразу.`)) return;
+			const submitButton = giftVoucherForm.querySelector('[type="submit"]');
+			submitButton.disabled = true;
+			adminStatus.classList.remove('is-error');
+			adminStatus.textContent = 'Создаём подарочный ваучер...';
+			try {
+				const result = await adminRequest('/api/admin/vouchers/gift', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values) });
+				giftVoucherForm.reset();
+				giftVoucherForm.hidden = true;
+				giftVoucherToggle.setAttribute('aria-expanded', 'false');
+				activeTab = 'active';
+				await loadOrders(`Подарочный ваучер создан. Передайте получателю код ${result.voucher.code}.`);
+			} catch (error) {
+				adminStatus.textContent = error.message;
+				adminStatus.classList.add('is-error');
+			} finally {
+				submitButton.disabled = false;
+			}
+		});
+		const loadOrders = async (successMessage = '') => {
+			adminStatus.classList.remove('is-error');
+			adminStatus.textContent = 'Загружаем заявки...';
+			try {
+				const data = await adminRequest('/api/admin/package-orders');
+				renderOrders(data.orders);
+				adminStatus.textContent = successMessage || `Заявок: ${data.orders.filter((order) => order.status === 'pending').length}. Активных ваучеров: ${data.orders.filter((order) => order.voucherStatus === 'active').length}.`;
+			} catch (error) {
+				adminStatus.textContent = error.message;
+				adminStatus.classList.add('is-error');
+			}
+		};
+		adminForm.addEventListener('submit', (event) => {
+			event.preventDefault();
+			loadOrders();
+		});
+	</script>
+</body>
+</html>
