@@ -249,6 +249,7 @@ h1 em { color: #d9c1ad; font-style: normal; }
 }
 
 .reviews-page { min-height: auto; padding: 90px 7vw 82px; background: #f7f3ee; color: #151311; }
+.reviews-disclaimer { max-width: 740px; margin: 8px 0 0; color: #756b63; font-size: 12px; line-height: 1.4; }
 .reviews-heading { max-width: none; margin: 0 0 36px; display: flex; align-items: end; justify-content: space-between; gap: 25px; }.reviews-eyebrow { margin: 0 0 14px; color: #968477; font-size: 14px; font-weight: 600; letter-spacing: .28em; }.reviews-heading h2 { margin: 0; font-size: clamp(38px, 4.3vw, 62px); line-height: 1; letter-spacing: -.05em; font-weight: 500; }.reviews-link { padding-bottom: 8px; font-size: 13px; font-weight: 600; }.reviews-link span { margin-left: 10px; font-size: 19px; }
 .reviews-grid { max-width: none; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }.reviews-grid article { min-height: 255px; display: flex; flex-direction: column; justify-content: space-between; padding: 28px 25px 24px; border: 1px solid rgba(67, 50, 37, .07); border-radius: 15px; background: rgba(255, 253, 250, .72); }.reviews-grid article > p { margin: 0; color: #5f5750; font-size: 15px; line-height: 1.5; }.review-author { display: flex; align-items: center; gap: 12px; }.avatar { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; color: #fff; font-size: 16px; font-weight: 600; }.avatar-a { background: #a87254; }.avatar-m { background: #6f806f; }.avatar-i { background: #6e8790; }.review-author strong, .review-author small { display: block; }.review-author strong { font-size: 13px; }.review-author small { margin-top: 3px; color: #958a80; font-size: 11px; }
 .contact-page { position: relative; min-height: 270px; overflow: hidden; display: grid; grid-template-columns: 1.2fr .8fr; align-items: center; gap: 50px; padding: 55px 7vw; background: #f7f3ee; color: #151311; }
@@ -723,7 +724,7 @@ body.menu-open { overflow: hidden; }
 .booking-result-check { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: #2d6653; color: #fff; font-size: 42px; line-height: 1; }
 .booking-result h4 { margin: 0; color: #1d241e; font-size: 23px; line-height: 1.25; }
 .booking-result-caption { margin: 0; color: #6a625d; }
-.booking-result-connection { width: min(100%, 560px); margin: 0; padding: 11px 14px; border: 1px solid #e3d7ca; border-radius: 6px; background: #f3ede5; color: #514940; font-size: 13px; line-height: 1.45; text-align: left; }
+.booking-result-connection { width: min(100%, 560px); margin: 0; padding: 11px 14px; border: 1px solid #e3d7ca; border-radius: 6px; background: #f3ede5; color: #514940; font-size: 13px; line-height: 1.45; font-style: italic; text-align: left; }
 .booking-result-details { display: grid; width: min(100%, 560px); gap: 12px; margin: 8px 0; padding: 16px 18px; border: 1px solid #e3d7ca; border-radius: 6px; background: #fffdfa; text-align: left; }
 .booking-result-details p { display: flex; align-items: flex-start; gap: 12px; margin: 0; color: #3b352f; }
 .booking-result-details p > span { width: 20px; flex: 0 0 20px; color: #315f4f; font-size: 18px; line-height: 1.2; }
@@ -1601,5 +1602,14 @@ h1 {
 @media (max-width: 800px) {
 	.about-copy, .about-continuation, .about-aside { grid-column: auto; grid-row: auto; }
 	.about-aside { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 800px) {
+	.hero-benefits { margin-right: 12px; margin-left: 12px; gap: 6px; transform: none; }
+	.hero-benefits div { display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 4px; text-align: center; font-size: 9px; line-height: 1.25; }
+	.hero-benefits div + div { padding-left: 0; }
+	.hero-benefits .icon { width: 24px; height: 24px; flex: 0 0 24px; place-items: center; }
+	.hero-benefits .icon svg { width: 22px; height: 22px; }
+	.hero-benefits span { display: block; width: 100%; min-width: 0; text-wrap: balance; }
 }
 
