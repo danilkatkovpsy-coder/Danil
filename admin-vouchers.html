@@ -605,7 +605,8 @@
 		<dialog id="admin-notifications" class="calendar-details-dialog" aria-labelledby="admin-notifications-title">
 			<button id="admin-notifications-close" type="button">Закрыть</button>
 			<h2 id="admin-notifications-title">Уведомления</h2>
-			<p>Здесь появятся письма, отправку которых нужно проверить. Повтор доступен в течение 23 часов. Позже сначала проверьте отправку в Resend, чтобы не отправить дубликат.</p>
+			<div id="admin-incoming-notifications" class="order-list"></div>
+			<p>Ниже показаны письма, отправку которых нужно проверить. Повтор доступен в течение 23 часов. Позже сначала проверьте отправку в Resend, чтобы не отправить дубликат.</p>
 			<p id="admin-notifications-status" role="status"></p>
 			<div id="calendar-mail-queue" class="order-list"></div>
 		</dialog>
@@ -649,6 +650,8 @@
 		let currentOrders = [];
 		let activeTab = 'applications';
 		let adminAuthenticated = false;
+		let adminMutations = 0;
+		let adminMutationVersion = 0;
 		let adminSessionVersion = 0;
 		const accountToggle = document.getElementById('admin-account-toggle');
 		const accountMenu = document.getElementById('admin-account-menu');
@@ -714,6 +717,9 @@
 		const requestAgeLimit = 7 * 24 * 60 * 60 * 1000;
 		const adminMessage = value => value.replace(/\u0451/g,'е').replace(/\u0401/g,'Е').replace(/[\u2014\u2013]/g,'-');
 		const adminRequest = async (url, options = {}) => {
+			const mutation=Boolean(options.method && options.method !== 'GET');
+			if(mutation){adminMutations++;adminMutationVersion++;}
+			try {
 			const sessionVersion = adminSessionVersion;
 			const response = await window.siteFetch(url, { ...options, headers: { ...(options.headers || {}), 'x-admin-key': adminKey.value } });
 			const data = await response.json();
@@ -732,7 +738,11 @@
 				accountToggle.focus();
 				document.dispatchEvent(new Event('admin-login'));
 			}
+			if (options.method && options.method !== 'GET') document.dispatchEvent(new Event('admin-data-changed'));
 			return data;
+			} finally {
+				if(mutation)adminMutations--;
+			}
 		};
 		const formatAdminDateTime = (value) => {
 			const timestamp = Date.parse(value || '');
@@ -788,6 +798,7 @@
 			return button;
 		};
 		const renderOrders = (orders) => {
+			delete orderList.dataset.liveDirty;
 			currentOrders = orders;
 			const tabOrders = {
 				applications: orders.filter((order) => order.status === 'pending' && !order.voucherCode),
@@ -1114,6 +1125,8 @@
 				adminStatus.classList.add('is-error');
 			}
 		};
+		orderList.addEventListener('input',()=>{orderList.dataset.liveDirty='true';});
+		orderList.addEventListener('change',()=>{orderList.dataset.liveDirty='true';});
 		adminForm.addEventListener('submit', (event) => {
 			event.preventDefault();
 			if (!document.getElementById('vouchers-section').hidden) loadOrders();

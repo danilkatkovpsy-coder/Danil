@@ -220,12 +220,14 @@
 			picker.querySelector('summary').focus();
 		}
 	});
-	function renderDay() {
+	function renderDay(background=false) {
 		const dayDate=new Date(`${selectedDay}T12:00:00Z`);
 		get('calendar-day-title').textContent = `Расписание · ${weekdays[dayDate.getUTCDay()]}, ${new Intl.DateTimeFormat('ru-RU',{dateStyle:'long',timeZone:'UTC'}).format(dayDate)}`;
-		dayTimes=timesFor(selectedDay).map(value=>value.slice(0,5)).sort();
-		dayEnds={...endsFor(selectedDay)};
-		get('calendar-time-picker').open=false;renderDayTimes();
+		if(!background){
+			dayTimes=timesFor(selectedDay).map(value=>value.slice(0,5)).sort();
+			dayEnds={...endsFor(selectedDay)};
+			get('calendar-time-picker').open=false;renderDayTimes();
+		}
 		const events = get('calendar-day-events');
 		events.replaceChildren();
 		for (const appointment of data.appointments.filter(item=>item.status==='confirmed'&&localDate(item.start_at)===selectedDay)) events.append(renderAppointment(appointment));
@@ -335,7 +337,7 @@
 		});
 		journal.append(timeline);
 	}
-	function render() {
+	function render(background=false) {
 		const first = new Date(`${month}-01T12:00:00Z`);
 		get('calendar-month').textContent = new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric',timeZone:'UTC'}).format(first);
 		const grid = get('calendar-grid'); grid.replaceChildren();
@@ -354,7 +356,8 @@
 			cell.setAttribute('aria-label',`${date}, записей: ${appointments}${blocked ? ', есть закрытые интервалы' : ''}`);
 			grid.append(cell);
 		}
-		renderDay(); renderJournal();
+		renderDay(background); renderJournal();
+		if(background)return;
 		for(const [type,color] of Object.entries(appointmentColors())){
 			const input=get('calendar-colors-form').elements.namedItem(type);
 			const picker=input.parentElement.querySelector('details');
@@ -405,12 +408,13 @@
 			});
 			week.append(form);
 		}
+		renderMailNotifications();
+	}
+	function renderMailNotifications(){
 		const queue = get('calendar-mail-queue');queue.replaceChildren();
 		get('admin-notifications-status').textContent='';
-		const notificationCount=data.notifications.length;
-		get('admin-notifications-count').textContent=String(notificationCount);
-		get('admin-notifications-count').hidden=notificationCount===0;
-		get('admin-notifications-toggle').setAttribute('aria-label',`Уведомления: писем для проверки - ${notificationCount}`);
+		mailNotificationCount=data.notifications.length;
+		updateIncomingNotifications();
 		for(const job of data.notifications){
 			const row = text('div','', 'order-card');
 			const expired = Date.now()-Date.parse(job.prepared_at)>23*3600000;
@@ -461,6 +465,9 @@
 		get('admin-notifications').close();
 		get('admin-notifications-count').hidden=true;
 		get('admin-notifications-status').textContent='';
+		incomingOrders=[];incomingReviews=[];mailNotificationCount=0;
+		get('admin-incoming-notifications').replaceChildren();
+		clearTimeout(liveTimer);
 		for(const id of ['calendar-grid','calendar-week-editor','calendar-day-events','calendar-journal','calendar-mail-queue','calendar-details-content']) get(id).replaceChildren();
 		for(const id of ['calendar-day-form','calendar-range-form','calendar-create-form','calendar-period-form']) get(id).reset();
 		weekDraft=[];get('calendar-period-summary').textContent='';
@@ -475,13 +482,81 @@
 	get('admin-notifications-toggle').addEventListener('click',()=>{
 		get('admin-notifications').showModal();
 		get('admin-notifications-status').textContent='Обновляем уведомления...';
-		load().catch(notificationFail);
+		refreshLive();
 	});
 	get('admin-notifications-close').addEventListener('click',()=>get('admin-notifications').close());
 	for(const name of ['calendar','vouchers','prices','invoices','texts','reviews','contacts']){
 		get(`section-${name}`).addEventListener('click',()=>section(name));
 	}
 	const reviewsForm=get('reviews-form'),reviewsEditor=get('reviews-editor');
+	let incomingOrders=[],incomingReviews=[],mailNotificationCount=0,liveTimer=null,liveBusy=false;
+	const updateIncomingNotifications=()=>{
+		const count=incomingOrders.length+incomingReviews.length+mailNotificationCount;
+		get('admin-notifications-count').textContent=String(count);
+		get('admin-notifications-count').hidden=count===0;
+		get('admin-notifications-toggle').setAttribute('aria-label',`Уведомления: заявки на ваучеры - ${incomingOrders.length}, отзывы на проверку - ${incomingReviews.length}, письма для проверки - ${mailNotificationCount}`);
+		const list=get('admin-incoming-notifications');list.replaceChildren();
+		for(const [items,label,target] of [[incomingOrders,'Заявки на ваучеры','vouchers'],[incomingReviews,'Отзывы на проверку','reviews']]){
+			if(!items.length)continue;
+			const open=text('button',`${label}: ${items.length}`);open.type='button';
+			open.addEventListener('click',()=>{
+				if(target==='reviews'&&reviewsDirty&&!confirm('В редакторе есть несохраненные изменения. Открыть список заново без их сохранения?'))return;
+				get('admin-notifications').close();
+				if(target==='vouchers')activeTab='applications';
+				section(target);
+			});
+			list.append(open);
+		}
+		if(!count)list.append(text('p','Новых уведомлений нет.'));
+	};
+	const scheduleLive=()=>{
+		clearTimeout(liveTimer);
+		if(adminAuthenticated)liveTimer=setTimeout(refreshLive,15000);
+	};
+	async function refreshLive(){
+		if(!adminAuthenticated||document.hidden||liveBusy)return;
+		if(adminMutations){scheduleLive();return;}
+		liveBusy=true;clearTimeout(liveTimer);
+		const session=adminSessionVersion,calendarGeneration=generation,reviewGeneration=reviewsGeneration;
+		const mutationVersion=adminMutationVersion;
+		const requestedMonth=month;
+		const first=new Date(`${month}-01T12:00:00Z`);
+		const next=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()+1,1,12)).toISOString().slice(0,10);
+		const until=weekStart(next)===next?next:addDays(weekStart(next),7);
+		try{
+			const [orders,reviews,calendar]=await Promise.all([
+				adminRequest('/api/admin/package-orders'),adminRequest('/api/admin/site-reviews'),
+				adminRequest(`/api/admin/calendar?from=${weekStart(`${requestedMonth}-01`)}&to=${until}`),
+			]);
+			if(!adminAuthenticated||session!==adminSessionVersion||mutationVersion!==adminMutationVersion)return;
+			incomingOrders=orders.orders.filter(order=>order.status==='pending'&&!order.voucherCode);
+			incomingReviews=validatePendingReviews(reviews.pending);
+			mailNotificationCount=calendar.notifications.length;
+			updateIncomingNotifications();get('admin-notifications-status').textContent='';
+			if(!get('vouchers-section').hidden&&JSON.stringify(currentOrders)!==JSON.stringify(orders.orders)&&
+				!adminMutations&&!get('order-list').dataset.liveDirty&&!get('order-list').contains(document.activeElement)){
+				renderOrders(orders.orders);
+			}
+			if(!get('reviews-section').hidden&&reviewGeneration===reviewsGeneration&&!reviewModerating&&
+				JSON.stringify(pendingReviews)!==JSON.stringify(incomingReviews)&&!get('reviews-pending').contains(document.activeElement)){
+				pendingReviews=incomingReviews;pendingOffset=0;get('reviews-pending').replaceChildren();renderPending();
+			}
+			if(calendarGeneration===generation&&requestedMonth===month&&JSON.stringify(data)!==JSON.stringify(calendar)&&
+				!get('calendar-day-events').contains(document.activeElement)){
+				data=calendar;
+				if(!get('calendar-section').hidden)render(true);
+				renderMailNotifications();
+			}
+		}catch(error){
+			if(adminAuthenticated&&session===adminSessionVersion)notificationFail(error);
+		}finally{liveBusy=false;scheduleLive();}
+	}
+	document.addEventListener('admin-login',()=>{scheduleLive();setTimeout(refreshLive,0);});
+	document.addEventListener('admin-data-changed',()=>{
+		clearTimeout(liveTimer);if(adminAuthenticated)liveTimer=setTimeout(refreshLive,500);
+	});
+	document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTimeout(liveTimer);else refreshLive();});
+	window.addEventListener('focus',refreshLive);
 	let reviewsGeneration=0,reviewsLoaded=false,reviewsDirty=false,reviewModerating=false;
 	const updateReviewAdd=()=>{get('reviews-add').disabled=!reviewsLoaded||reviewsEditor.children.length>=500;};
 	let pendingReviews=[],pendingOffset=0;
