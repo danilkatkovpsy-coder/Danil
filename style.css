@@ -295,6 +295,8 @@ h1 em { color: #d9c1ad; font-style: normal; }
 .contact-page { min-height: 330px; grid-template-columns: 1.1fr .9fr; padding: 70px 7vw; }
 .contact-copy h2 { font-size: clamp(42px, 4.6vw, 64px); }
 .contact-social-area { position: relative; z-index: 1; display: grid; align-content: center; gap: 20px; }
+#contact .contact-social-area { justify-items: start; text-align: left; min-width: 0; }
+#contact .contact-socials { justify-content: flex-start; flex-wrap: wrap; }
 .contact-social-area h3 { margin: 0; color: #27231f; font-size: 20px; font-weight: 500; }
 .contact-socials { display: flex; align-items: center; justify-content: flex-start; gap: 14px; margin: 0; width: 100%; }
 .contact-socials .social { margin: 0; background: rgba(255,255,255,.52); }

@@ -131,10 +131,14 @@
 		status.textContent = result.warning || 'Изменения сохранены.';
 		status.classList.toggle('is-error',Boolean(result.warning));
 	}
-	const renderAppointment = appointment => {
+	const renderAppointment = (appointment, expanded=false) => {
 		const card = text('details','', 'order-card calendar-appointment');
+		card.open=expanded;
 		card.append(text('summary', `${formatAdminDateTime(appointment.start_at)} - ${appointment.name}`));
-		card.append(text('p', `${appointment.email||'Без email'} · ${appointment.platform} · ${appointment.status === 'cancelled' ? 'Отменена' : 'Подтверждена'} · ${appointment.package_name}`));
+		if(appointment.voucher_code)card.append(text('p',`Номер ваучера: ${appointment.voucher_code}`));
+		if(appointment.voucher_position)card.append(text('p',`Консультация ${appointment.voucher_position} из ${appointment.voucher_total} по ваучеру`));
+		const packageLabel={free:'Бесплатное знакомство',single:'Индивидуальная консультация',five:'Ваучер на 5 встреч',ten:'Ваучер на 10 встреч'}[appointment.package_name]||appointment.package_name;
+		card.append(text('p', `${appointment.email||'Без email'} · ${appointment.platform} · ${appointment.status === 'cancelled' ? 'Отменена' : 'Подтверждена'} · ${packageLabel}`));
 		if (appointment.contact) card.append(text('p',appointment.contact));
 		if (appointment.client_request) card.append(text('p',appointment.client_request));
 		if (appointment.source === 'google') card.append(text('small','Перенесено из Google. Старое событие в Google не изменяется.'));
@@ -313,7 +317,7 @@
 				const card=button('',async()=>{
 					selectedDay=day;month=day.slice(0,7);render();
 					const content=get('calendar-details-content');content.replaceChildren();
-					if(item.kind==='appointment')content.append(renderAppointment(item));
+					if(item.kind==='appointment')content.append(renderAppointment(item,true));
 					else content.append(text('p',`${label} · ${formatAdminDateTime(item.start_at)} - ${formatAdminDateTime(item.end_at)}`));
 					get('calendar-details').showModal();
 				});
@@ -328,8 +332,10 @@
 				}
 				card.style.top=`${start-firstHour*60}px`;card.style.height=`${Math.max(18,end-start)}px`;
 				card.style.left=`calc(${lane*100/laneEnds.length}% + 2px)`;card.style.width=`calc(${100/laneEnds.length}% - 4px)`;
-				card.setAttribute('aria-label',`${dateLabel(day)}, ${clock(start)}-${clock(end)}, ${label}`);
-				card.append(text('strong',`${clock(start)}-${clock(end)}`),text('strong',label));
+				const voucherPosition=item.kind==='appointment'&&item.voucher_position?`${item.voucher_position} из ${item.voucher_total}`:'';
+				card.setAttribute('aria-label',`${dateLabel(day)}, ${clock(start)}-${clock(end)}, ${label}${voucherPosition?`, консультация ${voucherPosition} по ваучеру`:''}`);
+				card.title=card.getAttribute('aria-label');
+				card.append(text('strong',`${clock(start)}-${clock(end)}${voucherPosition?` · ${voucherPosition}`:''}`),text('strong',label));
 				if(item.kind==='appointment')card.append(text('span',item.platform),text('span',({single:'Консультация',free:'Знакомство',five:'Ваучер · 5 встреч',ten:'Ваучер · 10 встреч'})[item.package_name]||item.package_name));
 				column.append(card);
 			}
@@ -440,7 +446,7 @@
 		if(!data.pendingReservations.length) status.textContent=data.settings.enabled?'':'Календарь пока не включен.';
 	}
 	function section(selected) {
-		for(const name of ['calendar','vouchers','prices','invoices','texts','reviews','contacts']){
+		for(const name of ['calendar','vouchers','prices','invoices','texts','reviews','contacts','clients']){
 			get(`${name}-section`).hidden=name!==selected;
 			get(`section-${name}`).setAttribute('aria-pressed',String(name===selected));
 		}
@@ -451,6 +457,7 @@
 		else if(selected==='texts')loadTexts();
 		else if(selected==='contacts')loadContacts();
 		else if(selected==='reviews')loadReviews();
+		else if(selected==='clients')document.dispatchEvent(new Event('admin-clients-open'));
 		else loadOrders();
 	}
 	document.addEventListener('admin-logout',()=>{
@@ -486,7 +493,7 @@
 		refreshLive();
 	});
 	get('admin-notifications-close').addEventListener('click',()=>get('admin-notifications').close());
-	for(const name of ['calendar','vouchers','prices','invoices','texts','reviews','contacts']){
+	for(const name of ['calendar','vouchers','prices','invoices','texts','reviews','contacts','clients']){
 		get(`section-${name}`).addEventListener('click',()=>section(name));
 	}
 	const reviewsForm=get('reviews-form'),reviewsEditor=get('reviews-editor');
@@ -618,7 +625,7 @@
 		for(const review of pendingReviews.slice(pendingOffset,end)){
 			const card=document.createElement('article');card.className='contact-editor-row';
 			const title=text('strong',review.anonymous?'Анонимно':review.name);card.append(title);
-			const meta=text('p',`${review.rating} / 5 ★ · ${new Date(review.submitted_at).toLocaleString('ru-RU')}`);card.append(meta);
+			const meta=text('p',`${review.rating} / 5 ★ · Написан: ${formatAdminDateTime(review.submitted_at)} (Таллин)`);card.append(meta);
 			const body=text('p',review.review_text);body.style.whiteSpace='pre-wrap';card.append(body);
 			for(const [action,label] of [['approve','Опубликовать отзыв'],['delete','Отклонить отзыв']]){
 				const button=text('button',label);button.type='button';
@@ -654,8 +661,9 @@
 		});
 	};
 	reviewsForm.addEventListener('input',()=>{reviewsDirty=true;});
-	function reviewRow(review={id:crypto.randomUUID(),name:'',text:'',rating:5,topic:'',example:false}){
+	function reviewRow(review={id:crypto.randomUUID(),name:'',text:'',rating:5,topic:'',example:false},writtenAt=null){
 		const row=document.createElement('div');row.className='contact-editor-row';row.dataset.id=review.id;
+		row.append(text('p',writtenAt?`Написан: ${formatAdminDateTime(writtenAt)} (Таллин)`:'Дата написания неизвестна'));
 		const field=(title,input)=>{const label=text('label',title);label.append(input);row.append(label);};
 		const position=document.createElement('input');position.type='number';position.min='1';position.step='1';position.required=true;
 		position.dataset.reviewPosition='';field('Позиция на сайте',position);
@@ -690,7 +698,8 @@
 			pendingReviews=validatePendingReviews(result.pending);
 			pendingOffset=0;get('reviews-pending').replaceChildren();renderPending();
 			reviewsEditor.replaceChildren();reviewsLoaded=true;
-			for(const review of reviews)reviewRow(review);
+			const dates=new Map((result.dates||[]).map(item=>[item.id,item.written_at]));
+			for(const review of reviews)reviewRow(review,dates.get(review.id));
 			reviewsDirty=false;updateReviewAdd();reviewsForm.querySelector('[type="submit"]').disabled=false;get('reviews-status').textContent='';
 		}catch(error){if(current===reviewsGeneration){
 			get('reviews-status').textContent=error.message;get('reviews-pending-status').textContent=error.message;
@@ -722,9 +731,24 @@
 	const contactSaveButtons=[...contactsForm.querySelectorAll('[type="submit"]')];
 	const disableContactSave=disabled=>contactSaveButtons.forEach(button=>{button.disabled=disabled;});
 	let contactsGeneration=0,contactsLoaded=false;
+	const renumberContacts=()=>{
+		[...contactList.children].forEach((row,index)=>{
+			const position=row.querySelector('[data-contact-position]');
+			position.value=String(index+1);position.max=String(contactList.children.length);
+		});
+	};
 	function contactRow(link={type:'website',label:'',url:'',enabled:true}){
 		const row=document.createElement('div');row.className='contact-editor-row';
 		const field=(title,input)=>{const label=text('label',title);label.append(input);row.append(label);return input;};
+		const position=document.createElement('input');position.type='number';position.min='1';position.step='1';position.required=true;
+		position.dataset.contactPosition='';field('Позиция на сайте (1 — первая слева)',position);
+		position.addEventListener('change',()=>{
+			if(!position.reportValidity())return;
+			const others=[...contactList.children].filter(item=>item!==row);
+			contactList.insertBefore(row,others[Number(position.value)-1]||null);
+			renumberContacts();
+			get('contacts-status').textContent='Порядок изменен. Нажмите «Сохранить изменения», чтобы применить его на сайте.';
+		});
 		const type=document.createElement('select');type.dataset.field='type';
 		for(const [key,title] of Object.entries(window.siteContacts.types)){const option=text('option',title);option.value=key;type.append(option);}
 		type.value=link.type;field('Соцсеть / тип кнопки',type);
@@ -736,8 +760,8 @@
 		const enabled=document.createElement('input');enabled.type='checkbox';enabled.dataset.field='enabled';enabled.checked=link.enabled;
 		field('Показывать кнопку на сайте',enabled).parentElement.className='contact-editor-toggle';
 		const remove=text('button','Удалить кнопку');remove.type='button';
-		remove.addEventListener('click',()=>{row.remove();get('contacts-add').disabled=!contactsLoaded||contactList.children.length>=12;});row.append(remove);
-		contactList.append(row);get('contacts-add').disabled=!contactsLoaded||contactList.children.length>=12;
+		remove.addEventListener('click',()=>{row.remove();renumberContacts();get('contacts-add').disabled=!contactsLoaded||contactList.children.length>=12;});row.append(remove);
+		contactList.append(row);renumberContacts();get('contacts-add').disabled=!contactsLoaded||contactList.children.length>=12;
 	}
 	async function loadContacts(){
 		const current=++contactsGeneration;contactsLoaded=false;

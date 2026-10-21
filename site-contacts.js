@@ -16,13 +16,7 @@
 			}))throw new Error('Проверьте поля подвала, названия кнопок и ссылки. Нужен полный адрес https://, mailto: или tel:.');
 		return settings;
 	};
-	const visibleLinks=links=>{
-		const enabled=links.filter(link=>link.enabled),tiktok=enabled.filter(link=>link.type==='tiktok'),
-			others=enabled.filter(link=>link.type!=='tiktok');
-		const whatsapp=others.findIndex(link=>link.type==='whatsapp'),email=others.findIndex(link=>link.type==='email');
-		others.splice(whatsapp>=0?whatsapp+1:email>=0?email:others.length,0,...tiktok);
-		return others;
-	};
+	const visibleLinks=links=>links.filter(link=>link.enabled);
 	window.siteContacts={types,validate,visibleLinks};
 	const socials=document.querySelector('#contact .contact-socials');
 	if(!socials)return;

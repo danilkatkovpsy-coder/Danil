@@ -41,11 +41,14 @@
 		main:has(#admin-workspace:not([hidden]) #invoices-section:not([hidden])) #admin-status:not(.is-error),
 		main:has(#admin-workspace:not([hidden]) #texts-section:not([hidden])) #admin-status:not(.is-error),
 		main:has(#admin-workspace:not([hidden]) #contacts-section:not([hidden])) #admin-status:not(.is-error),
+		main:has(#admin-workspace:not([hidden]) #clients-section:not([hidden])) #admin-status:not(.is-error),
 		main:has(#admin-workspace:not([hidden]) #reviews-section:not([hidden])) #admin-status:not(.is-error),
 		#calendar-status:empty { display: none; }
 		.order-list { display: grid; gap: 12px; }
 		.order-card { display: grid; gap: 12px; }
 		.order-card h2 { margin: 0; font-size: 18px; }
+		#clients-section .order-card { min-width: 0; overflow-wrap: anywhere; }
+		#client-dialog input, #client-dialog textarea { min-width: 0; max-width: 100%; }
 		.order-meta { margin: 0; color: #5e544f; }
 		.order-additional { margin: 0; padding: 10px; background: #f4f0eb; color: #514940; white-space: pre-wrap; }
 		.order-invoice { margin: 0; color: #514940; }
@@ -307,13 +310,14 @@
 				<div id="calendar-grid" class="calendar-grid" aria-label="Дни месяца"></div>
 			</aside>
 			<p class="admin-sidebar-title">Панель управления</p>
-			<button id="section-vouchers" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 5v14M12 10h5M12 14h3"/></svg><span>Управление ваучерами</span></button>
-			<button id="section-calendar" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18M7 15h2M13 15h2"/></svg><span>Календарь</span></button>
+			<button id="section-calendar" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18M7 15h2M13 15h2"/></svg><span>Календарь</span></button>
+			<button id="section-vouchers" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 5v14M12 10h5M12 14h3"/></svg><span>Управление ваучерами</span></button>
 			<button id="section-prices" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5a7.5 7.5 0 1 0 0 13M4 10h11M4 14h9"/></svg><span>Цены</span></button>
 			<button id="section-invoices" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v5h4M9 12h7M9 16h7"/></svg><span>Счета</span></button>
 			<button id="section-texts" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M12 5v15M8 20h8"/></svg><span>Текста</span></button>
 			<button id="section-reviews" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L3 10l6-1z"/></svg><span>Отзывы</span></button>
 			<button id="section-contacts" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg><span>Контакты</span></button>
+			<button id="section-clients" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span>Клиенты</span></button>
 		</nav>
 		<section id="reviews-section" hidden aria-label="Отзывы">
 			<div class="calendar-card">
@@ -333,6 +337,47 @@
 				</form>
 				<p id="reviews-status" role="status"></p>
 			</div>
+		</section>
+		<section id="clients-section" hidden aria-label="Клиенты">
+			<div class="calendar-card">
+				<h2>Клиенты</h2>
+				<p>Клиенты определяются по email, без учета регистра. Платные записи добавляют клиента автоматически, включая прежние записи. Бесплатные консультации и записи без email не добавляются.</p>
+				<form id="clients-search-form" class="calendar-actions">
+					<label>Поиск по имени, email или телефону<input id="clients-search" type="search" maxlength="254"></label>
+					<button type="submit">Найти</button><button id="clients-refresh" type="button">Обновить</button>
+					<button id="clients-add" type="button">Добавить клиента</button>
+				</form>
+				<p id="clients-status" role="status"></p>
+				<div id="clients-list" class="order-list"></div>
+				<button id="clients-more" type="button" hidden>Показать еще</button>
+			</div>
+			<dialog id="client-dialog" class="calendar-details-dialog" aria-labelledby="client-title">
+				<button id="client-close" type="button">Закрыть</button>
+				<h2 id="client-title">Клиент</h2>
+				<p id="client-status" role="status"></p>
+				<form id="client-form" class="calendar-form">
+					<label>Email (определяет клиента)<input name="email" type="email" required maxlength="254"></label>
+					<label>Имя<input name="name" required maxlength="120"></label>
+					<label>Телефон<input name="phone" type="tel" maxlength="80"></label>
+					<label>Контакты / мессенджеры<textarea name="contact" maxlength="1000" rows="3"></textarea></label>
+					<label>Заметки<textarea name="notes" maxlength="5000" rows="4"></textarea></label>
+					<button type="submit">Сохранить клиента</button>
+				</form>
+				<div id="client-history" hidden>
+					<details id="client-purchases-toggle">
+					<summary>История покупок</summary>
+					<p>Заявка на пакет не означает оплату. Активация ваучера отображается отдельно. Индивидуальные консультации показаны в истории записей: отдельного подтверждения оплаты для них нет.</p>
+					<div id="client-purchases" class="order-list"></div>
+					<button id="client-purchases-more" type="button" hidden>Еще покупки</button>
+					</details>
+					<details id="client-visits-toggle">
+					<summary>История записей</summary>
+					<p>Предстоящие, прошедшие и отмененные платные записи. «Прошедшая» не означает подтвержденное посещение. Время Таллина.</p>
+					<div id="client-visits" class="order-list"></div>
+					<button id="client-visits-more" type="button" hidden>Еще записи</button>
+					</details>
+				</div>
+			</dialog>
 		</section>
 		<section id="contacts-section" hidden aria-label="Контакты">
 			<form id="contacts-form" class="calendar-form">
@@ -463,7 +508,7 @@
 				<p id="prices-status" role="status"></p>
 			</div>
 		</section>
-		<div id="vouchers-section">
+		<div id="vouchers-section" hidden>
 		<nav class="admin-tabs" role="tablist" aria-label="Заявки и ваучеры">
 			<button class="admin-tab" id="tab-applications" type="button" role="tab" aria-controls="order-list" aria-selected="true" data-tab="applications">Заявки <span class="admin-tab-count">0</span></button>
 			<button class="admin-tab" id="tab-active" type="button" role="tab" aria-controls="order-list" aria-selected="false" tabindex="-1" data-tab="active">Активные ваучеры <span class="admin-tab-count">0</span></button>
@@ -480,7 +525,7 @@
 		</div>
 		<section id="order-list" class="order-list" role="tabpanel" aria-labelledby="tab-applications" aria-label="Список заявок и ваучеров"></section>
 		</div>
-		<section id="calendar-section" hidden aria-label="Календарь и журнал записей">
+		<section id="calendar-section" aria-label="Календарь и журнал записей">
 			<p id="calendar-status" role="status"></p>
 			<div class="calendar-overview">
 			<section class="calendar-journal-panel" aria-label="Недельный журнал записей">
@@ -1147,5 +1192,6 @@
 	</script>
 	<script src="site-logo.js"></script>
 	<script src="admin-calendar.js"></script>
+	<script src="admin-clients.js"></script>
 </body>
 </html>
