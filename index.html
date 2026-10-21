@@ -301,11 +301,11 @@
 						</div></div>
 						<div id="booking-telegram-field" class="booking-field booking-contact-field booking-telegram-field" hidden><label for="booking-telegram-username">Имя пользователя Telegram</label><div class="booking-telegram-input-row"><input id="booking-telegram-username" name="telegramUsername" type="text" placeholder="@username" autocomplete="off" maxlength="33" pattern="@?[A-Za-z0-9_]{5,32}" title="Введите username Telegram длиной от 5 до 32 символов"><div class="booking-telegram-choice"><input id="booking-telegram-no-username" type="checkbox"><div class="booking-telegram-choice-copy"><label class="booking-telegram-optional" for="booking-telegram-no-username">У меня нет username - я напишу Вам сам(а)</label> <a id="booking-telegram-contact" class="booking-telegram-contact" href="https://t.me/DanielRise" target="_blank" rel="noreferrer">@DanielRise</a></div></div></div></div>
 						<div id="booking-phone-field" class="booking-field booking-contact-field" hidden><label for="booking-phone">Номер WhatsApp</label><input id="booking-phone" name="phone" type="tel" inputmode="tel" placeholder="Номер WhatsApp" autocomplete="tel"></div>
+						<div class="booking-field"><label for="booking-request">Запрос (опционально)</label><textarea id="booking-request" name="request" rows="3" maxlength="1000" placeholder="Кратко опишите, с чем хотите поработать"></textarea></div>
 						<div id="booking-client-fields" class="booking-two-col">
 							<div class="booking-field"><label for="booking-name">Имя</label><input id="booking-name" name="name" type="text" placeholder="Ваше имя" autocomplete="name" required></div>
 							<div class="booking-field"><label for="booking-email">Email</label><input id="booking-email" name="email" type="email" placeholder="name@example.com" autocomplete="email" required></div>
 						</div>
-						<div class="booking-field"><label for="booking-request">Запрос (опционально)</label><textarea id="booking-request" name="request" rows="3" maxlength="1000" placeholder="Кратко опишите, с чем хотите поработать"></textarea></div>
 						</div>
 						<input type="hidden" id="booking-start" name="start" required><input type="hidden" id="booking-end" name="end" required>
 						</div>
@@ -387,7 +387,7 @@
 		<p>После оплаты Вы получите ваучер для записи на консультацию по выбранному пакету.</p>
 		<form method="dialog"><button class="purchase-submit" autofocus>Понятно</button></form>
 	</dialog>
-	<footer class="site-footer" data-name="подвал сайта">
+	<footer id="footer" class="site-footer" data-name="подвал сайта">
 		<div class="footer-content">
 			<div class="footer-brand" data-name="бренд подвала"><img src="images/logo.png" alt="Логотип"><strong data-site-text="footer_name">Данил Катков</strong><span data-site-text="footer_tagline">психолог, кпт-подход</span><p data-site-text="footer_description">Психологическая поддержка
 для более осознанной и
@@ -701,6 +701,7 @@
 		let bookingMonthCalendarOpen = false;
 		let bookingMobileStep = 1;
 		let appliedBookingVoucher = null;
+		let bookingVoucherValidationGeneration = 0;
 		const formatBookingTime = (value) => new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: window.googleCalendarConfig.timezone }).format(new Date(value));
 		const formatBookingDateValue = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 		const renderBookingMobileStep = () => {
@@ -729,7 +730,7 @@
 				const showVoucher = bookingMobileStep === 1;
 				bookingVoucherField.hidden = !showVoucher;
 				bookingVoucherField.style.display = showVoucher ? 'grid' : 'none';
-				bookingClientFields.hidden = true;
+				bookingClientFields.hidden = !appliedBookingVoucher;
 			}
 			const hasSelectedBookingTime = bookingDate.value && bookingStart.value && bookingEnd.value;
 			bookingStepNext.disabled = !hasSelectedBookingTime && !(packageNeedsVoucher && !appliedBookingVoucher);
@@ -946,6 +947,7 @@
 		});
 		window.addEventListener('resize', renderBookingMobileStep);
 		const openBooking = (key) => {
+			bookingVoucherValidationGeneration++;
 			const packageKey = bookingLabels[key] ? key : 'single';
 			bookingForm.querySelectorAll('input[name="platform"]').forEach((input) => { input.checked = false; });
 			bookingForm.querySelectorAll('.platform-option').forEach((option) => option.classList.remove('selected'));
@@ -1033,6 +1035,7 @@
 			purchaseStatus.textContent = '';
 		};
 		const closeBooking = () => {
+			bookingVoucherValidationGeneration++;
 			bookingModal.classList.remove('is-open');
 			bookingDialog.classList.remove('is-confirmed');
 			bookingModal.setAttribute('aria-hidden', 'true');
@@ -1094,6 +1097,8 @@
 			else if (bookingModal.classList.contains('is-open')) closeBooking();
 		});
 		bookingVoucher.addEventListener('input', () => {
+			bookingVoucherValidationGeneration++;
+			bookingVoucherApplyButton.disabled = false;
 			bookingVoucherBanner.hidden = true;
 			if (appliedBookingVoucher && bookingVoucher.value.trim().toUpperCase() !== appliedBookingVoucher.code) {
 				appliedBookingVoucher = null;
@@ -1113,8 +1118,15 @@
 			bookingVoucherStatus.classList.remove('is-error', 'is-success');
 		});
 		bookingVoucherApplyButton.addEventListener('click', async () => {
+			const generation=++bookingVoucherValidationGeneration;
+			const requestedCode=bookingVoucher.value.trim().toUpperCase(),requestedPackage=bookingPackage.value;
 			bookingVoucherBanner.hidden = true;
 			appliedBookingVoucher = null;
+			bookingClientFields.hidden = true;
+			bookingName.value = '';
+			bookingEmail.value = '';
+			bookingName.readOnly = false;
+			bookingEmail.readOnly = false;
 			bookingVoucherHistoryButton.hidden = true;
 			bookingHistoryPanel.hidden = true;
 			moveBookingHistoryToResult();
@@ -1125,26 +1137,29 @@
 			try {
 				const response = await fetch('/api/vouchers/validate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: bookingVoucher.value.trim(), packageName: bookingPackage.value }) });
 				const data = await response.json();
+				if(generation!==bookingVoucherValidationGeneration||bookingVoucher.value.trim().toUpperCase()!==requestedCode||bookingPackage.value!==requestedPackage)return;
 				if (!response.ok) throw new Error(data.error || 'Не удалось проверить ваучер.');
+				if(typeof data.name!=='string'||!data.name.trim()||typeof data.email!=='string'||!data.email.trim())throw new Error('Не удалось загрузить контакты ваучера. Повторите проверку.');
 				appliedBookingVoucher = { code: bookingVoucher.value.trim().toUpperCase() };
 				bookingVoucherHistoryButton.hidden = false;
 				bookingVoucherBannerPackage.textContent = bookingLabels[bookingPackage.value];
 				bookingVoucherBannerBalance.textContent = `Осталось ${data.remainingSessions} из ${data.totalSessions} консультаций`;
 				bookingVoucherBanner.hidden = false;
-				bookingName.value = '';
-				bookingEmail.value = '';
-				bookingName.readOnly = false;
-				bookingEmail.readOnly = false;
+				bookingName.value = data.name;
+				bookingEmail.value = data.email;
+				bookingName.readOnly = true;
+				bookingEmail.readOnly = true;
 				bookingName.required = false;
 				bookingEmail.required = false;
-				bookingClientFields.hidden = true;
+				bookingClientFields.hidden = false;
 				bookingVoucherStatus.textContent = '';
 				bookingVoucherStatus.classList.remove('is-success');
 			} catch (error) {
+				if(generation!==bookingVoucherValidationGeneration)return;
 				bookingVoucherStatus.textContent = error.message;
 				bookingVoucherStatus.classList.add('is-error');
 			} finally {
-				bookingVoucherApplyButton.disabled = false;
+				if(generation===bookingVoucherValidationGeneration)bookingVoucherApplyButton.disabled = false;
 			}
 		});
 		const escapeCalendarText = (value) => String(value).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');

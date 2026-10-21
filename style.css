@@ -747,6 +747,7 @@ html:has(body.modal-open) { overflow: hidden; }
 .booking-submit { display: flex; align-items: center; justify-content: center; gap: 9px; }
 .booking-submit-icon { width: 18px; height: 18px; flex: 0 0 18px; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .booking-submit:disabled { opacity: .65; cursor: wait; }
+#booking-client-fields input[readonly] { background: #ede4d8; border-color: #d8c9b6; color: #696154; cursor: default; }
 .booking-close { position: absolute; top: 12px; right: 14px; z-index: 2; width: 36px; height: 36px; border: 0; border-radius: 50%; background: #f1ede9; color: #352d28; font-size: 25px; line-height: 1; cursor: pointer; }
 .booking-status { min-height: 20px; margin: 0; color: #3e5d49; font-size: 13px; }
 .booking-status.is-error { color: #8a3b33; }

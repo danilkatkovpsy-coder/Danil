@@ -6,6 +6,23 @@
 		}
 		return image;
 	};
+	async function prepareImage(image){
+		if(!['image/png','image/jpeg','image/webp'].includes(image.type)||image.size>5*1024*1024){
+			throw new Error('Выберите PNG, JPEG или WebP размером до 5 МБ.');
+		}
+		const bitmap=await createImageBitmap(image);
+		try{
+			if(bitmap.width>8192||bitmap.height>8192)throw new Error('Размер исходного изображения не должен превышать 8192 x 8192 пикселей.');
+			const scale=Math.min(1,512/bitmap.width,512/bitmap.height),canvas=document.createElement('canvas');
+			canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+			const context=canvas.getContext('2d');
+			if(!context)throw new Error('Браузер не поддерживает подготовку изображения.');
+			context.drawImage(bitmap,0,0,canvas.width,canvas.height);
+			const prepared=canvas.toDataURL('image/png');
+			if(prepared.length>699073)throw new Error('Изображение слишком сложное. Выберите более простой логотип, до 512 КБ после обработки.');
+			return validate(prepared);
+		}finally{bitmap.close();}
+	}
 	const targets=[...document.querySelectorAll('.brand-lockup img, .footer-brand img')];
 	const apply=image=>targets.forEach(target=>{target.src=image||original;});
 	const file=document.getElementById('logo-file');
@@ -61,24 +78,11 @@
 		if(!image){controls();return;}
 		busy=true;controls();status.textContent='Подготавливаем изображение...';
 		try{
-			if(!['image/png','image/jpeg','image/webp'].includes(image.type)||image.size>5*1024*1024){
-				throw new Error('Выберите PNG, JPEG или WebP размером до 5 МБ.');
-			}
-			const bitmap=await createImageBitmap(image);
-			try{
-				if(bitmap.width>8192||bitmap.height>8192)throw new Error('Размер исходного изображения не должен превышать 8192 x 8192 пикселей.');
-				const scale=Math.min(1,512/bitmap.width,512/bitmap.height),canvas=document.createElement('canvas');
-				canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
-				const context=canvas.getContext('2d');
-				if(!context)throw new Error('Браузер не поддерживает подготовку изображения.');
-				context.drawImage(bitmap,0,0,canvas.width,canvas.height);
-				const prepared=canvas.toDataURL('image/png');
-				if(prepared.length>699073)throw new Error('Изображение слишком сложное. Выберите более простой логотип, до 512 КБ после обработки.');
-				if(current!==generation||chosen!==selection)return;
-				pending=validate(prepared);show(pending);status.textContent=invoice
-					?'Предпросмотр готов. Нажмите «Сохранить логотип», чтобы использовать его в новых PDF-счетах.'
-					:'Предпросмотр готов. Нажмите «Сохранить логотип», чтобы применить его в шапке и подвале.';
-			}finally{bitmap.close();}
+			const prepared=await prepareImage(image);
+			if(current!==generation||chosen!==selection)return;
+			pending=prepared;show(pending);status.textContent=invoice
+				?'Предпросмотр готов. Нажмите «Сохранить логотип», чтобы использовать его в новых PDF-счетах.'
+				:'Предпросмотр готов. Нажмите «Сохранить логотип», чтобы применить его в шапке и подвале.';
 		}catch(error){if(current===generation&&chosen===selection)status.textContent=`Не удалось подготовить логотип: ${error.message}`;}
 		finally{if(current===generation&&chosen===selection){busy=false;controls();}}
 	});
@@ -106,8 +110,10 @@
 		generation++;selection++;loaded=false;busy=false;pending=null;saved=initial;file.value='';show(initial);status.textContent='';controls();
 	});
 	controls();
-	return {loadAdmin};
+	return {loadAdmin,prepareImage,readDraft:()=>{
+		if(!loaded||busy)throw new Error('Дождитесь загрузки и подготовки логотипа.');
+		return pending===null?saved:pending;
+	}};
 	}
 	window.siteLogo=editor('logo');
-	window.invoiceLogo=editor('invoice-logo',true);
 })();

@@ -144,7 +144,7 @@
 		if (appointment.source === 'google') card.append(text('small','Перенесено из Google. Старое событие в Google не изменяется.'));
 		if (appointment.status === 'confirmed' && Date.parse(appointment.start_at) > Date.now()) {
 			const editor = text('div','', 'calendar-form');
-			const label = text('label','Новое время (Таллин)');
+			const label = text('label','Новое время');
 			const input = document.createElement('input');
 			input.type = 'datetime-local'; input.value = localInput(appointment.start_at);
 			label.append(input); editor.append(label);
@@ -446,6 +446,8 @@
 		if(!data.pendingReservations.length) status.textContent=data.settings.enabled?'':'Календарь пока не включен.';
 	}
 	function section(selected) {
+		window.adminNavigation.write('section',selected);
+		if(selected!=='texts'&&!get('texts-section').hidden)textSections.leave();
 		for(const name of ['calendar','vouchers','prices','invoices','texts','reviews','contacts','clients']){
 			get(`${name}-section`).hidden=name!==selected;
 			get(`section-${name}`).setAttribute('aria-pressed',String(name===selected));
@@ -482,7 +484,10 @@
 		rangeStart=null;rangeEnd=null;rangeClosed=true;renderRange();
 		get('calendar-search').value='';status.textContent='';
 	});
-	document.addEventListener('admin-login',()=>load().catch(notificationFail));
+	document.addEventListener('admin-login',()=>{
+		section(window.adminNavigation.read('section',['calendar','vouchers','prices','invoices','texts','reviews','contacts','clients'],'calendar'));
+		if(get('calendar-section').hidden)load().catch(notificationFail);
+	});
 	get('calendar-history').addEventListener('toggle',()=>{if(get('calendar-history').open&&adminAuthenticated)loadHistory();});
 	get('calendar-history-refresh').addEventListener('click',()=>loadHistory());
 	get('calendar-history-more').addEventListener('click',()=>loadHistory(true));
@@ -607,8 +612,9 @@
 	});
 	document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTimeout(liveTimer);else refreshLive();});
 	window.addEventListener('focus',refreshLive);
-	let reviewsGeneration=0,reviewsLoaded=false,reviewsDirty=false,reviewModerating=false;
-	const updateReviewAdd=()=>{get('reviews-add').disabled=!reviewsLoaded||reviewsEditor.children.length>=500;};
+	let reviewsGeneration=0,reviewsLoaded=false,reviewsDirty=false,reviewModerating=false,reviewSaving=false;
+	const updateReviewAdd=()=>{get('reviews-add').disabled=!reviewsLoaded||reviewSaving||reviewsEditor.children.length>=500;};
+	const updateReviewDirty=()=>{reviewsDirty=get('review-create-editor').children.length>0||[...reviewsEditor.children].some(row=>row.dataset.dirty==='true'||row.dataset.published!=='true');};
 	let pendingReviews=[],pendingOffset=0;
 	const validatePendingReviews=value=>{
 		if(!Array.isArray(value)||value.length>1000||!value.every(review=>review&&
@@ -625,28 +631,37 @@
 		for(const review of pendingReviews.slice(pendingOffset,end)){
 			const card=document.createElement('article');card.className='contact-editor-row';
 			const title=text('strong',review.anonymous?'Анонимно':review.name);card.append(title);
-			const meta=text('p',`${review.rating} / 5 ★ · Написан: ${formatAdminDateTime(review.submitted_at)} (Таллин)`);card.append(meta);
+			const meta=text('p',`${review.rating} / 5 ★ · Написан: ${formatAdminDateTime(review.submitted_at)}`);card.append(meta);
 			const body=text('p',review.review_text);body.style.whiteSpace='pre-wrap';card.append(body);
+			const actions=document.createElement('div');actions.className='review-row-actions';
 			for(const [action,label] of [['approve','Опубликовать отзыв'],['delete','Отклонить отзыв']]){
 				const button=text('button',label);button.type='button';
 				button.addEventListener('click',async()=>{
-					if(reviewModerating)return;
-					if(reviewsDirty&&!confirm('В редакторе есть несохраненные изменения. Продолжить без их сохранения?'))return;
+					if(reviewModerating||reviewSaving)return;
 					if(action==='delete'&&!confirm('Отклонить отзыв? Заявка будет удалена и не появится на сайте.'))return;
 					const current=reviewsGeneration;reviewModerating=true;
 					const buttons=[...get('reviews-pending').querySelectorAll('button')];buttons.forEach(item=>{item.disabled=true;});
 					get('reviews-pending-status').textContent=action==='approve'?'Публикуем отзыв на сайте...':'Отклоняем отзыв...';
 					try{
-						await adminRequest('/api/admin/site-reviews',{method:'POST',headers:{'Content-Type':'application/json'},
+						const result=await adminRequest('/api/admin/site-reviews',{method:'POST',headers:{'Content-Type':'application/json'},
 							body:JSON.stringify({action,id:review.id})});
 						if(current!==reviewsGeneration)return;
-						await loadReviews();
+						if(result.ok!==true)throw new Error('Сервер не подтвердил обработку отзыва.');
+						if(action==='approve'){
+							const published=window.siteReviews.validate(result.reviews).find(item=>item.id===review.id);
+							if(!published)throw new Error('Опубликованный отзыв не найден в ответе.');
+							reviewRow(published,review.submitted_at,true,published);
+						}
+						card.remove();pendingReviews=pendingReviews.filter(item=>item.id!==review.id);
+						pendingOffset=Math.max(0,pendingOffset-1);
+						renumberReviews();updateReviewDirty();
 						if(reviewsLoaded)get('reviews-pending-status').textContent=action==='approve'?'Отзыв опубликован на сайте.':'Отзыв отклонен и удален из заявок. На сайт он не опубликован.';
 					}catch(error){if(current===reviewsGeneration)get('reviews-pending-status').textContent=error.message;}
 					finally{reviewModerating=false;buttons.forEach(item=>{item.disabled=false;});}
 				});
-				card.append(button);
+				actions.append(button);
 			}
+			card.append(actions);
 			list.append(card);
 		}
 		pendingOffset=end;get('reviews-pending-more').hidden=pendingOffset>=pendingReviews.length;
@@ -655,99 +670,220 @@
 	};
 	get('reviews-pending-more').addEventListener('click',renderPending);
 	const renumberReviews=()=>{
+		let publishedPosition=0;
+		const publishedCount=[...reviewsEditor.children].filter(row=>row.dataset.published==='true').length;
 		[...reviewsEditor.children].forEach((row,index)=>{
 			const position=row.querySelector('[data-review-position]');
-			position.value=String(index+1);position.max=String(reviewsEditor.children.length);
+			if(row.dataset.published==='true')publishedPosition++;
+			if(row.dataset.positionDirty!=='true')position.value=String(row.dataset.published==='true'?publishedPosition:Math.min(index+1,publishedCount+1));
+			position.max=String(publishedCount+(row.dataset.published==='true'?0:1));
 		});
 	};
-	reviewsForm.addEventListener('input',()=>{reviewsDirty=true;});
-	function reviewRow(review={id:crypto.randomUUID(),name:'',text:'',rating:5,topic:'',example:false},writtenAt=null){
+	reviewsForm.addEventListener('submit',event=>event.preventDefault());
+	function reviewRow(review={id:crypto.randomUUID(),name:'',text:'',rating:5,topic:'',example:false},writtenAt=null,published=false,original=null,container=reviewsEditor,onPublished=null){
 		const row=document.createElement('div');row.className='contact-editor-row';row.dataset.id=review.id;
-		row.append(text('p',writtenAt?`Написан: ${formatAdminDateTime(writtenAt)} (Таллин)`:'Дата написания неизвестна'));
+		row.dataset.published=String(published);
+		row.addEventListener('input',()=>{row.dataset.dirty='true';updateReviewDirty();});
+		row.append(text('p',writtenAt?`Написан: ${formatAdminDateTime(writtenAt)}`:'Дата написания неизвестна'));
 		const field=(title,input)=>{const label=text('label',title);label.append(input);row.append(label);};
 		const position=document.createElement('input');position.type='number';position.min='1';position.step='1';position.required=true;
 		position.dataset.reviewPosition='';field('Позиция на сайте',position);
 		position.addEventListener('change',()=>{
 			if(!position.reportValidity())return;
-			const others=[...reviewsEditor.children].filter(item=>item!==row);
-			reviewsEditor.insertBefore(row,others[Number(position.value)-1]||null);
-			renumberReviews();reviewsDirty=true;
-			get('reviews-status').textContent='Порядок изменен. Нажмите «Сохранить и опубликовать отзывы», чтобы применить его на сайте.';
+			row.dataset.dirty='true';row.dataset.positionDirty='true';updateReviewDirty();
+			get('reviews-status').textContent='Новая позиция применится кнопкой сохранения в этой карточке.';
 		});
 		for(const [key,title,max] of [['name','Имя автора',80],['text','Текст отзыва',5000]]){
 			const input=document.createElement(key==='text'?'textarea':'input');input.dataset.field=key;
 			input.value=review[key];input.maxLength=max;input.required=key!=='topic';if(key==='text')input.rows=5;
 			field(title,input);
 		}
+		let anonymousLabel=null;
+		if(onPublished){
+			const name=row.querySelector('[data-field="name"]');
+			const anonymous=document.createElement('input');anonymous.type='checkbox';
+			anonymousLabel=text('label','');anonymousLabel.className='contact-editor-toggle';
+			anonymousLabel.append(anonymous,text('span','Анонимно'));
+			row.insertBefore(anonymousLabel,row.querySelector('[data-field="text"]').parentElement);
+			let authorName=name.value;
+			anonymous.addEventListener('change',()=>{
+				if(anonymous.checked){authorName=name.value;name.value='Анонимно';}
+				else name.value=authorName;
+				name.readOnly=anonymous.checked;name.required=!anonymous.checked;
+				row.dataset.dirty='true';updateReviewDirty();
+			});
+		}
 		const rating=document.createElement('select');rating.dataset.field='rating';
 		for(let value=1;value<=5;value++){const option=text('option',`${value} / 5 ${'★'.repeat(value)}`);option.value=String(value);rating.append(option);}
 		rating.value=String(review.rating);field('Рейтинг',rating);
-		const remove=text('button','Удалить отзыв');remove.type='button';
-		remove.addEventListener('click',()=>{row.remove();renumberReviews();reviewsDirty=true;updateReviewAdd();});
-		row.append(remove);reviewsEditor.append(row);renumberReviews();updateReviewAdd();
+		const remove=text('button',onPublished?'Отменить':'Удалить отзыв');remove.type='button';remove.className='review-delete-button';
+		const save=text('button',published?'Сохранить изменения':'Опубликовать отзыв');save.type='button';
+		const edit=text('button','Изменить');edit.type='button';
+		const restore=text('button','Вернуться к оригиналу');restore.type='button';restore.hidden=!published;
+		const cancel=text('button','Отменить');cancel.type='button';
+		const status=text('p','');status.setAttribute('role','status');
+		const actions=document.createElement('div');actions.className='review-row-actions';actions.append(save,remove);
+		actions.append(edit,restore,cancel);
+		const setLocked=locked=>{
+			row.dataset.locked=String(locked);
+			for(const input of row.querySelectorAll('input,textarea,select'))input.disabled=locked;
+			edit.hidden=!locked;save.hidden=locked;
+			cancel.hidden=locked||row.dataset.published!=='true';
+		};
+		cancel.addEventListener('click',()=>{
+			if(reviewSaving||reviewModerating||row.dataset.published!=='true')return;
+			for(const input of row.querySelectorAll('[data-field]'))input.value=String(review[input.dataset.field]);
+			row.dataset.dirty='false';row.dataset.positionDirty='false';
+			renumberReviews();updateReviewDirty();setLocked(true);
+			status.textContent='Изменения отменены. Отзыв заблокирован.';
+		});
+		edit.addEventListener('click',()=>{
+			if(reviewSaving||reviewModerating)return;
+			setLocked(false);status.textContent='Редактирование открыто. Изменения появятся на сайте после сохранения.';
+		});
+		restore.addEventListener('click',()=>{
+			if(reviewSaving||reviewModerating)return;
+			if(!original){status.textContent='Оригинал не загружен. Обновите список отзывов.';return;}
+			if(!confirm('Вернуть исходные имя, текст и рейтинг? Несохраненные правки этой карточки будут заменены.'))return;
+			setLocked(false);
+			for(const input of row.querySelectorAll('[data-field]'))input.value=String(original[input.dataset.field]);
+			row.dataset.dirty='true';updateReviewDirty();
+			status.textContent='Оригинал восстановлен в редакторе. Нажмите «Сохранить изменения», чтобы вернуть его на сайт.';
+		});
+		const mutate=async deleting=>{
+			if(reviewSaving||reviewModerating)return;
+			if(!deleting&&row.dataset.locked==='true')return;
+			if(deleting&&onPublished){get('review-create-close').click();return;}
+			if(deleting&&!confirm(row.dataset.published==='true'?'Удалить этот отзыв с сайта?':'Удалить этот неопубликованный отзыв?'))return;
+			if(deleting&&row.dataset.published!=='true'){
+				row.remove();renumberReviews();updateReviewDirty();updateReviewAdd();return;
+			}
+			let content;
+			if(!deleting){
+				if(![...row.querySelectorAll('input,textarea,select')].every(input=>input.reportValidity()))return;
+				try{
+					content=window.siteReviews.validate([{...review,...Object.fromEntries([...row.querySelectorAll('[data-field]')].map(input=>
+						[input.dataset.field,input.dataset.field==='rating'?Number(input.value):input.value.replace(/\s+/g,' ').trim()]))}])[0];
+				}catch(error){status.textContent=error.message;return;}
+			}
+			const current=reviewsGeneration;reviewSaving=true;updateReviewAdd();
+			const controls=[...reviewsForm.querySelectorAll('input,textarea,select,button')];controls.forEach(input=>{input.disabled=true;});
+			status.textContent=deleting?'Удаляем отзыв...':'Сохраняем отзыв...';
+			try{
+				const result=await adminRequest('/api/admin/site-reviews',{method:'POST',headers:{'Content-Type':'application/json'},
+					body:JSON.stringify({action:deleting?'remove':row.dataset.published==='true'?'update':'create',id:review.id,
+						...(!deleting?{review:content,position:Number(position.value)}:{})})});
+				if(current!==reviewsGeneration)return;
+				if(result.ok!==true)throw new Error('Сервер не подтвердил сохранение отзыва.');
+				const saved=window.siteReviews.validate(result.reviews);
+				if(deleting)row.remove();
+				else{
+					const savedIndex=saved.findIndex(item=>item.id===review.id);
+					if(savedIndex<0)throw new Error('Сохраненный отзыв не найден в ответе.');
+					if(!original)original={...content};
+					review=content;row.dataset.published='true';row.dataset.dirty='false';row.dataset.positionDirty='false';save.textContent='Сохранить изменения';
+					restore.hidden=false;setLocked(true);
+					status.textContent='Отзыв сохранен и опубликован.';
+					const others=[...reviewsEditor.children].filter(item=>item!==row&&item.dataset.published==='true');
+					reviewsEditor.insertBefore(row,others[savedIndex]||null);
+					if(onPublished){
+						anonymousLabel.remove();row.querySelector('[data-field="name"]').readOnly=false;
+						row.querySelector('[data-field="name"]').required=true;
+						onPublished();onPublished=null;remove.textContent='Удалить отзыв';
+					}
+				}
+				for(const item of reviewsEditor.children){
+					const field=item.querySelector('[data-review-position]');
+					field.max=String(saved.length+(item.dataset.published==='true'?0:1));
+					const index=saved.findIndex(savedReview=>savedReview.id===item.dataset.id);
+					if(item===row||item.dataset.positionDirty!=='true')field.value=String(index<0?saved.length+1:index+1);
+				}
+				updateReviewDirty();get('reviews-status').textContent=deleting?'Отзыв удален с сайта.':'Изменения этого отзыва опубликованы.';
+			}catch(error){if(current===reviewsGeneration)status.textContent=error.message;}
+			finally{
+				if(current===reviewsGeneration){
+					reviewSaving=false;controls.forEach(input=>{input.disabled=false;});
+					for(const item of reviewsEditor.children){
+						for(const input of item.querySelectorAll('input,textarea,select'))input.disabled=item.dataset.locked==='true';
+					}
+					updateReviewAdd();
+				}
+			}
+		};
+		save.addEventListener('click',()=>mutate(false));remove.addEventListener('click',()=>mutate(true));
+		setLocked(published);
+		row.append(actions,status);container.append(row);renumberReviews();
+		if(container!==reviewsEditor){
+			position.value=String(reviewsEditor.children.length+1);position.max=position.value;
+		}
+		updateReviewDirty();updateReviewAdd();
 	}
 	async function loadReviews(){
 		const current=++reviewsGeneration;reviewsLoaded=false;updateReviewAdd();
 		pendingReviews=[];pendingOffset=0;get('reviews-pending').replaceChildren();
 		get('reviews-pending-status').textContent='Загружаем отзывы на проверку...';
-		reviewsForm.querySelector('[type="submit"]').disabled=true;get('reviews-status').textContent='Загружаем отзывы...';
+		get('reviews-status').textContent='Загружаем отзывы...';
 		try{
 			const result=await adminRequest('/api/admin/site-reviews');
 			if(current!==reviewsGeneration)return;
 			const reviews=window.siteReviews.validate(result.reviews);
+			const originals=new Map(window.siteReviews.validate(result.originals).map(review=>[review.id,review]));
+			if(reviews.some(review=>!originals.has(review.id)))throw new Error('Не удалось загрузить оригиналы отзывов.');
 			pendingReviews=validatePendingReviews(result.pending);
 			pendingOffset=0;get('reviews-pending').replaceChildren();renderPending();
 			reviewsEditor.replaceChildren();reviewsLoaded=true;
 			const dates=new Map((result.dates||[]).map(item=>[item.id,item.written_at]));
-			for(const review of reviews)reviewRow(review,dates.get(review.id));
-			reviewsDirty=false;updateReviewAdd();reviewsForm.querySelector('[type="submit"]').disabled=false;get('reviews-status').textContent='';
+			for(const review of reviews)reviewRow(review,dates.get(review.id),true,originals.get(review.id));
+			reviewsDirty=false;updateReviewAdd();get('reviews-status').textContent='';
 		}catch(error){if(current===reviewsGeneration){
 			get('reviews-status').textContent=error.message;get('reviews-pending-status').textContent=error.message;
 		}}
 	}
-	get('reviews-add').addEventListener('click',()=>{if(reviewsLoaded&&reviewsEditor.children.length<500){reviewRow();reviewsDirty=true;}});
-	reviewsForm.addEventListener('submit',async event=>{
-		event.preventDefault();if(!reviewsLoaded)return;
-		const current=reviewsGeneration,save=reviewsForm.querySelector('[type="submit"]');save.disabled=true;
-		get('reviews-status').textContent='Сохраняем отзывы...';
-		try{
-			const reviews=window.siteReviews.validate([...reviewsEditor.children].map(row=>({
-				id:row.dataset.id,topic:'',example:false,...Object.fromEntries([...row.querySelectorAll('[data-field]')].map(input=>
-					[input.dataset.field,input.type==='checkbox'?input.checked:input.dataset.field==='rating'?Number(input.value):input.value.replace(/\s+/g,' ').trim()]))
-			})));
-			await adminRequest('/api/admin/site-reviews',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reviews})});
-			if(current===reviewsGeneration){reviewsDirty=false;get('reviews-status').textContent='Отзывы и их порядок опубликованы. Изменения появятся при следующем открытии сайта.';}
-		}catch(error){if(current===reviewsGeneration)get('reviews-status').textContent=error.message;}
-		finally{if(current===reviewsGeneration)save.disabled=false;}
+	const reviewCreateDialog=get('review-create-dialog'),reviewCreateEditor=get('review-create-editor');
+	const closeReviewCreate=()=>{
+		if(reviewSaving)return;
+		if(reviewCreateEditor.children.length&&!confirm('Закрыть окно? Неопубликованный отзыв будет удален из редактора.'))return;
+		reviewCreateDialog.close();reviewCreateEditor.replaceChildren();updateReviewDirty();
+	};
+	get('review-create-close').addEventListener('click',closeReviewCreate);
+	reviewCreateDialog.addEventListener('cancel',event=>{event.preventDefault();closeReviewCreate();});
+	get('reviews-add').addEventListener('click',()=>{
+		if(!reviewsLoaded||reviewSaving||reviewModerating||reviewsEditor.children.length>=500)return;
+		reviewCreateEditor.replaceChildren();
+		reviewRow(undefined,null,false,null,reviewCreateEditor,()=>reviewCreateDialog.close());
+		reviewCreateDialog.showModal();
 	});
 	document.addEventListener('admin-login',()=>{if(!get('reviews-section').hidden)loadReviews();});
 	document.addEventListener('admin-logout',()=>{
-		reviewsGeneration++;reviewsLoaded=false;reviewsDirty=false;reviewsEditor.replaceChildren();get('reviews-status').textContent='';
+		reviewsGeneration++;reviewsLoaded=false;reviewsDirty=false;reviewSaving=false;reviewsEditor.replaceChildren();get('reviews-status').textContent='';
+		reviewCreateDialog.close();reviewCreateEditor.replaceChildren();
 		pendingReviews=[];pendingOffset=0;get('reviews-pending').replaceChildren();get('reviews-pending-status').textContent='';
 		get('reviews-pending-more').hidden=true;
-		updateReviewAdd();reviewsForm.querySelector('[type="submit"]').disabled=true;
+		updateReviewAdd();
 	});
 	const contactsForm=get('contacts-form'),contactList=get('contacts-links');
-	const contactSaveButtons=[...contactsForm.querySelectorAll('[type="submit"]')];
-	const disableContactSave=disabled=>contactSaveButtons.forEach(button=>{button.disabled=disabled;});
-	let contactsGeneration=0,contactsLoaded=false;
+	let contactsGeneration=0,contactsLoaded=false,contactSaving=false,contactSettings=null;
+	const updateContactAdd=()=>{get('contacts-add').disabled=!contactsLoaded||contactSaving||contactList.children.length>=12;};
 	const renumberContacts=()=>{
+		const savedCount=[...contactList.children].filter(row=>row.dataset.index).length;
+		let savedPosition=0;
 		[...contactList.children].forEach((row,index)=>{
 			const position=row.querySelector('[data-contact-position]');
-			position.value=String(index+1);position.max=String(contactList.children.length);
+			if(row.dataset.index)savedPosition++;
+			if(row.dataset.positionDirty!=='true')position.value=String(row.dataset.index?savedPosition:Math.min(index+1,savedCount+1));
+			position.max=String(savedCount+(row.dataset.index?0:1));
 		});
 	};
-	function contactRow(link={type:'website',label:'',url:'',enabled:true}){
+	function contactRow(link={type:'website',label:'',url:'',enabled:true},savedIndex=null){
 		const row=document.createElement('div');row.className='contact-editor-row';
+		if(savedIndex!==null)row.dataset.index=String(savedIndex);
 		const field=(title,input)=>{const label=text('label',title);label.append(input);row.append(label);return input;};
 		const position=document.createElement('input');position.type='number';position.min='1';position.step='1';position.required=true;
 		position.dataset.contactPosition='';field('Позиция на сайте (1 — первая слева)',position);
 		position.addEventListener('change',()=>{
 			if(!position.reportValidity())return;
-			const others=[...contactList.children].filter(item=>item!==row);
-			contactList.insertBefore(row,others[Number(position.value)-1]||null);
-			renumberContacts();
-			get('contacts-status').textContent='Порядок изменен. Нажмите «Сохранить изменения», чтобы применить его на сайте.';
+			row.dataset.positionDirty='true';
+			get('contacts-status').textContent='Позиция применится при сохранении этой карточки.';
 		});
 		const type=document.createElement('select');type.dataset.field='type';
 		for(const [key,title] of Object.entries(window.siteContacts.types)){const option=text('option',title);option.value=key;type.append(option);}
@@ -759,49 +895,105 @@
 		}
 		const enabled=document.createElement('input');enabled.type='checkbox';enabled.dataset.field='enabled';enabled.checked=link.enabled;
 		field('Показывать кнопку на сайте',enabled).parentElement.className='contact-editor-toggle';
+		const save=text('button','Сохранить изменения');save.type='button';
 		const remove=text('button','Удалить кнопку');remove.type='button';
-		remove.addEventListener('click',()=>{row.remove();renumberContacts();get('contacts-add').disabled=!contactsLoaded||contactList.children.length>=12;});row.append(remove);
-		contactList.append(row);renumberContacts();get('contacts-add').disabled=!contactsLoaded||contactList.children.length>=12;
+		const actions=document.createElement('div');actions.className='review-row-actions';actions.append(save,remove);
+		const status=text('p','');status.setAttribute('role','status');row.append(actions,status);
+		const edit=text('button','Изменить');edit.type='button';
+		const cancel=text('button','Отмена');cancel.type='button';actions.append(edit,cancel);
+		const setLocked=locked=>{
+			row.dataset.locked=String(locked);
+			for(const input of row.querySelectorAll('input,select'))input.disabled=locked;
+			edit.hidden=!locked;save.hidden=locked;cancel.hidden=locked;
+		};
+		edit.addEventListener('click',()=>{
+			if(contactSaving)return;
+			setLocked(false);status.textContent='Редактирование открыто.';
+		});
+		cancel.addEventListener('click',()=>{
+			if(contactSaving)return;
+			if(!row.dataset.index){row.remove();renumberContacts();updateContactAdd();return;}
+			for(const input of row.querySelectorAll('[data-field]')){
+				if(input.type==='checkbox')input.checked=link[input.dataset.field];
+				else input.value=link[input.dataset.field];
+			}
+			row.dataset.positionDirty='false';renumberContacts();setLocked(true);
+			status.textContent='Изменения отменены. Контакт заблокирован.';
+		});
+		const mutate=async deleting=>{
+			if(!contactsLoaded||contactSaving)return;
+			if(!deleting&&row.dataset.locked==='true')return;
+			if(deleting&&!confirm(row.dataset.index?'Удалить этот контакт с сайта?':'Удалить неопубликованный контакт?'))return;
+			if(deleting&&!row.dataset.index){row.remove();renumberContacts();updateContactAdd();return;}
+			let content;
+			if(!deleting){
+				if(![...row.querySelectorAll('input,select')].every(input=>input.reportValidity()))return;
+				try{
+					content=window.siteContacts.validate({footer:contactSettings.footer,
+						links:[Object.fromEntries([...row.querySelectorAll('[data-field]')].map(input=>
+							[input.dataset.field,input.type==='checkbox'?input.checked:input.value.trim()]))]}).links[0];
+				}catch(error){status.textContent=error.message;return;}
+			}
+			const current=contactsGeneration,oldIndex=row.dataset.index?Number(row.dataset.index):null;
+			const target=Number(position.value),order=[...contactList.children].filter(item=>item.dataset.index)
+				.sort((a,b)=>Number(a.dataset.index)-Number(b.dataset.index)).filter(item=>item!==row);
+			if(!deleting)order.splice(target-1,0,row);
+			contactSaving=true;updateContactAdd();
+			const controls=[...contactsForm.querySelectorAll('input,select,button')];controls.forEach(input=>{input.disabled=true;});
+			status.textContent=deleting?'Удаляем контакт...':'Сохраняем контакт...';
+			try{
+				const result=await adminRequest('/api/admin/site-contacts',{method:'POST',headers:{'Content-Type':'application/json'},
+					body:JSON.stringify({action:deleting?'remove':oldIndex===null?'create':'update',
+						expectedLinks:contactSettings.links,...(oldIndex===null?{}:{index:oldIndex}),
+						...(deleting?{}:{link:content,position:target})})});
+				if(current!==contactsGeneration)return;
+				if(result.ok!==true)throw new Error('Сервер не подтвердил сохранение контакта.');
+				const settings=window.siteContacts.validate(result.settings);
+				if(settings.links.length!==order.length)throw new Error('Некорректный список контактов в ответе.');
+				contactSettings=settings;
+				order.forEach((item,index)=>{item.dataset.index=String(index+1);});
+				if(deleting)row.remove();
+				else{
+					link={...content};setLocked(true);
+					row.dataset.positionDirty='false';
+					contactList.insertBefore(row,order[target]||null);
+					status.textContent='Контакт сохранен.';
+				}
+				renumberContacts();get('contacts-status').textContent=deleting?'Контакт удален с сайта.':'Изменения этого контакта сохранены. PDF-счета не изменены.';
+			}catch(error){if(current===contactsGeneration)status.textContent=error.message;}
+			finally{if(current===contactsGeneration){
+				contactSaving=false;controls.forEach(input=>{input.disabled=false;});
+				for(const item of contactList.children){
+					for(const input of item.querySelectorAll('input,select'))input.disabled=item.dataset.locked==='true';
+				}
+				updateContactAdd();
+			}}
+		};
+		save.addEventListener('click',()=>mutate(false));remove.addEventListener('click',()=>mutate(true));
+		setLocked(savedIndex!==null);
+		contactList.append(row);renumberContacts();updateContactAdd();
 	}
 	async function loadContacts(){
 		const current=++contactsGeneration;contactsLoaded=false;
-		disableContactSave(true);get('contacts-add').disabled=true;
+		updateContactAdd();
 		get('contacts-status').textContent='Загружаем контакты...';
 		try{
 			const result=await adminRequest('/api/admin/site-contacts');
 			if(current!==contactsGeneration)return;
 			const settings=window.siteContacts.validate(result.settings);
-			contactList.replaceChildren();contactsLoaded=true;
-			for(const link of settings.links)contactRow(link);
-			get('contacts-add').disabled=settings.links.length>=12;
-			disableContactSave(false);get('contacts-status').textContent='';
+			contactSettings=settings;contactList.replaceChildren();contactsLoaded=true;
+			settings.links.forEach((link,index)=>contactRow(link,index+1));
+			updateContactAdd();get('contacts-status').textContent='';
 		}catch(error){if(current===contactsGeneration)get('contacts-status').textContent=error.message;}
 	}
-	get('contacts-add').addEventListener('click',()=>{if(contactsLoaded&&contactList.children.length<12)contactRow();});
-	contactsForm.addEventListener('submit',async event=>{
-		event.preventDefault();if(!contactsLoaded)return;
-		const current=contactsGeneration;disableContactSave(true);
-		get('contacts-status').textContent='Сохраняем контакты...';
-		try{
-			const latest=await adminRequest('/api/admin/site-contacts');
-			if(current!==contactsGeneration)return;
-			const settings=window.siteContacts.validate({
-				footer:window.siteContacts.validate(latest.settings).footer,
-				links:[...contactList.children].map(row=>Object.fromEntries([...row.querySelectorAll('[data-field]')].map(input=>
-					[input.dataset.field,input.type==='checkbox'?input.checked:input.value.trim()])))
-			});
-			await adminRequest('/api/admin/site-contacts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({settings})});
-			if(current===contactsGeneration)get('contacts-status').textContent='Контакты сохранены. Изменения появятся при следующем открытии сайта. PDF-счета не изменены.';
-		}catch(error){if(current===contactsGeneration)get('contacts-status').textContent=error.message;}
-		finally{if(current===contactsGeneration)disableContactSave(false);}
-	});
+	get('contacts-add').addEventListener('click',()=>{if(contactsLoaded&&!contactSaving&&contactList.children.length<12)contactRow();});
+	contactsForm.addEventListener('submit',event=>event.preventDefault());
 	document.addEventListener('admin-login',()=>{if(!get('contacts-section').hidden)loadContacts();});
 	document.addEventListener('admin-logout',()=>{
 		contactsGeneration++;contactsLoaded=false;contactsForm.reset();contactList.replaceChildren();get('contacts-status').textContent='';
-		disableContactSave(true);get('contacts-add').disabled=true;
+		contactSaving=false;contactSettings=null;updateContactAdd();
 	});
 	const textsForm=get('texts-form');
-	let textsGeneration=0;
 	const textLabels={hero_eyebrow:'Верхняя подпись: Психолог · КПТ-подход · Онлайн',
 		hero_title_first:'Заголовок: первая строка',hero_title_second:'Заголовок: вторая строка',
 		hero_title_accent:'Заголовок: выделенная часть (курсив)',hero_intro:'Описание под заголовком',
@@ -862,102 +1054,10 @@
 		label.append(input);
 		get(key.startsWith('header_')?'texts-header-fields':key.startsWith('footer_')?'texts-footer-fields':key.startsWith('contact_')?'texts-contact-fields':/^(review|reviews)_/.test(key)?'texts-reviews-fields':key.startsWith('hero_')?'texts-hero-fields':key.startsWith('format_')?'texts-format-fields':key.startsWith('service_')||key.startsWith('services_')?'texts-services-fields':/^(pricing|free|single|five|ten)_/.test(key)?'texts-package-fields':'texts-about-fields').append(label);
 	}
-	textsForm.addEventListener('invalid',event=>{
-		for(let panel=event.target.closest('details');panel;panel=panel.parentElement.closest('details'))panel.open=true;
-	},true);
-	async function loadTexts(){
-		window.siteLogo.loadAdmin();
-		const current=++textsGeneration;
-		const save=textsForm.querySelector('[type="submit"]');
-		save.disabled=true;get('texts-status').textContent='Загружаем тексты...';
-		try{
-			const result=await adminRequest('/api/admin/site-texts');
-			if(current!==textsGeneration)return;
-			const texts=window.siteTexts.validate(result.texts);
-			for(const key of Object.keys(textLabels))textsForm.elements.namedItem(key).value=texts[key];
-			get('texts-status').textContent='';save.disabled=false;
-		}catch(error){if(current===textsGeneration)get('texts-status').textContent=error.message;}
-	}
-	textsForm.addEventListener('submit',async event=>{
-		event.preventDefault();
-		const current=textsGeneration,save=textsForm.querySelector('[type="submit"]');save.disabled=true;
-		get('texts-status').textContent='Сохраняем тексты...';
-		try{
-			const texts=window.siteTexts.validate(Object.fromEntries(Object.keys(textLabels).map(key=>
-				[key,window.siteTexts.normalize(key,textsForm.elements.namedItem(key).value)])));
-			await adminRequest('/api/admin/site-texts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texts})});
-			if(current!==textsGeneration)return;
-			for(const key of Object.keys(textLabels))textsForm.elements.namedItem(key).value=texts[key];
-			get('texts-status').textContent='Тексты сохранены. Посетители увидят их при следующем открытии сайта.';
-		}catch(error){if(current===textsGeneration)get('texts-status').textContent=error.message;}
-		finally{if(current===textsGeneration)save.disabled=false;}
-	});
+	const textSections=window.adminTextSections.mount(Object.keys(textLabels));
+	const loadTexts=()=>textSections.load();
 	document.addEventListener('admin-login',()=>{if(!get('texts-section').hidden)loadTexts();});
-	document.addEventListener('admin-logout',()=>{
-		textsGeneration++;textsForm.reset();get('texts-status').textContent='';
-		textsForm.querySelector('[type="submit"]').disabled=true;
-	});
-	const invoiceSettingsForm=get('invoice-settings-form');
-	let invoiceSettingsGeneration=0;
-	const invoiceFields=['name','address','registration_code','phone','email','website','bank','swift','iban'];
-	const invoiceVat=invoiceSettingsForm.elements.namedItem('vatRegistered');
-	const invoiceVatNumber=invoiceSettingsForm.elements.namedItem('vatNumber');
-	function calculateInvoiceVat(){
-		get('invoice-vat-number-field').hidden=!invoiceVat.checked;
-		invoiceVatNumber.disabled=!invoiceVat.checked;invoiceVatNumber.required=invoiceVat.checked;
-		const input=get('invoice-calculator-gross');
-		if(!input.validity.valid){get('invoice-calculator-result').textContent='Укажите корректную конечную цену.';return;}
-		const gross=Math.round(Number(input.value)*100);
-		const net=invoiceVat.checked?Math.round(gross*100/124):gross;
-		const money=window.servicePricing.money;
-		get('invoice-calculator-result').textContent=invoiceVat.checked
-			?`Без НДС: ${money(net)}. Käibemaks 24%: ${money(gross-net)}. Итого для клиента: ${money(gross)}.`
-			:`Без НДС. Итого для клиента: ${money(gross)}.`;
-	}
-	invoiceVat.addEventListener('change',calculateInvoiceVat);
-	get('invoice-calculator-gross').addEventListener('input',calculateInvoiceVat);
-	calculateInvoiceVat();
-	async function loadInvoiceSettings(){
-		window.invoiceLogo.loadAdmin();
-		const current=++invoiceSettingsGeneration;
-		const save=invoiceSettingsForm.querySelector('[type="submit"]');
-		save.disabled=true;get('invoice-settings-status').textContent='Загружаем реквизиты...';
-		try{
-			const result=await adminRequest('/api/admin/invoice-settings');
-			if(current!==invoiceSettingsGeneration)return;
-			if(!result.issuer||!invoiceFields.every(key=>typeof result.issuer[key]==='string')||
-				typeof result.vatRegistered!=='boolean'||typeof result.vatNumber!=='string')throw new Error('Не удалось прочитать реквизиты фирмы.');
-			for(const key of invoiceFields)invoiceSettingsForm.elements.namedItem(key).value=result.issuer[key];
-			invoiceVat.checked=result.vatRegistered;invoiceVatNumber.value=result.vatNumber;
-			calculateInvoiceVat();
-			get('invoice-settings-status').textContent='';save.disabled=false;
-		}catch(error){if(current===invoiceSettingsGeneration)get('invoice-settings-status').textContent=error.message;}
-	}
-	invoiceSettingsForm.addEventListener('submit',async event=>{
-		event.preventDefault();
-		const current=invoiceSettingsGeneration;
-		const save=invoiceSettingsForm.querySelector('[type="submit"]');save.disabled=true;
-		get('invoice-settings-status').textContent='Сохраняем реквизиты...';
-		const issuer=Object.fromEntries(invoiceFields.map(key=>[key,invoiceSettingsForm.elements.namedItem(key).value.trim()]));
-		issuer.iban=issuer.iban.replace(/\s/g,'').toUpperCase();
-		issuer.swift=issuer.swift.toUpperCase();
-		try{
-			const vatNumber=invoiceVat.checked?invoiceVatNumber.value.trim().toUpperCase():'';
-			await adminRequest('/api/admin/invoice-settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({issuer,vatRegistered:invoiceVat.checked,vatNumber})});
-			if(current!==invoiceSettingsGeneration)return;
-			for(const key of invoiceFields)invoiceSettingsForm.elements.namedItem(key).value=issuer[key];
-			invoiceVatNumber.value=vatNumber;
-			get('invoice-settings-status').textContent='Реквизиты сохранены. Новые заказы и PDF-счета будут с этими данными.';
-		}catch(error){if(current===invoiceSettingsGeneration)get('invoice-settings-status').textContent=error.message;}
-		finally{if(current===invoiceSettingsGeneration)save.disabled=false;}
-	});
-	document.addEventListener('admin-login',()=>{if(!get('invoices-section').hidden)loadInvoiceSettings();});
-	document.addEventListener('admin-logout',()=>{
-		invoiceSettingsGeneration++;invoiceSettingsForm.reset();
-		calculateInvoiceVat();
-		get('invoice-settings-status').textContent='';
-		invoiceSettingsForm.querySelector('[type="submit"]').disabled=true;
-	});
+	const loadInvoiceSettings=()=>window.adminInvoices.load();
 	const pricesForm=get('prices-form');
 	let pricesGeneration=0;
 	const readPrices=()=>Object.fromEntries(window.servicePricing.keys.map(key=>[key,Math.round(Number(pricesForm.elements.namedItem(key).value)*100)]));

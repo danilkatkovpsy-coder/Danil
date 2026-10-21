@@ -47,6 +47,46 @@
 		.order-list { display: grid; gap: 12px; }
 		.order-card { display: grid; gap: 12px; }
 		.order-card h2 { margin: 0; font-size: 18px; }
+		#order-list .order-card { display: block; padding: 0; border-radius: 18px; overflow: hidden; }
+		.voucher-card-summary { position: relative; display: grid; gap: 10px; padding: 22px 52px 22px 24px; cursor: pointer; list-style: none; overflow-wrap: anywhere; }
+		.voucher-card-summary::-webkit-details-marker { display: none; }
+		.voucher-card-summary::after { content: ''; position: absolute; right: 26px; top: 30px; width: 9px; height: 9px; border-right: 2px solid #69645f; border-bottom: 2px solid #69645f; transform: rotate(45deg); }
+		details[open] > .voucher-card-summary::after { transform: rotate(225deg); }
+		.voucher-card-summary:focus-visible { outline: 2px solid #315f4f; outline-offset: -4px; border-radius: 18px; }
+		.voucher-card-name { font-size: 20px; }
+		.voucher-card-email, .voucher-card-reference { color: #69645f; }
+		.voucher-card-badges { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+		.voucher-card-package, .voucher-card-state { padding: 3px 10px; border-radius: 20px; background: #f0eeeb; font-size: 13px; }
+		.voucher-card-state.is-active { background: #dff1e5; color: #237443; }
+		.voucher-card-price { font-size: 19px; }
+		.voucher-card-body { padding: 0 24px 22px; display: grid; gap: 22px; }
+		.voucher-card-block { border-top: 1px solid #e9e4de; padding-top: 22px; display: grid; gap: 12px; min-width: 0; }
+		.voucher-card-block h3 { font-size: 15px; margin: 0 0 2px; }
+		.voucher-card-data { margin: 0; display: grid; gap: 12px; }
+		.voucher-card-data > div, .voucher-usage-row { display: flex; justify-content: space-between; gap: 16px; }
+		.voucher-card-data dt, .voucher-usage-row > span { color: #69645f; font-size: 14px; }
+		.voucher-card-data dd { margin: 0; text-align: right; overflow-wrap: anywhere; min-width: 0; }
+		.voucher-usage-remaining { color: #315f4f; }
+		.voucher-usage-progress { appearance: none; display: block; width: 100%; height: 10px; border: 0; border-radius: 8px; overflow: hidden; background: #efeeeb; }
+		.voucher-usage-progress::-webkit-progress-bar { background: #efeeeb; border-radius: 8px; }
+		.voucher-usage-progress::-webkit-progress-value { background: #487b65; border-radius: 8px; }
+		.voucher-usage-progress::-moz-progress-bar { background: #487b65; border-radius: 8px; }
+		.voucher-card-state.is-archived { background: #f8e3e0; color: #a43f35; }
+		.voucher-usage-progress.is-archived::-webkit-progress-value { background: #b95146; }
+		.voucher-usage-progress.is-archived::-moz-progress-bar { background: #b95146; }
+		.voucher-card-extra summary { cursor: pointer; font-weight: 600; }
+		.voucher-card-extra .order-additional { margin-top: 12px; }
+		.voucher-card-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+		.voucher-card-data .voucher-card-code { padding: 4px 10px; border: 1px solid #c6d8ce; border-radius: 4px; background: #e8f0e9; color: #234b3d; font-family: monospace; font-size: 17px; font-weight: 700; letter-spacing: 1px; user-select: all; }
+		.voucher-card-actions button { min-height: 42px; padding: 8px 14px; font-size: 15px; border-radius: 4px; }
+		.voucher-card-actions .voucher-deactivate-button { margin-left: auto; background: #8a3b33; border-color: #8a3b33; color: #fff; }
+		@media(max-width: 600px) {
+			.voucher-card-summary { padding: 18px 44px 18px 16px; }
+			.voucher-card-summary::after { right: 20px; }
+			.voucher-card-body { padding: 0 16px 18px; }
+			.voucher-card-data > div { flex-wrap: wrap; gap: 3px 12px; }
+			.voucher-card-data dd { text-align: left; }
+		}
 		#clients-section .order-card { min-width: 0; overflow-wrap: anywhere; }
 		#client-dialog input, #client-dialog textarea { min-width: 0; max-width: 100%; }
 		.order-meta { margin: 0; color: #5e544f; }
@@ -62,13 +102,15 @@
 		.gift-voucher-tools[hidden], .gift-voucher-form[hidden] { display: none; }
 		.gift-voucher-toggle { justify-self: start; display: inline-flex; align-items: center; gap: 8px; }
 		.gift-voucher-toggle svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-		.gift-voucher-form { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(180px, 1.2fr) minmax(130px, .8fr) auto; align-items: end; gap: 10px; padding: 14px; border: 1px solid #ded5cb; border-radius: 4px; background: #fffdfa; }
+		.gift-voucher-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); align-items: end; gap: 10px; padding: 14px; border: 1px solid #ded5cb; border-radius: 4px; background: #fffdfa; }
 		.gift-voucher-form select { width: 100%; min-height: 42px; padding: 8px 10px; border: 1px solid #d7cec5; border-radius: 4px; background: #fff; color: #292621; font: inherit; }
-		.order-activate { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 10px; }
+		.order-activate { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: end; gap: 10px; }
 		.order-activated { color: #315f4f; font-weight: 600; }
 		.order-card.is-overdue { border-color: #d9a39d; background: #fff0ef; }
 		.order-overdue { margin: 0; color: #8a3b33; font-size: 13px; font-weight: 700; }
 		.voucher-toolbar, .voucher-editor { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+		.voucher-send-button { flex: 0 0 auto; width: auto; }
+		.voucher-send-button:disabled { cursor: default; }
 		.voucher-editor { padding-top: 2px; }
 		.voucher-editor[hidden] { display: none; }
 		.voucher-history[hidden] { display: none; }
@@ -114,11 +156,40 @@
 		.calendar-form { display: grid; gap: 10px; }
 		.contact-editor-row { display: grid; gap: 10px; padding: 14px; border: 1px solid #ded5cb; border-radius: 6px; min-width: 0; }
 		#reviews-section, #reviews-section .calendar-card, #reviews-section .calendar-form { min-width: 0; }
-		#reviews-section .contact-editor-row { grid-template-columns: minmax(0, 1fr); overflow-wrap: anywhere; }
+		#reviews-section .reviews-layout { padding: 0; border: 0; background: transparent; }
+		#reviews-editor, #reviews-pending { gap: 20px; }
+		#reviews-section .contact-editor-row { grid-template-columns: minmax(0, 1fr); overflow-wrap: anywhere; background: #fffdfa; }
+		#reviews-editor .contact-editor-row[data-locked="true"] { background: #e9e6e1; }
+		#reviews-editor .contact-editor-row[data-locked="true"] :is(input, textarea, select):disabled { background: #e1ddd6; color: #625b53; opacity: 1; cursor: default; }
 		#reviews-section .contact-editor-row > *, #reviews-section label, #reviews-section input, #reviews-section textarea, #reviews-section select { min-width: 0; max-width: 100%; }
 		#reviews-section button { white-space: normal; overflow-wrap: anywhere; }
+		.reviews-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+		#reviews-add { flex: 0 0 auto; min-height: 44px; padding: 10px 18px; font-size: 15px; }
+		.review-delete-button { justify-self: start; width: auto; }
+		.review-row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+		.review-row-actions button { min-height: 44px; padding: 10px 18px; font-size: 15px; }
+		#contacts-section button { justify-self: start; width: auto; min-height: 44px; padding: 10px 18px; font-size: 15px; }
+		#contacts-section .contacts-layout { min-width: 0; padding: 0; border: 0; background: transparent; }
+		#contacts-links { min-width: 0; gap: 20px; }
+		#contacts-links .contact-editor-row { background: #fffdfa; }
+		#contacts-links .contact-editor-row[data-locked="true"] { background: #e9e6e1; }
+		#contacts-links .contact-editor-row[data-locked="true"] :is(input, select):disabled { background: #e1ddd6; color: #625b53; opacity: 1; cursor: default; }
+		@supports (appearance: base-select) {
+			#contacts-links select, #contacts-links select::picker(select) { appearance: base-select; }
+			#contacts-links select::picker(select) {
+				inset: auto; top: anchor(bottom); left: anchor(left); width: anchor-size(width);
+				margin: 4px 0 0; max-height: min(320px, 50dvh); overflow-y: auto;
+				border: 1px solid #d7cec5; border-radius: 4px; background: #fffdfa; color: #292621;
+				position-try-fallbacks: flip-block;
+			}
+			#contacts-links select option { padding: 10px 12px; }
+			#contacts-links select option:checked { background: #dfece2; }
+		}
 		.contact-editor-toggle { display: flex; gap: 10px; align-items: center; }
 		.contact-editor-toggle input { width: 20px; min-height: 20px; height: 20px; accent-color: #2d5647; }
+		#review-create-dialog .contact-editor-row { border: 0; padding: 0; }
+		#review-create-dialog input[readonly] { background: #e1ddd6; color: #625b53; cursor: default; }
+		#review-create-dialog .reviews-header { margin-bottom: 16px; }
 		#invoice-settings-form textarea, #texts-form textarea, #reviews-form textarea { width: 100%; min-height: 84px; padding: 9px 11px; border: 1px solid #d7cec5; border-radius: 4px; font: inherit; color: #292621; resize: vertical; }
 		@media (min-width: 700px) {
 			#invoice-settings-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
@@ -266,11 +337,15 @@
 			.gift-voucher-form { grid-template-columns: 1fr; }
 		}
 	</style>
+	<link rel="stylesheet" href="admin-invoices.css">
 </head>
 <body>
 	<main>
 		<header class="admin-header">
 			<a class="admin-site-link" href="/" aria-label="danilpsy.ee - вернуться на сайт">danilpsy.ee</a>
+			<button id="admin-page-refresh" class="admin-account-toggle admin-notifications-toggle" type="button" aria-label="Обновить страницу" title="Обновить страницу" hidden>
+				<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 7a7 7 0 0 1 11.5-1L20 9M4 15l2.4 3A7 7 0 0 0 17.9 17"/></svg>
+			</button>
 			<button id="admin-notifications-toggle" class="admin-account-toggle admin-notifications-toggle" type="button" aria-label="Уведомления" aria-haspopup="dialog" aria-controls="admin-notifications" hidden>
 				<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
 				<span id="admin-notifications-count" hidden></span>
@@ -320,20 +395,29 @@
 			<button id="section-clients" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span>Клиенты</span></button>
 		</nav>
 		<section id="reviews-section" hidden aria-label="Отзывы">
-			<div class="calendar-card">
+			<div class="calendar-card reviews-layout">
 				<h2>Отзывы</h2>
-				<p>Добавляйте реальные отзывы вручную с согласия автора или публикуйте заявки после проверки. Имя, текст и рейтинг можно исправить. Вместо фото остается первая буква имени. Заявки посетителей не появляются на сайте до одобрения.</p>
+				<p>Добавляйте реальные отзывы вручную с согласия автора или публикуйте заявки после проверки. «Добавить отзыв» открывает отдельное окно: карточка появится в списке только после публикации. Имя, текст и рейтинг можно исправить. Вместо фото остается первая буква имени. Заявки посетителей не появляются на сайте до одобрения.</p>
 				<p>«Опубликовать отзыв» сразу размещает заявку на сайте в конце списка. «Отклонить отзыв» удаляет заявку без публикации.</p>
-				<p>В опубликованных отзывах задайте «Позицию на сайте»: 1 - первый отзыв, 2 - второй. При переносе остальные номера сдвигаются автоматически. Добавление, изменения, порядок и удаление карточек применяются кнопкой «Сохранить и опубликовать отзывы». До 500 отзывов, текст до 5000 символов.</p>
+				<p>У каждого отзыва свои кнопки публикации, сохранения и удаления. «Позиция на сайте»: 1 - первый отзыв, 2 - второй. Позиция применяется при сохранении этого отзыва, остальные номера сдвигаются автоматически. Изменения в других карточках не сохраняются и не теряются. До 500 отзывов, текст до 5000 символов.</p>
+				<p>Сохраненные отзывы заблокированы и выделены серой заливкой. «Изменить» открывает редактирование. «Отменить» сбрасывает несохраненные правки и снова блокирует карточку. «Вернуться к оригиналу» восстанавливает исходные имя, текст и рейтинг в редакторе, не меняя позицию. Чтобы опубликовать восстановленный вариант, сохраните карточку. Для старых отзывов без исходника оригиналом считается версия на момент включения этой функции.</p>
 				<h3>Ожидают проверки</h3>
 				<p id="reviews-pending-status" role="status"></p>
 				<div id="reviews-pending" class="calendar-form"></div>
 				<button id="reviews-pending-more" type="button" hidden>Показать еще</button>
-				<h3>Отзывы для публикации и порядок на сайте</h3>
+				<div class="reviews-header">
+					<h3>Отзывы для публикации и порядок на сайте</h3>
+					<button id="reviews-add" type="button" disabled>Добавить отзыв</button>
+				</div>
 				<form id="reviews-form" class="calendar-form">
 					<div id="reviews-editor" class="calendar-form"></div>
-					<button id="reviews-add" type="button" disabled>Добавить отзыв</button>
-					<button type="submit" disabled>Сохранить и опубликовать отзывы</button>
+					<dialog id="review-create-dialog" class="calendar-details-dialog" aria-labelledby="review-create-title">
+						<div class="reviews-header">
+							<h3 id="review-create-title">Добавить отзыв вручную</h3>
+							<button id="review-create-close" type="button">Закрыть</button>
+						</div>
+						<div id="review-create-editor" class="calendar-form"></div>
+					</dialog>
 				</form>
 				<p id="reviews-status" role="status"></p>
 			</div>
@@ -372,7 +456,7 @@
 					</details>
 					<details id="client-visits-toggle">
 					<summary>История записей</summary>
-					<p>Предстоящие, прошедшие и отмененные платные записи. «Прошедшая» не означает подтвержденное посещение. Время Таллина.</p>
+					<p>Предстоящие, прошедшие и отмененные платные записи. «Прошедшая» не означает подтвержденное посещение.</p>
 					<div id="client-visits" class="order-list"></div>
 					<button id="client-visits-more" type="button" hidden>Еще записи</button>
 					</details>
@@ -381,19 +465,18 @@
 		</section>
 		<section id="contacts-section" hidden aria-label="Контакты">
 			<form id="contacts-form" class="calendar-form">
-				<div class="calendar-card">
+				<div class="calendar-card contacts-layout">
 					<h2>КОНТАКТЫ: Вопросы и запись</h2>
-					<p>Выберите соцсеть и укажите полный адрес. Переключатель временно скрывает кнопку, сохраняя ее ссылку. Можно добавить до 12 кнопок. Для другой соцсети выберите «Сайт / другая ссылка».</p>
+					<p>«Изменить» открывает поля контакта. «Отмена» сбрасывает несохраненные правки и снова блокирует карточку. Каждый контакт сохраняется и удаляется отдельно. Позиция и переключатель видимости применяются при сохранении этой карточки. Можно добавить до 12 кнопок. Для другой соцсети выберите «Сайт / другая ссылка».</p>
 					<div id="contacts-links" class="calendar-form"></div>
 					<button id="contacts-add" type="button">Добавить кнопку</button>
-					<p>Для TikTok добавьте кнопку, выберите тип TikTok и укажите ссылку на профиль. Он появится между WhatsApp и почтой. Снимите «Показывать кнопку на сайте», чтобы скрыть любую иконку без пустого места в ряду.</p>
-					<button type="submit" disabled>Сохранить изменения</button>
 				</div>
 				<p id="contacts-status" role="status"></p>
 			</form>
 		</section>
 		<section id="texts-section" hidden aria-label="Текста">
-			<form id="texts-form" class="calendar-form">
+			<p>Каждый блок сохраняется отдельно. «Предпросмотр» показывает сайт с черновиком выбранного блока без сохранения. Нажмите «Назад», чтобы вернуться к редактированию. При выходе из раздела или обновлении страницы несохраненные изменения сбрасываются.</p>
+			<form id="texts-form" class="calendar-form" autocomplete="off">
 				<details class="calendar-card">
 					<summary>Главная страница</summary>
 					<p>Каждая часть заголовка и каждое преимущество редактируются отдельно. В выделенной части заголовка и преимуществах Enter задает перенос строки. Курсив, иконки и оформление сохраняются.</p>
@@ -451,11 +534,16 @@
 						<div id="texts-footer-fields" class="calendar-form"></div>
 					</details>
 				</details>
-				<button type="submit" disabled>Сохранить тексты</button>
 				<p id="texts-status" role="status"></p>
 			</form>
 		</section>
 		<section id="invoices-section" hidden aria-label="Счета">
+			<div class="invoice-tabs" role="tablist" aria-label="Настройки счета">
+				<button id="invoice-tab-company" type="button" role="tab" aria-controls="invoice-panel-company" aria-selected="true">Данные фирмы</button>
+				<button id="invoice-tab-design" type="button" role="tab" aria-controls="invoice-panel-design" aria-selected="false" tabindex="-1">Оформление счета</button>
+				<button id="invoice-tab-email" type="button" role="tab" aria-controls="invoice-panel-email" aria-selected="false" tabindex="-1">Автоматическая отправка писем</button>
+			</div>
+			<div id="invoice-panel-company" role="tabpanel" aria-labelledby="invoice-tab-company" class="invoice-workbench">
 			<div class="calendar-card">
 				<h2>Данные фирмы</h2>
 				<p>Реквизиты и НДС в PDF-счетах для новых заказов. Старые заказы и счета сохраняют прежние данные. Цены на сайте всегда конечные для клиента, налог не добавляется сверху.</p>
@@ -480,16 +568,80 @@
 					<button type="submit" disabled>Сохранить реквизиты</button>
 				</form>
 				<p id="invoice-settings-status" role="status"></p>
-				<details class="calendar-card">
-					<summary>Логотип в PDF-счетах</summary>
-					<p>Отдельно от логотипа сайта. Загрузите PNG, JPEG или WebP до 5 МБ. Изображение будет уменьшено до 512 x 512 пикселей с сохранением пропорций. Изменения применяются только к новым заказам. Старые заказы сохраняют свой логотип, даже если PDF создается позже.</p>
+			</div>
+			<div class="calendar-card invoice-preview">
+				<h3>Предпросмотр счета</h3>
+				<p>Образец PDF обновляется при вводе. Данные применяются только после сохранения. Это не настоящий заказ.</p>
+				<p id="invoice-company-preview-status" role="status"></p>
+				<div id="invoice-company-preview" class="invoice-pdf-pages" role="img" aria-label="Предпросмотр PDF с реквизитами фирмы"></div>
+			</div>
+			</div>
+			<div id="invoice-panel-design" role="tabpanel" aria-labelledby="invoice-tab-design" class="invoice-workbench" hidden>
+				<div class="calendar-card calendar-form">
+					<h2>Оформление счета</h2>
+					<p>Заливки и разделительные линии меняются вместе. Настройки применяются только к новым заказам после нажатия «Применить».</p>
+					<label>Цветовая палитра<select id="invoice-theme" disabled>
+						<option value="beige">Бежевый (исходный)</option>
+						<option value="green">Светло-зеленый</option>
+						<option value="blue">Светло-голубой</option>
+						<option value="purple">Светло-фиолетовый</option>
+					</select></label>
+					<h3>Логотип в PDF-счетах</h3>
+					<p>Отдельно от логотипа сайта. PNG, JPEG или WebP до 5 МБ. Изображение уменьшается до 512 x 512 пикселей с сохранением пропорций. Выбор, удаление и возврат логотипа сначала меняют только предпросмотр.</p>
 					<img id="invoice-logo-preview" src="images/logo.png" alt="Предпросмотр логотипа PDF-счета" style="display:block;max-width:200px;max-height:140px;object-fit:contain">
 					<label>Новый логотип для PDF<input id="invoice-logo-file" type="file" accept="image/png,image/jpeg,image/webp" disabled></label>
-					<button id="invoice-logo-save" type="button" disabled>Сохранить логотип</button>
 					<button id="invoice-logo-remove" type="button" disabled>Удалить логотип из счетов</button>
 					<button id="invoice-logo-reset" type="button" disabled>Вернуть исходный логотип</button>
 					<p id="invoice-logo-status" role="status"></p>
-				</details>
+					<button id="invoice-design-save" type="button" disabled>Применить</button>
+					<p id="invoice-design-status" role="status"></p>
+				</div>
+				<div class="calendar-card invoice-preview">
+					<h3>Предпросмотр оформления</h3>
+					<p>Настоящий PDF с сохраненными реквизитами и выбранным оформлением. Старые заказы и счета не меняются.</p>
+					<p id="invoice-design-preview-status" role="status"></p>
+					<div id="invoice-design-preview" class="invoice-pdf-pages" role="img" aria-label="Предпросмотр оформления PDF-счета"></div>
+				</div>
+			</div>
+			<div id="invoice-panel-email" role="tabpanel" aria-labelledby="invoice-tab-email" class="invoice-workbench" hidden>
+				<form id="invoice-email-form" class="calendar-card calendar-form">
+					<h2>Письмо со счетом</h2>
+					<p>Общее письмо для пакетов на 5 и 10 консультаций. PDF прикрепляется автоматически. Изменения применяются после сохранения к новым отправкам, уже подготовленные письма и повторы сохраняют прежний текст.</p>
+					<label>Шаблон письма<select id="invoice-email-source" disabled>
+						<option value="original">Исходный шаблон (сохраненная копия)</option>
+						<option value="custom">Мое письмо (редактируемый вариант)</option>
+					</select></label>
+					<p id="invoice-email-source-help">Исходный шаблон защищен от изменений. Для редактирования выберите «Мое письмо».</p>
+					<button id="invoice-email-restore" type="button" disabled>Восстановить исходное письмо в моем варианте</button>
+					<label>Язык отправки<select id="invoice-email-language" disabled>
+						<option value="both">Эстонский и русский</option>
+						<option value="estonian">Только эстонский</option>
+						<option value="russian">Только русский</option>
+					</select></label>
+					<p>Для одного языка разделительная черта не добавляется. Подпись общая для всех языков, ее можно изменить в «Моем письме». Выбор языка и шаблона применяется кнопкой «Сохранить письмо».</p>
+					<label>Тема письма<input id="invoice-email-subject" maxlength="200" required disabled></label>
+					<p>Подстановки: <code>{{sessions}}</code> - число консультаций, <code>{{invoice_number}}</code> - номер счета, <code>{{name}}</code> - имя клиента, <code>{{email}}</code> - почта для ответа. Не меняйте текст внутри фигурных скобок.</p>
+					<div id="invoice-email-toolbar" class="invoice-email-toolbar" role="toolbar" aria-label="Форматирование письма">
+						<button type="button" data-format="bold" aria-label="Жирный" title="Жирный (Ctrl/Cmd+B)" aria-pressed="false" disabled><strong>B</strong></button>
+						<button type="button" data-format="italic" aria-label="Курсив" title="Курсив (Ctrl/Cmd+I)" aria-pressed="false" disabled><em>I</em></button>
+						<button type="button" data-format="underline" aria-label="Подчеркивание" title="Подчеркивание (Ctrl/Cmd+U)" aria-pressed="false" disabled><u>U</u></button>
+					</div>
+					<p>Выделите текст и нажмите B, I или U. Без выделения кнопка меняет стиль следующего вводимого текста. Повторное нажатие отключает стиль.</p>
+					<label id="invoice-email-estonian-label">Эстонский текст</label>
+					<div id="invoice-email-estonian" class="invoice-email-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-labelledby="invoice-email-estonian-label"></div>
+					<label id="invoice-email-russian-label">Русский текст</label>
+					<div id="invoice-email-russian" class="invoice-email-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-labelledby="invoice-email-russian-label"></div>
+					<label id="invoice-email-signature-label">Подпись и контакты</label>
+					<div id="invoice-email-signature" class="invoice-email-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-labelledby="invoice-email-signature-label"></div>
+					<button type="submit" disabled>Сохранить письмо</button>
+					<p id="invoice-email-status" role="status"></p>
+				</form>
+				<div class="calendar-card">
+					<h3>Предпросмотр письма</h3>
+					<p>Пример для пакета на 5 консультаций. Письмо не отправляется.</p>
+					<strong id="invoice-email-preview-subject"></strong>
+					<div id="invoice-email-preview" class="invoice-email-preview"></div>
+				</div>
 			</div>
 		</section>
 		<section id="prices-section" hidden aria-label="Цены">
@@ -513,13 +665,41 @@
 			<button class="admin-tab" id="tab-applications" type="button" role="tab" aria-controls="order-list" aria-selected="true" data-tab="applications">Заявки <span class="admin-tab-count">0</span></button>
 			<button class="admin-tab" id="tab-active" type="button" role="tab" aria-controls="order-list" aria-selected="false" tabindex="-1" data-tab="active">Активные ваучеры <span class="admin-tab-count">0</span></button>
 			<button class="admin-tab" id="tab-archive" type="button" role="tab" aria-controls="order-list" aria-selected="false" tabindex="-1" data-tab="archive">Архив <span class="admin-tab-count">0</span></button>
+			<button class="admin-tab" id="tab-email" type="button" role="tab" aria-controls="voucher-email-panel" aria-selected="false" tabindex="-1" data-tab="email">Автоматическое письмо</button>
 		</nav>
+		<div id="voucher-email-panel" class="invoice-workbench" role="tabpanel" aria-labelledby="tab-email" hidden>
+			<form id="voucher-email-form" class="calendar-card calendar-form">
+				<h2>Письмо с ваучером</h2>
+				<p>Одно письмо на русском. Активация не отправляет письмо. После проверки оплаты и активации нажмите «Отправить ваучер» в карточке активного ваучера.</p>
+				<label>Шаблон<select id="voucher-email-source" disabled><option value="original">Исходный шаблон</option><option value="custom">Мое письмо</option></select></label>
+				<button id="voucher-email-restore" type="button" disabled>Восстановить исходное письмо</button>
+				<p>Исходный шаблон защищен от изменений. Для редактирования выберите «Мое письмо». Подстановки: {{sessions}} - число встреч, {{name}} - имя клиента, {{email}} - почта для ответа.</p>
+				<label>Тема<input id="voucher-email-subject" maxlength="200" required disabled></label>
+				<div id="voucher-email-toolbar" class="invoice-email-toolbar" role="toolbar" aria-label="Форматирование письма с ваучером">
+					<button type="button" data-format="bold" aria-label="Жирный" disabled><strong>B</strong></button>
+					<button type="button" data-format="italic" aria-label="Курсив" disabled><em>I</em></button>
+					<button type="button" data-format="underline" aria-label="Подчеркивание" disabled><u>U</u></button>
+				</div>
+				<label id="voucher-email-body-label">Благодарность и вступление</label>
+				<div id="voucher-email-body" class="invoice-email-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-labelledby="voucher-email-body-label"></div>
+				<p>Здесь автоматически добавляется цветной блок с кодом ваучера и кнопкой перехода на сайт для копирования.</p>
+				<label id="voucher-email-instructions-label">Инструкция</label>
+				<div id="voucher-email-instructions" class="invoice-email-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-labelledby="voucher-email-instructions-label"></div>
+				<label id="voucher-email-signature-label">Подпись</label>
+				<div id="voucher-email-signature" class="invoice-email-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-labelledby="voucher-email-signature-label"></div>
+				<button type="submit" disabled>Сохранить письмо</button>
+				<p id="voucher-email-status" role="status"></p>
+			</form>
+			<div class="calendar-card"><h3>Предпросмотр</h3><p>Пример для 5 консультаций. Письмо не отправляется.</p><strong id="voucher-email-preview-subject"></strong><div id="voucher-email-preview" class="invoice-email-preview"></div></div>
+		</div>
 		<div id="gift-voucher-tools" class="gift-voucher-tools" hidden>
 			<button id="gift-voucher-toggle" class="gift-voucher-toggle" type="button" aria-expanded="false" aria-controls="gift-voucher-form"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 21V7"/><path d="M12 7H7.5a2.5 2.5 0 1 1 2.4-3.2C10.5 5 12 7 12 7Z"/><path d="M12 7h4.5a2.5 2.5 0 1 0-2.4-3.2C13.5 5 12 7 12 7Z"/></svg>Создать подарочный ваучер</button>
 			<form id="gift-voucher-form" class="gift-voucher-form" hidden>
 				<label for="gift-voucher-name">Имя получателя<input id="gift-voucher-name" name="name" type="text" maxlength="120" autocomplete="name" required></label>
 				<label for="gift-voucher-email">Email получателя<input id="gift-voucher-email" name="email" type="email" maxlength="254" autocomplete="email" required></label>
 				<label for="gift-voucher-package">Пакет<select id="gift-voucher-package" name="packageName" required><option value="five">5 консультаций · Подарок</option><option value="ten">10 консультаций · Подарок</option></select></label>
+				<label for="gift-voucher-code">Код ваучера<input id="gift-voucher-code" name="code" type="text" minlength="13" maxlength="13" pattern="GIFT-[0-9][A-Z0-9]{7}" autocomplete="off" spellcheck="false" title="GIFT- и 8 латинских заглавных букв и цифр. Для 5 встреч первый символ после дефиса - цифра, для 10 - буква." required></label>
+				<button id="gift-voucher-code-generate" type="button">Новый код</button>
 				<button type="submit">Создать</button>
 			</form>
 		</div>
@@ -543,7 +723,7 @@
 					<span><i aria-hidden="true"></i>Закрыто</span>
 					<span>Цветные карточки - записи</span>
 				</div>
-				<div id="calendar-journal" class="calendar-journal-scroll" tabindex="0" aria-label="Расписание недели по часам, время Таллина"></div>
+				<div id="calendar-journal" class="calendar-journal-scroll" tabindex="0" aria-label="Расписание недели по часам"></div>
 			</section>
 			</div>
 			<section class="calendar-card">
@@ -553,7 +733,7 @@
 					<button id="calendar-day-next" type="button" aria-label="Следующий день">›</button>
 				</div>
 				<form id="calendar-day-form">
-					<p>Время начала консультаций · Таллин</p>
+					<p>Время начала консультаций</p>
 					<div class="calendar-time-chips">
 						<div id="calendar-day-times" class="calendar-time-chips" role="group" aria-label="Выбранные часы"></div>
 						<details id="calendar-time-picker" class="calendar-time-picker">
@@ -645,11 +825,36 @@
 			</details>
 			<details id="calendar-history" class="calendar-card">
 				<summary>История записей</summary>
-				<p>Все записи, переносы и отмены. Сначала последние изменения, время Таллина.</p>
+				<p>Все записи, переносы и отмены. Сначала последние изменения.</p>
 				<div class="calendar-actions"><button id="calendar-history-refresh" type="button">Обновить историю</button></div>
 				<p id="calendar-history-status" role="status"></p>
 				<div id="calendar-history-list" class="order-list"></div>
 				<button id="calendar-history-more" type="button" hidden>Показать еще</button>
+			</details>
+			<details id="booking-email-panel" class="calendar-card">
+				<summary>Автоматическое письмо</summary>
+				<p>Письмо клиенту при новой записи на сеанс, на одном языке, без перевода. Изменения действуют после сохранения для новых отправок. Уже подготовленные письма, уведомления о переносе и отмене и служебные письма не меняются.</p>
+				<div class="invoice-workbench">
+					<form id="booking-email-form" class="calendar-form">
+						<label>Шаблон<select id="booking-email-source" disabled><option value="original">Исходный шаблон</option><option value="custom">Мое письмо</option></select></label>
+						<button id="booking-email-restore" type="button" disabled>Восстановить исходное письмо</button>
+						<p>Исходный шаблон защищен от изменений. Для редактирования выберите «Мое письмо».</p>
+						<label>Тема<input id="booking-email-subject" maxlength="200" required disabled></label>
+						<p>Обязательные подстановки в тексте: <code>{{start}}</code> - начало, <code>{{end}}</code> - окончание, <code>{{platform}}</code> - платформа, <code>{{connection_notice}}</code> - инструкция подключения. Дополнительно: <code>{{name}}</code> - имя клиента, <code>{{email}}</code> - почта для связи. Кнопка добавления в календарь сохраняется автоматически.</p>
+						<div id="booking-email-toolbar" class="invoice-email-toolbar" role="toolbar" aria-label="Форматирование письма о записи">
+							<button type="button" data-format="bold" aria-label="Жирный" aria-pressed="false" disabled><strong>B</strong></button>
+							<button type="button" data-format="italic" aria-label="Курсив" aria-pressed="false" disabled><em>I</em></button>
+							<button type="button" data-format="underline" aria-label="Подчеркивание" aria-pressed="false" disabled><u>U</u></button>
+						</div>
+						<label id="booking-email-body-label">Текст письма</label>
+						<div id="booking-email-body" class="invoice-email-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-labelledby="booking-email-body-label"></div>
+						<label id="booking-email-signature-label">Подпись</label>
+						<div id="booking-email-signature" class="invoice-email-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-labelledby="booking-email-signature-label"></div>
+						<button type="submit" disabled>Сохранить письмо</button>
+						<p id="booking-email-status" role="status"></p>
+					</form>
+					<div><h3>Предпросмотр</h3><p>Пример записи через Google Meet. Письмо не отправляется. В настоящем письме используются данные выбранного сеанса и способа связи.</p><p id="booking-email-preview-status" role="status"></p><strong id="booking-email-preview-subject"></strong><div id="booking-email-preview" class="invoice-email-preview"></div></div>
+				</div>
 			</details>
 		</section>
 		</div>
@@ -699,12 +904,17 @@
 		const giftVoucherToggle = document.getElementById('gift-voucher-toggle');
 		const giftVoucherForm = document.getElementById('gift-voucher-form');
 		let currentOrders = [];
-		let activeTab = 'applications';
+		window.adminNavigation={
+			read(key,allowed,fallback){const value=new URL(window.location.href).searchParams.get(key);return allowed.includes(value)?value:fallback;},
+			write(key,value){const url=new URL(window.location.href);url.searchParams.set(key,value);window.history.replaceState(null,'',url);}
+		};
+		let activeTab = window.adminNavigation.read('vouchers',['applications','active','archive','email'],'applications');
 		let adminAuthenticated = false;
 		let adminMutations = 0;
 		let adminMutationVersion = 0;
 		let adminSessionVersion = 0;
 		const accountToggle = document.getElementById('admin-account-toggle');
+		document.getElementById('admin-page-refresh').addEventListener('click', () => window.location.reload());
 		const accountMenu = document.getElementById('admin-account-menu');
 		const closeAccountMenu = () => {
 			accountMenu.hidden = true;
@@ -723,9 +933,11 @@
 			document.getElementById('admin-account-refresh').hidden = !authenticated;
 			document.getElementById('admin-account-logout').hidden = !authenticated;
 			document.getElementById('admin-notifications-toggle').hidden = !authenticated;
+			document.getElementById('admin-page-refresh').hidden = !authenticated;
 			closeAccountMenu();
 		};
 		const logoutAdmin = () => {
+			expandedVoucherCards.clear();
 			adminSessionVersion++;
 			storedAdminKey('remove');
 			adminRemember.checked = false;
@@ -768,7 +980,7 @@
 		const requestAgeLimit = 7 * 24 * 60 * 60 * 1000;
 		const adminMessage = value => value.replace(/\u0451/g,'е').replace(/\u0401/g,'Е').replace(/[\u2014\u2013]/g,'-');
 		const adminRequest = async (url, options = {}) => {
-			const mutation=Boolean(options.method && options.method !== 'GET');
+			const mutation=Boolean(options.method && options.method !== 'GET' && !['/invoice-preview','/booking-email/preview'].some(path=>url.split('?')[0].endsWith(path)));
 			if(mutation){adminMutations++;adminMutationVersion++;}
 			try {
 			const sessionVersion = adminSessionVersion;
@@ -789,7 +1001,7 @@
 				accountToggle.focus();
 				document.dispatchEvent(new Event('admin-login'));
 			}
-			if (options.method && options.method !== 'GET') document.dispatchEvent(new Event('admin-data-changed'));
+			if (mutation) document.dispatchEvent(new Event('admin-data-changed'));
 			return data;
 			} finally {
 				if(mutation)adminMutations--;
@@ -803,6 +1015,13 @@
 		};
 		const downloadInvoice = async (order) => {
 			const sessionVersion = adminSessionVersion;
+			if (!order.invoiceGenerated) {
+				const prepared = await adminRequest(`/api/admin/package-orders/${encodeURIComponent(order.id)}/invoice/prepare`, { method: 'POST' });
+				if (prepared.ok !== true || prepared.invoiceGenerated !== true || typeof prepared.invoiceNumber !== 'string') throw new Error('Сервер не подтвердил создание PDF.');
+				if (sessionVersion !== adminSessionVersion) throw new Error('Сеанс завершен. Войдите снова.');
+				order.invoiceNumber = prepared.invoiceNumber;
+				order.invoiceGenerated = true;
+			}
 			const response = await window.siteFetch(`/api/admin/package-orders/${encodeURIComponent(order.id)}/invoice`, { headers: { 'x-admin-key': adminKey.value } });
 			if (sessionVersion !== adminSessionVersion) throw new Error('Сеанс завершен. Войдите снова.');
 			if (response.status === 401 || response.status === 403) logoutAdmin();
@@ -816,7 +1035,10 @@
 			const link = document.createElement('a');
 			link.href = url;
 			link.download = `Arve_${String(order.invoiceNumber || order.orderNumber).replace(/[^0-9/]/g, '').replace('/', '-')}.pdf`;
+			link.hidden = true;
+			document.body.append(link);
 			link.click();
+			link.remove();
 			setTimeout(() => URL.revokeObjectURL(url), 1000);
 		};
 		const runVoucherAction = async (button, order, endpoint, options, confirmation, successMessage) => {
@@ -826,6 +1048,8 @@
 			adminStatus.textContent = 'Сохраняем изменения ваучера...';
 			try {
 				await adminRequest(endpoint, options);
+				if (endpoint.endsWith('/deactivate')) activeTab = 'archive';
+				if (endpoint.endsWith('/reactivate')) activeTab = 'active';
 				await loadOrders(successMessage);
 			} catch (error) {
 				adminStatus.textContent = error.message;
@@ -848,7 +1072,70 @@
 			));
 			return button;
 		};
+		const expandedVoucherCards = new Set();
+		const decorateVoucherCard = (card, order) => {
+			const archived=['inactive','exhausted'].includes(order.voucherStatus);
+			const details=document.createElement('details'),summary=document.createElement('summary');
+			details.open=expandedVoucherCards.has(order.id);
+			details.addEventListener('toggle',()=>{
+				if(details.open)expandedVoucherCards.add(order.id);else expandedVoucherCards.delete(order.id);
+			});
+			summary.className='voucher-card-summary';
+			const text=(tag,className,value)=>{const node=document.createElement(tag);node.className=className;node.textContent=value;return node;};
+			const sessions=order.packageName==='ten'?10:5;
+			const states={active:'Ваучер активен',inactive:'Ваучер деактивирован',exhausted:'Ваучер использован'};
+			const badges=text('span','voucher-card-badges','');
+			badges.append(text('span','voucher-card-package',`${sessions} консультаций`),
+				text('strong','voucher-card-price',order.price),
+				text('span',`voucher-card-state${order.voucherStatus==='active'?' is-active':archived?' is-archived':''}`,states[order.voucherStatus]||'Ожидает активации'));
+			summary.append(text('strong','voucher-card-name',order.name),text('span','voucher-card-email',order.email),badges,
+				text('span','voucher-card-reference',`Заявка ${order.orderNumber||order.id} · ${formatAdminDateTime(order.createdAt)}`));
+			const body=text('div','voucher-card-body','');
+			const block=title=>{const section=text('section','voucher-card-block','');section.append(text('h3','',title));body.append(section);return section;};
+			if(order.voucherCode){
+				const usage=block('Использование консультаций'),total=order.voucherTotalSessions,remaining=order.voucherRemainingSessions;
+				const used=total-remaining;
+				const row=text('div','voucher-usage-row','');
+				row.append(text('span','','Использовано'),text('strong','',`${used} из ${total}`));
+				const progress=document.createElement('progress');progress.className=`voucher-usage-progress${archived?' is-archived':''}`;
+				progress.max=total;progress.value=used;progress.setAttribute('aria-label',`Использовано ${used} из ${total} консультаций`);
+				const balance=text('div','voucher-usage-row','');
+				balance.append(text('span','','Осталось'),text('strong','voucher-usage-remaining',`${remaining} консультаций`));
+				usage.append(row,progress,balance);
+			}
+			const data=block(order.status==='pending'?'Данные заявки':'Данные заказа'),list=text('dl','voucher-card-data','');
+			const field=(label,value,className='')=>{const row=document.createElement('div');row.append(text('dt','',label),text('dd',className,value));list.append(row);};
+			field('Номер заявки',order.orderNumber||order.id);
+			field('Дата заявки',formatAdminDateTime(order.createdAt));
+			if(order.source==='gift')field('Тип ваучера','Подарочный');
+			if(order.voucherCode){
+				field('Код ваучера',order.voucherCode,'voucher-card-code');
+				field('Дата активации',formatAdminDateTime(order.voucherActivatedAt||order.activatedAt));
+				field('Отправка ваучера',order.voucherEmailSentAt?formatAdminDateTime(order.voucherEmailSentAt):'Еще не отправлен');
+			}
+			data.append(list);
+			const additional=card.querySelector('.order-additional');
+			if(additional){const extra=text('details','voucher-card-block voucher-card-extra','');extra.append(text('summary','','Дополнительная информация'),additional);body.append(extra);}
+			const documents=block('Документы и действия'),actions=text('div','voucher-card-actions','');
+			const invoiceStatus=card.querySelector('.order-invoice');if(invoiceStatus)documents.append(invoiceStatus);
+			for(const selector of ['.order-invoice-actions button','.voucher-history-toggle','.voucher-toolbar button']){
+				for(const button of card.querySelectorAll(selector))actions.append(button);
+			}
+			documents.append(actions);
+			for(const selector of ['.voucher-history','.voucher-editor','.order-overdue']){
+				const node=card.querySelector(selector);if(node)documents.append(node);
+			}
+			const activation=card.querySelector('.order-activate');
+			if(activation)block('Активация ваучера после оплаты').append(activation);
+			if(!order.voucherCode&&order.status!=='pending'){
+				const missing=card.querySelector('.order-activated');if(missing)documents.append(missing);
+			}
+			const deactivate=card.querySelector('.voucher-deactivate-button');
+			if(deactivate)actions.append(deactivate);
+			card.replaceChildren(details);details.append(summary,body);
+		};
 		const renderOrders = (orders) => {
+			window.adminNavigation.write('vouchers',activeTab);
 			delete orderList.dataset.liveDirty;
 			currentOrders = orders;
 			const tabOrders = {
@@ -857,7 +1144,8 @@
 				archive: orders.filter((order) => order.voucherCode && ['exhausted', 'inactive'].includes(order.voucherStatus)),
 			};
 			adminTabs.forEach((tab) => {
-				tab.querySelector('.admin-tab-count').textContent = tabOrders[tab.dataset.tab].length;
+				const count=tab.querySelector('.admin-tab-count');
+				if(count)count.textContent = tabOrders[tab.dataset.tab].length;
 			});
 			adminTabs.forEach((tab) => {
 				const selected = tab.dataset.tab === activeTab;
@@ -865,6 +1153,9 @@
 				tab.tabIndex = selected ? 0 : -1;
 			});
 			giftVoucherTools.hidden = activeTab !== 'active';
+			orderList.hidden=activeTab==='email';
+			document.getElementById('voucher-email-panel').hidden=activeTab!=='email';
+			if(activeTab==='email'){window.voucherEmail.load();return;}
 			orderList.setAttribute('aria-labelledby', `tab-${activeTab}`);
 			orderList.replaceChildren();
 			const visibleOrders = tabOrders[activeTab];
@@ -918,22 +1209,23 @@
 				const downloadButton = document.createElement('button');
 				downloadButton.type = 'button';
 				downloadButton.textContent = 'Скачать PDF';
-				downloadButton.disabled = !order.invoiceGenerated;
 				downloadButton.addEventListener('click', async () => {
 					downloadButton.disabled = true;
+					adminStatus.classList.remove('is-error');
+					adminStatus.textContent = 'Подготавливаем PDF счета...';
 					try {
 						await downloadInvoice(order);
-						adminStatus.textContent = `Счет ${order.invoiceNumber} скачан.`;
+						await loadOrders(`Счет ${order.invoiceNumber} подготовлен для скачивания.`);
 					} catch (error) {
 						adminStatus.textContent = error.message;
 						adminStatus.classList.add('is-error');
 					} finally {
-						downloadButton.disabled = !order.invoiceGenerated;
+						downloadButton.disabled = false;
 					}
 				});
 				const sendButton = document.createElement('button');
 				sendButton.type = 'button';
-				sendButton.textContent = order.invoiceEmailSent ? 'Отправить повторно' : 'Сформировать и отправить';
+				sendButton.textContent = 'Отправить счет';
 				let deliveryId;
 				sendButton.addEventListener('click', async () => {
 					sendButton.disabled = true;
@@ -969,6 +1261,12 @@
 					additional.textContent = order.additionalInfo;
 					card.append(additional);
 				}
+				if(order.voucherEmailSentAt||order.voucherCode&&order.source!=='gift'){
+					const delivery=document.createElement('p');
+					delivery.className='order-meta';
+					delivery.textContent=order.voucherEmailSentAt?`Дата отправки ваучера: ${formatAdminDateTime(order.voucherEmailSentAt)}`:'Ваучер еще не отправлен.';
+					card.append(delivery);
+				}
 				if (order.status === 'pending') {
 					const activation = document.createElement('form');
 					activation.className = 'order-activate';
@@ -981,11 +1279,19 @@
 					codeInput.maxLength = 32;
 					codeInput.autocomplete = 'off';
 					codeInput.required = true;
+					try{codeInput.value=window.voucherEmail.generateCode(order.packageName);}
+					catch(error){adminStatus.textContent=`Не удалось сгенерировать код: ${error.message}. Введите его вручную.`;adminStatus.classList.add('is-error');}
 					codeLabel.append(codeInput);
+					const generateButton=document.createElement('button');
+					generateButton.type='button';generateButton.textContent='Сгенерировать';
+					generateButton.addEventListener('click',()=>{
+						try{codeInput.value=window.voucherEmail.generateCode(order.packageName);orderList.dataset.liveDirty='true';}
+						catch(error){adminStatus.textContent=error.message;adminStatus.classList.add('is-error');}
+					});
 					const activateButton = document.createElement('button');
 					activateButton.type = 'submit';
 					activateButton.textContent = 'Активировать';
-					activation.append(codeLabel, activateButton);
+					activation.append(codeLabel, generateButton, activateButton);
 					activation.addEventListener('submit', async (event) => {
 						event.preventDefault();
 						if (!window.confirm(`Активировать ваучер ${codeInput.value.trim().toUpperCase()} для ${order.name}? После активации клиент сможет записываться на консультации.`)) return;
@@ -994,7 +1300,8 @@
 						adminStatus.textContent = 'Активируем ваучер...';
 						try {
 							const result = await adminRequest('/api/admin/vouchers/activate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id, code: codeInput.value }) });
-							await loadOrders(`Ваучер ${result.voucher.code} активирован для ${result.voucher.name}. Осталось сессий: ${result.voucher.remainingSessions}. Отправьте код покупателю.`);
+							activeTab='active';
+							await loadOrders(`Ваучер ${result.voucher.code} активирован для ${result.voucher.name}. Осталось сессий: ${result.voucher.remainingSessions}. Нажмите «Отправить ваучер», чтобы отправить письмо клиенту.`);
 						} catch (error) {
 							adminStatus.textContent = error.message;
 							adminStatus.classList.add('is-error');
@@ -1041,6 +1348,26 @@
 					activationDate.className = 'order-meta';
 					activationDate.textContent = `Дата активации: ${formatAdminDateTime(order.voucherActivatedAt || order.activatedAt)}`;
 					card.append(activationDate);
+					let voucherSendButton=null;
+					if(order.voucherStatus==='active'&&order.source!=='gift'){
+						const send=document.createElement('button');
+						send.className='voucher-send-button';
+						send.type='button';send.textContent='Отправить ваучер';
+						let voucherDeliveryId;
+						send.addEventListener('click',async()=>{
+							if(!confirm(`${order.voucherEmailSentAt?'Повторно отправить':'Отправить'} ваучер ${order.voucherCode} на ${order.email}?`))return;
+							if(order.voucherEmailSentAt)voucherDeliveryId ||= crypto.randomUUID();
+							send.disabled=true;adminStatus.classList.remove('is-error');
+							try{
+								const suffix=voucherDeliveryId?`?deliveryId=${voucherDeliveryId}`:'';
+								const result=await adminRequest(`/api/admin/vouchers/${encodeURIComponent(order.voucherCode)}/send${suffix}`,
+									{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+								if(result.ok!==true)throw new Error('Сервер не подтвердил отправку.');
+								await loadOrders(result.emailSentNow?'Письмо с ваучером отправлено клиенту.':'Письмо с ваучером уже было отправлено.');
+							}catch(error){adminStatus.textContent=error.message;adminStatus.classList.add('is-error');send.disabled=false;}
+						});
+						voucherSendButton=send;
+					}
 					const historyButton = document.createElement('button');
 					historyButton.type = 'button';
 					historyButton.className = 'voucher-history-toggle';
@@ -1094,12 +1421,18 @@
 							editButton.setAttribute('aria-expanded', String(!voucherEditor.hidden));
 						});
 						voucherToolbar.append(editButton);
+						if(voucherSendButton)voucherToolbar.append(voucherSendButton);
+						const deactivateButton=makeVoucherActionButton(order, 'Деактивировать', '/deactivate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }, `Деактивировать ваучер ${order.voucherCode}? Клиент больше не сможет использовать его для новых записей. Ваучер будет перенесен в архив.`, `Ваучер ${order.voucherCode} деактивирован и перенесен в архив.`, true);
+						deactivateButton.classList.add('voucher-deactivate-button');
+						card.append(deactivateButton);
 						voucherEditor.append(
 							makeVoucherActionButton(order, '+1 консультация', '/adjust', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'add' }) }, `Добавить одну консультацию к ваучеру ${order.voucherCode}? Остаток и общий лимит увеличатся на 1.`, `Ваучер ${order.voucherCode}: добавлена 1 консультация.`, false),
 							makeVoucherActionButton(order, '−1 консультация', '/adjust', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'remove' }) }, `Убрать одну неиспользованную консультацию из ваучера ${order.voucherCode}? Остаток и общий лимит уменьшатся на 1. Записи в календаре не изменятся.`, `Ваучер ${order.voucherCode}: убрана 1 консультация.`, false),
-							makeVoucherActionButton(order, 'Деактивировать', '/deactivate', { method: 'POST' }, `Деактивировать ваучер ${order.voucherCode}? Клиент больше не сможет использовать его для новых записей.`, `Ваучер ${order.voucherCode} деактивирован. Его можно удалить.`, true),
 						);
 					} else {
+						if(order.voucherStatus==='inactive'&&order.voucherRemainingSessions>0){
+							voucherToolbar.append(makeVoucherActionButton(order, 'Активировать', '/reactivate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }, `Активировать ваучер ${order.voucherCode}? Код и оставшиеся консультации сохранятся.`, `Ваучер ${order.voucherCode} активирован и возвращен в активные.`));
+						}
 						const deleteButton = makeVoucherActionButton(order, '', '', { method: 'DELETE' }, `Удалить неактивный ваучер ${order.voucherCode} без возможности восстановления? Заявка и история заказов сохранятся.`, `Неактивный ваучер ${order.voucherCode} удален.`, true);
 						deleteButton.className = 'voucher-delete-button';
 						deleteButton.title = 'Удалить ваучер';
@@ -1114,6 +1447,7 @@
 					missing.textContent = 'Для этой заявки нет ваучера.';
 					card.append(missing);
 				}
+				decorateVoucherCard(card,order);
 				orderList.append(card);
 			});
 		};
@@ -1135,17 +1469,34 @@
 				selectTab(adminTabs[nextIndex].dataset.tab);
 			});
 		});
+		const giftVoucherCode=document.getElementById('gift-voucher-code');
+		const giftVoucherPackage=document.getElementById('gift-voucher-package');
+		const generateGiftVoucherCode=()=>{
+			try{
+				giftVoucherCode.pattern=giftVoucherPackage.value==='five'?'GIFT-[0-9][A-Z0-9]{7}':'GIFT-[A-Z][A-Z0-9]{7}';
+				giftVoucherCode.value=`GIFT-${window.voucherEmail.generateCode(giftVoucherPackage.value)}`;
+				giftVoucherCode.setCustomValidity('');
+			}catch(error){adminStatus.textContent=error.message;adminStatus.classList.add('is-error');}
+		};
+		giftVoucherPackage.addEventListener('change',generateGiftVoucherCode);
+		document.getElementById('gift-voucher-code-generate').addEventListener('click',generateGiftVoucherCode);
+		giftVoucherCode.addEventListener('input',()=>{
+			giftVoucherCode.value=giftVoucherCode.value.toUpperCase();
+			const suffix=giftVoucherCode.value.slice(5);
+			giftVoucherCode.setCustomValidity(/[A-Z]/.test(suffix)&&/[0-9]/.test(suffix)?'':'Код должен содержать и буквы, и цифры после GIFT-.');
+		});
 		giftVoucherToggle.addEventListener('click', () => {
 			giftVoucherForm.hidden = !giftVoucherForm.hidden;
 			giftVoucherToggle.setAttribute('aria-expanded', String(!giftVoucherForm.hidden));
+			if(!giftVoucherForm.hidden&&!giftVoucherCode.value)generateGiftVoucherCode();
 			if (!giftVoucherForm.hidden) document.getElementById('gift-voucher-name').focus();
 		});
 		giftVoucherForm.addEventListener('submit', async (event) => {
 			event.preventDefault();
 			const formData = new FormData(giftVoucherForm);
-			const values = { name: String(formData.get('name') || '').trim(), email: String(formData.get('email') || '').trim(), packageName: String(formData.get('packageName') || '') };
+			const values = { name: String(formData.get('name') || '').trim(), email: String(formData.get('email') || '').trim(), packageName: String(formData.get('packageName') || ''), code: String(formData.get('code') || '').trim().toUpperCase() };
 			const sessions = values.packageName === 'ten' ? 10 : 5;
-			if (!window.confirm(`Создать подарочный ваучер на ${sessions} консультаций для ${values.name}? Ваучер будет активен сразу.`)) return;
+			if (!window.confirm(`Создать подарочный ваучер ${values.code} на ${sessions} консультаций для ${values.name}? Ваучер будет активен сразу.`)) return;
 			const submitButton = giftVoucherForm.querySelector('[type="submit"]');
 			submitButton.disabled = true;
 			adminStatus.classList.remove('is-error');
@@ -1191,6 +1542,10 @@
 		});
 	</script>
 	<script src="site-logo.js"></script>
+	<script src="admin-invoices.js"></script>
+	<script src="admin-voucher-email.js"></script>
+	<script src="admin-booking-email.js"></script>
+	<script src="admin-texts.js"></script>
 	<script src="admin-calendar.js"></script>
 	<script src="admin-clients.js"></script>
 </body>

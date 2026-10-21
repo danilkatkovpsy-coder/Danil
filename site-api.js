@@ -14,8 +14,16 @@
 		'/api/vouchers/history': 'voucher-history',
 	};
 	const pending = new Map();
+	const previewMode=new URL(location.search||'',location.origin).searchParams.get('admin-preview')==='1';
+	const preview=previewMode&&window.parent!==window?window.parent.adminTextPreview?.read(window):null;
 	window.siteFetch = async (input, init = {}) => {
 		const url = new URL(input, location.origin);
+		if(previewMode){
+			if(!preview)throw new Error('Предпросмотр недоступен. Откройте его из редактора текстов.');
+			if((init.method||'GET').toUpperCase()!=='GET')return Response.json({error:'В предпросмотре отправка отключена. Вернитесь в редактор кнопкой «Назад».'},{status:403});
+			if(url.pathname==='/api/site-texts')return Response.json({texts:preview.texts});
+			if(url.pathname==='/api/site-logo'&&Object.hasOwn(preview,'logo'))return Response.json({image:preview.logo});
+		}
 		let endpoint = endpoints[url.pathname];
 		if (url.pathname.startsWith('/api/admin/')) endpoint = `admin/${url.pathname.slice('/api/admin/'.length)}`;
 		if (!endpoint) throw new Error('Неизвестный адрес API.');
