@@ -21,16 +21,16 @@
 </head>
 <body>
 	<header class="header" data-name="верхняя навигация">
-		<a class="brand-lockup" data-name="логотип" href="#top"><img src="images/logo.png" alt="Логотип"><span><strong>Данил Катков</strong><small>Психолог</small></span></a>
+		<a class="brand-lockup" data-name="логотип" href="#top"><img src="images/logo.png" alt="Логотип"><span><strong data-site-text="header_name">Данил Катков</strong><small data-site-text="header_tagline">Психолог</small></span></a>
 		<nav id="site-nav" data-name="главное меню" aria-label="Главное меню">
-			<a data-name="ссылка обо мне" href="#about">Обо мне</a>
-			<a data-name="ссылка услуги" href="#services">Услуги</a>
-			<a data-name="ссылка как проходит" href="#approach">Как проходит</a>
-			<a data-name="ссылка стоимость" href="#packages">Стоимость</a>
-			<a data-name="ссылка отзывы" href="#reviews">Отзывы</a>
-			<a data-name="ссылка контакты" href="#contact">Контакты</a>
+			<a data-name="ссылка обо мне" href="#about" data-site-text="about_label">Обо мне</a>
+			<a data-name="ссылка услуги" href="#services" data-site-text="services_label">Услуги</a>
+			<a data-name="ссылка как проходит" href="#approach" data-site-text="format_label">Как проходит</a>
+			<a data-name="ссылка стоимость" href="#packages" data-site-text="pricing_label">Стоимость</a>
+			<a data-name="ссылка отзывы" href="#reviews" data-site-text="reviews_label">Отзывы</a>
+			<a data-name="ссылка контакты" href="#contact" data-site-text="contact_label">Контакты</a>
 		</nav>
-		<a class="header-button" data-name="кнопка записаться в шапке" href="#packages" aria-label="Записаться"><svg class="calendar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M7 3v4M17 3v4M3 10h18M7 14h.01M11 14h.01M15 14h.01M7 18h.01M11 18h.01"></path></svg><span class="header-button-text">Записаться</span></a>
+		<a class="header-button" data-name="кнопка записаться в шапке" href="#packages"><svg class="calendar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M7 3v4M17 3v4M3 10h18M7 14h.01M11 14h.01M15 14h.01M7 18h.01M11 18h.01"></path></svg><span class="header-button-text" data-site-text="header_button">Записаться</span></a>
 		<button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="site-nav"><span></span><span></span><span></span></button>
 	</header>
 	<main class="hero" id="top" data-name="главный баннер">
@@ -38,34 +38,38 @@
 		<div class="hero-overlay"></div>
 
 		<section class="hero-copy" data-name="текст главного баннера">
-			<p class="eyebrow">ПСИХОЛОГ · КПТ-ПОДХОД · ОНЛАЙН</p>
-			<h1>Больше понимания.<br>Больше контроля.<br><em>Более спокойная<br> жизнь.</em></h1>
-			<p class="intro">Помогаю справляться с тревогой, внутренним напряжением и сложностями в отношениях, чтобы лучше понимать себя и других, легче принимать решения и чувствовать себя спокойнее в повседневной жизни.</p>
-			<a class="main-button" data-name="кнопка записаться на консультацию" href="#packages"><svg class="calendar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M7 3v4M17 3v4M3 10h18M7 14h.01M11 14h.01M15 14h.01M7 18h.01M11 18h.01"></path></svg>Записаться на консультацию</a>
+			<p class="eyebrow" data-site-text="hero_eyebrow">ПСИХОЛОГ · КПТ-ПОДХОД · ОНЛАЙН</p>
+			<h1><span data-site-text="hero_title_first">Больше понимания.</span><br><span data-site-text="hero_title_second">Больше контроля.</span><br><em data-site-text="hero_title_accent">Более спокойная
+жизнь.</em></h1>
+			<p class="intro" data-site-text="hero_intro">Помогаю справляться с тревогой, внутренним напряжением и сложностями в отношениях, чтобы лучше понимать себя и других, легче принимать решения и чувствовать себя спокойнее в повседневной жизни.</p>
+			<a class="main-button" data-name="кнопка записаться на консультацию" href="#packages"><svg class="calendar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M7 3v4M17 3v4M3 10h18M7 14h.01M11 14h.01M15 14h.01M7 18h.01M11 18h.01"></path></svg><span data-site-text="hero_button">Записаться на консультацию</span></a>
 		</section>
 
 		<div class="hero-benefits" data-name="преимущества">
-			<div data-name="преимущество онлайн"><b class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5" fill="currentColor" stroke="none"></circle></svg></b><span>Консультации<br>из любой точки</span></div>
-			<div data-name="преимущество индивидуальная работа"><b class="icon"><svg viewBox="0 0 28 32" aria-hidden="true"><circle cx="14" cy="7" r="5"></circle><path d="M4 29c.6-7 3.8-11 10-11s9.4 4 10 11M8 29h12"></path></svg></b><span>Индивидуальная<br>работа</span></div>
-			<div data-name="преимущество безопасность"><b class="icon"><svg viewBox="0 0 28 32" aria-hidden="true"><path d="M14 2 25 6v8c0 7-4.4 12.2-11 16C7.4 26.2 3 21 3 14V6l11-4Z"></path><path d="m9.5 15 3 3 6-7"></path></svg></b><span>Безопасность и<br>конфиденциальность</span></div>
+			<div data-name="преимущество онлайн"><b class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5" fill="currentColor" stroke="none"></circle></svg></b><span data-site-text="hero_benefit_online">Консультации
+из любой точки</span></div>
+			<div data-name="преимущество индивидуальная работа"><b class="icon"><svg viewBox="0 0 28 32" aria-hidden="true"><circle cx="14" cy="7" r="5"></circle><path d="M4 29c.6-7 3.8-11 10-11s9.4 4 10 11M8 29h12"></path></svg></b><span data-site-text="hero_benefit_individual">Индивидуальная
+работа</span></div>
+			<div data-name="преимущество безопасность"><b class="icon"><svg viewBox="0 0 28 32" aria-hidden="true"><path d="M14 2 25 6v8c0 7-4.4 12.2-11 16C7.4 26.2 3 21 3 14V6l11-4Z"></path><path d="m9.5 15 3 3 6-7"></path></svg></b><span data-site-text="hero_benefit_privacy">Безопасность и
+конфиденциальность</span></div>
 		</div>
 	</main>
 
 	<section id="about" class="about-page" data-name="обо мне">
 		<div class="about-copy">
-			<p class="about-eyebrow">ОБО МНЕ</p>
-			<h2>Опыт и образование</h2>
-			<p class="about-text">Меня зовут Данил Катков, мне 28 лет. В рамках защиты диплома в Московском международном университете (ММУ) в данный момент провожу индивидуальные консультации. Я работал школьным психологом и ведущим группы психологической поддержки.</p>
-			<p class="about-text">Мне хочется делиться знаниями и навыками, которые могут помочь людям лучше понимать себя и других и находить ответы на беспокоящие вопросы.</p>
-			<p class="about-text">Есть выражение: «Мудрый родитель экономит 10 лет жизни своему ребенку». Я верю, что психолог, временно побывав в этой роли, может помочь человеку сэкономить это время.</p>
-			<p class="about-text">Я верю, что человек способен на многое, если лучше понимает себя и учится справляться со своими эмоциями, мыслями и поведением. Я помогаю Вам раскрыть свой потенциал, определить, каким человеком Вы хотите стать, поставить цели, составить план действий и последовательно двигаться к ним.</p>
+			<p class="about-eyebrow" data-site-text="about_label">Обо мне</p>
+			<h2 data-site-text="about_title">Опыт и образование</h2>
+			<p class="about-text" data-site-text="about_body">Меня зовут Данил Катков, мне 28 лет. В рамках защиты диплома в Московском международном университете (ММУ) в данный момент провожу индивидуальные консультации. Я работал школьным психологом и ведущим группы психологической поддержки.</p>
+			<p class="about-text" data-site-text="about_sharing">Мне хочется делиться знаниями и навыками, которые могут помочь людям лучше понимать себя и других и находить ответы на беспокоящие вопросы.</p>
+			<p class="about-text" data-site-text="about_parent">Есть выражение: «Мудрый родитель экономит 10 лет жизни своему ребенку». Я верю, что психолог, временно побывав в этой роли, может помочь человеку сэкономить это время.</p>
+			<p class="about-text" data-site-text="about_potential">Я верю, что человек способен на многое, если лучше понимает себя и учится справляться со своими эмоциями, мыслями и поведением. Я помогаю Вам раскрыть свой потенциал, определить, каким человеком Вы хотите стать, поставить цели, составить план действий и последовательно двигаться к ним.</p>
 		</div>
 		<div class="about-continuation">
-			<h3 class="about-approach-title">Мой подход</h3>
-			<p class="about-text">В своей практике я использую когнитивно-поведенческий подход (КПТ). С помощью логики, точных вопросов и анализа происходящего можно понять причины трудностей, выработать новые способы реагирования и обрести больше спокойствия - как в конкретных ситуациях, так и в долгосрочной перспективе.</p>
-			<p class="about-text">Когда привычные способы не работают, КПТ помогает увидеть новые возможности для изменений даже тогда, когда кажется, что ситуация в безысходном положении.</p>
-			<p class="about-text">И как результат - реальные изменения вместо замкнутого круга.</p>
-			<a class="about-button" href="#services">Узнать больше <svg class="about-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7 17 17M9 17h8V9"></path></svg></a>
+			<h3 class="about-approach-title" data-site-text="approach_title">Мой подход</h3>
+			<p class="about-text" data-site-text="approach_body">В своей практике я использую когнитивно-поведенческий подход (КПТ). С помощью логики, точных вопросов и анализа происходящего можно понять причины трудностей, выработать новые способы реагирования и обрести больше спокойствия - как в конкретных ситуациях, так и в долгосрочной перспективе.</p>
+			<p class="about-text" data-site-text="approach_changes">Когда привычные способы не работают, КПТ помогает увидеть новые возможности для изменений даже тогда, когда кажется, что ситуация в безысходном положении.</p>
+			<p class="about-text" data-site-text="approach_result">И как результат - реальные изменения вместо замкнутого круга.</p>
+			<a class="about-button" href="#services"><span data-site-text="about_button">Узнать больше</span> <svg class="about-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7 17 17M9 17h8V9"></path></svg></a>
 		</div>
 		<div class="about-aside">
 			<div class="diploma-wrap" data-name="диплом"><p class="diploma-label">ДИПЛОМ</p><button class="diploma-frame diploma-trigger" data-name="увеличить диплом" type="button" aria-label="Увеличить диплом"><img src="images/diplom.jpg" alt="Диплом Данила Каткова"><span class="zoom-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"></circle><path d="m16 16 4.5 4.5"></path></svg>Нажмите, чтобы увеличить</span></button></div>
@@ -86,7 +90,7 @@
 		</div>
 	</section>
 	<section id="services" class="services-page" data-name="услуги">
-		<div class="services-heading"><div><p class="services-eyebrow">УСЛУГИ</p><h2>С чем я работаю</h2><p>На консультациях мы работаем с различными запросами.</p></div></div>
+		<div class="services-heading"><div><p class="services-eyebrow" data-site-text="services_label">Услуги</p><h2 data-site-text="services_title">С чем я работаю</h2><p data-site-text="services_intro">На консультациях мы работаем с различными запросами.</p></div></div>
 		<div class="services-grid">
 			<article><span class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
 				<circle cx="60" cy="60" r="56" fill="#EEF0E7" stroke="none"/>
@@ -99,12 +103,13 @@
 					<path d="M48 43 C55 35 66 40 62 47 C59 52 49 49 50 57 C51 64 63 62 66 55 C70 47 59 44 56 51 C52 57 61 60 68 54"/>
 					<path d="M45 48 C41 55 48 60 54 55 C60 49 68 51 70 57"/>
 				</g>
-			</svg></span><h3>Тревожность</h3><p>Постоянное беспокойство,<br>навязчивые мысли</p></article>
+			</svg></span><h3 data-site-text="service_anxiety_title">Тревожность</h3><p data-site-text="service_anxiety_body">Постоянное беспокойство,
+навязчивые мысли</p></article>
 			<article><span class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
 				<circle cx="60" cy="60" r="56" fill="#F3EDE5" stroke="none"/>
 				<path d="M76 83 L58 66 C49 57 53 44 63 43 C69 42 74 46 76 51 C80 43 90 42 96 49 C103 57 98 66 92 72 Z" fill="#C9A487" stroke="none"/>
 				<path d="M56 82 L32 59 C21 48 27 32 40 32 C48 32 54 38 56 44 C60 34 70 31 79 37 C90 45 85 57 78 64 Z" fill="none" stroke="#60351F" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-			</svg></span><h3>Отношения</h3><p>Сложности в личной жизни, взаимопонимание и потребности друг друга</p></article>
+			</svg></span><h3 data-site-text="service_relationships_title">Отношения</h3><p data-site-text="service_relationships_body">Сложности в личной жизни, взаимопонимание и потребности друг друга</p></article>
 			<article><span class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
 				<circle cx="60" cy="60" r="56" fill="#EEF0E7" stroke="none"/>
 				<g stroke="#29483D" stroke-width="2.5" stroke-linecap="round">
@@ -121,14 +126,16 @@
 					<path d="M36 88 L46 83 L55 91"/><path d="M84 88 L74 83 L65 91"/>
 				</g>
 				<path d="M60 97 L45 83 C37 75 42 65 50 65 C55 65 59 69 60 72 C63 66 68 64 73 67 C81 72 78 80 73 85 Z" fill="#C98F70" stroke="#29483D" stroke-width="2.3" stroke-linejoin="round"/>
-			</svg></span><h3>Самооценка</h3><p>Неуверенность, частая критика себя, излишнее чувство вины</p></article>
+			</svg></span><h3 data-site-text="service_selfesteem_title">Самооценка</h3><p data-site-text="service_selfesteem_body">Неуверенность, частая критика себя, излишнее чувство вины</p></article>
 			<article><span class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
 				<circle cx="60" cy="60" r="56" fill="#F3EDE5" stroke="none"/>
 				<g stroke="#29483D" stroke-width="2.6" stroke-linecap="round"><path d="M44 27 L39 19"/><path d="M60 23 V13"/><path d="M76 27 L81 19"/></g>
 				<rect x="29" y="43" width="62" height="34" rx="4" stroke="#29483D" stroke-width="2.8" fill="#F8F5EF"/>
 				<rect x="32" y="46" width="11" height="28" rx="1.5" fill="#C9A487" stroke="none"/>
 				<path d="M91 52 H95 Q98 52 98 55 V65 Q98 68 95 68 H91" stroke="#29483D" stroke-width="2.8" stroke-linejoin="round"/>
-			</svg></span><h3>Эмоциональное<br>выгорание</h3><p>Усталость, потеря мотивации,<br>стресс</p></article>
+			</svg></span><h3 data-site-text="service_burnout_title">Эмоциональное
+выгорание</h3><p data-site-text="service_burnout_body">Усталость, потеря мотивации,
+стресс</p></article>
 			<article><span class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
 				<circle cx="60" cy="60" r="56" fill="#F3EDE5" stroke="none"/>
 				<g stroke="#29483D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -141,7 +148,8 @@
 					<path d="M75 101 C68 99 64 94 63 88 L57 78 C55 75 56 72 59 71 C61 70 63 72 65 75 L68 80 V60 C68 57 70 55 72 55 C75 55 76 57 76 60 V77 L78 55 C78 52 80 50 83 51 C85 51 86 54 86 57 L84 78 L88 61 C89 58 91 57 93 58 C96 59 96 61 96 64 L92 83 L96 72 C97 69 99 68 101 69 C104 70 105 73 104 76 L100 89 C97 97 88 102 77 102 Z" fill="#F8F5EF"/>
 				</g>
 				<g stroke="#C98F70" stroke-width="2.5" stroke-linecap="round"><path d="M98 39 L101 33"/><path d="M101 51 L106 47"/><path d="M99 64 L104 66"/></g>
-			</svg></span><h3>Личные границы</h3><p>Умение говорить «нет»,<br>защита своих интересов</p></article>
+			</svg></span><h3 data-site-text="service_boundaries_title">Личные границы</h3><p data-site-text="service_boundaries_body">Умение говорить «нет»,
+защита своих интересов</p></article>
 			<article><span class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
 				<circle cx="60" cy="60" r="56" fill="#F3EDE5" stroke="none"/>
 				<path d="M39 105 C43 93 40 86 33 80 C22 71 17 58 18 44 C19 25 32 13 52 11 C72 9 88 21 89 40 L89 52 C89 58 93 62 98 67 C101 70 100 73 96 75 L93 77 L97 80 Q99 82 95 85 L96 88 Q98 91 93 94 C88 98 81 97 73 95 C66 93 61 96 59 104 L58 114" fill="none" stroke="#29483D" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -152,60 +160,104 @@
 					<path d="M57 80 C44 76 37 66 36 53 C49 57 57 68 57 80 Z"/>
 					<path d="M60 74 C73 68 80 58 80 46 C67 50 60 61 60 74 Z"/>
 				</g>
-			</svg></span><h3>Осознанность</h3><p>Лучшее понимание себя, своих потребностей и окружающих</p></article>
+			</svg></span><h3 data-site-text="service_awareness_title">Осознанность</h3><p data-site-text="service_awareness_body">Лучшее понимание себя, своих потребностей и окружающих</p></article>
 		</div>
 	</section>
 		<section id="approach" class="approach-page" data-name="как проходят консультации">
-			<div class="approach-main"><div class="approach-shade"></div><div class="approach-content"><p class="approach-eyebrow">ФОРМАТ</p><h2>Как проходят<br>консультации</h2><p class="approach-intro">Создание доверительного контакта, выражение чувств и мыслей, анализ убеждений и поиск причин трудностей. Разработка плана решения проблемы, подбор копинг-стратегий, реализация плана и подведение итогов.</p><div class="approach-facts"><div><span class="approach-icon"><svg viewBox="0 0 32 28" aria-hidden="true"><rect x="2" y="5" width="21" height="17" rx="2"></rect><path d="m23 10 7-4v16l-7-4"></path></svg></span><strong>Онлайн</strong><small>Zoom, Teams, Telegram, WhatsApp</small></div><div><span class="approach-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13"></circle><path d="M16 8v9l6 3"></path></svg></span><strong>50 минут</strong><small>продолжительность<br>сессии</small></div><div><span class="approach-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="6" width="24" height="22" rx="2"></rect><path d="M9 3v6M23 3v6M4 12h24M10 18h4M10 23h4"></path></svg></span><strong>Гибкая запись</strong><small>Онлайн-запись или индивидуальный подбор&nbsp;времени</small></div><div><span class="approach-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 3h14l5 5v21H7zM21 3v6h5M11 15h11M11 20h11M11 25h7"></path></svg></span><strong>Научный подход</strong><small>Используем только научные методики.</small></div></div></div></div>
-		<aside class="quote-card"><div class="quote-overlay"></div><div class="quote-content"><strong>“</strong><p>Чем ближе мы к себе,<br>тем ярче становится мир вокруг.</p><small>Карл Густав Юнг</small></div></aside>
+			<div class="approach-main"><div class="approach-shade"></div><div class="approach-content">
+				<p class="approach-eyebrow" data-site-text="format_label">Как проходит</p>
+				<h2 data-site-text="format_title">Как проходят
+консультации</h2>
+				<p class="approach-intro" data-site-text="format_intro">Создание доверительного контакта, выражение чувств и мыслей, анализ убеждений и поиск причин трудностей. Разработка плана решения проблемы, подбор копинг-стратегий, реализация плана и подведение итогов.</p>
+				<div class="approach-facts">
+					<div><span class="approach-icon"><svg viewBox="0 0 32 28" aria-hidden="true"><rect x="2" y="5" width="21" height="17" rx="2"></rect><path d="m23 10 7-4v16l-7-4"></path></svg></span><strong data-site-text="format_online_title">Онлайн</strong><small data-site-text="format_online_body">Zoom, Teams, Telegram, WhatsApp</small></div>
+					<div><span class="approach-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13"></circle><path d="M16 8v9l6 3"></path></svg></span><strong data-site-text="format_duration_title">50 минут</strong><small data-site-text="format_duration_body">продолжительность
+сессии</small></div>
+					<div><span class="approach-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="6" width="24" height="22" rx="2"></rect><path d="M9 3v6M23 3v6M4 12h24M10 18h4M10 23h4"></path></svg></span><strong data-site-text="format_booking_title">Гибкая запись</strong><small data-site-text="format_booking_body">Онлайн-запись или индивидуальный подбор времени</small></div>
+					<div><span class="approach-icon"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 3h14l5 5v21H7zM21 3v6h5M11 15h11M11 20h11M11 25h7"></path></svg></span><strong data-site-text="format_science_title">Научный подход</strong><small data-site-text="format_science_body">Используем только научные методики.</small></div>
+				</div>
+			</div></div>
+		<aside class="quote-card"><div class="quote-overlay"></div><div class="quote-content"><strong>“</strong><p data-site-text="format_quote">Чем ближе мы к себе,
+тем ярче становится мир вокруг.</p><small data-site-text="format_quote_author">Карл Густав Юнг</small></div></aside>
 	</section>
 	<section id="packages" class="packages-page" data-name="пакеты консультаций" aria-labelledby="packages-title">
-		<div class="packages-heading"><p class="services-eyebrow">СТОИМОСТЬ</p><h2 id="packages-title">Пакеты консультаций</h2><p>Индивидуально · онлайн · 50 минут каждая встреча</p></div>
+		<div class="packages-heading"><p class="services-eyebrow" data-site-text="pricing_label">Стоимость</p><h2 id="packages-title" data-site-text="pricing_title">Пакеты консультаций</h2><p data-site-text="pricing_intro">Индивидуально · онлайн · 50 минут каждая встреча</p></div>
 		<div id="consultation-options" class="packages-grid">
 			<article class="package-card package-card-free">
-				<div class="package-top"><div class="pricing-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3"></path><path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4"></path><path d="M5 21h14"></path></svg></div><h3>Первая консультация</h3></div>
+				<div class="package-top"><div class="pricing-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3"></path><path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4"></path><path d="M5 21h14"></path></svg></div><h3 data-site-text="free_title">Первая консультация</h3></div>
 				<p class="package-price"><span class="price-meta">50 минут</span><span class="price-value">Бесплатно</span></p>
-				<p class="package-description">Знакомство, обсуждение вашего запроса и целей работы.</p>
-				<div class="package-bottom"><a class="package-button" href="#packages" data-booking="free" aria-label="Записаться на первую бесплатную консультацию">Записаться</a></div>
+				<p class="package-description" data-site-text="free_description">Знакомство, обсуждение вашего запроса и целей работы.</p>
+				<div class="package-bottom"><a class="package-button" href="#packages" data-booking="free" data-site-text="free_button">Записаться</a></div>
 			</article>
 			<article class="package-card">
-				<div class="package-top"><div class="pricing-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><h3>Индивидуальная консультация</h3></div>
+				<div class="package-top"><div class="pricing-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><h3 data-site-text="single_title">Индивидуальная консультация</h3></div>
 				<p class="package-price"><span class="price-meta">50 минут</span><span class="price-value">49&nbsp;€</span></p>
 				<p class="package-rate package-unit-rate">(без покупки пакета)</p>
-				<p class="package-description">Личная поддержка, обсуждение вашего запроса и работа над решениями.</p>
-				<div class="package-bottom"><a class="package-button" href="#packages" data-booking="single" aria-label="Записаться на индивидуальную консультацию">Записаться</a></div>
+				<p class="package-description" data-site-text="single_description">Личная поддержка, обсуждение вашего запроса и работа над решениями.</p>
+				<div class="package-bottom"><a class="package-button" href="#packages" data-booking="single" data-site-text="single_button">Записаться</a></div>
 			</article>
 			<article class="package-card package-card-bundle">
-				<div class="package-top"><div class="pricing-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"></path><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"></path><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"></path></svg></div><h3>Пакет из 5 консультаций</h3><span class="package-badge">Экономия 20&nbsp;€</span></div>
+				<div class="package-top"><div class="pricing-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"></path><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"></path><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"></path></svg></div><h3 data-site-text="five_title">Пакет из 5 консультаций</h3><span class="package-badge">Экономия 20&nbsp;€</span></div>
 				<p class="package-price"><span class="price-meta">5 × 50 минут</span><span class="price-value">225&nbsp;€</span></p>
 				<p class="package-rate package-unit-rate">(45&nbsp;€ за консультацию)</p>
-				<p class="package-description">Глубокая работа над вашими целями с моей поддержкой.</p>
-				<div class="package-bottom"><button class="package-buy-button" type="button" data-buy-package="five">Выбрать пакет</button><a class="package-button" href="#packages" data-booking="five" aria-label="Записаться на пакет из 5 консультаций">Записаться</a></div>
+				<p class="package-description" data-site-text="five_description">Глубокая работа над вашими целями с моей поддержкой.</p>
+				<div class="package-bottom"><button class="package-buy-button" type="button" data-buy-package="five" data-site-text="five_buy_button">Выбрать пакет</button><a class="package-button" href="#packages" data-booking="five" data-site-text="five_button">Записаться</a></div>
 			</article>
 			<article class="package-card package-card-best package-card-bundle">
-				<div class="package-top"><div class="pricing-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l4 6-10 13L2 9l4-6Z"></path><path d="m10 3-2 6 4 13 4-13-2-6"></path><path d="M2 9h20"></path></svg></div><h3>Пакет из 10 консультаций</h3><span class="package-badge">Экономия 70&nbsp;€</span></div>
+				<div class="package-top"><div class="pricing-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l4 6-10 13L2 9l4-6Z"></path><path d="m10 3-2 6 4 13 4-13-2-6"></path><path d="M2 9h20"></path></svg></div><h3 data-site-text="ten_title">Пакет из 10 консультаций</h3><span class="package-badge">Экономия 70&nbsp;€</span></div>
 				<p class="package-price"><span class="price-meta">10 × 50 минут</span><span class="price-value">420&nbsp;€</span></p>
 				<p class="package-rate package-unit-rate">(42&nbsp;€ за консультацию)</p>
-				<p class="package-description">Комплексная поддержка для устойчивых изменений и долгосрочных результатов.</p>
-				<div class="package-bottom"><button class="package-buy-button" type="button" data-buy-package="ten">Выбрать пакет</button><a class="package-button" href="#packages" data-booking="ten" aria-label="Записаться на пакет из 10 консультаций">Записаться</a></div>
+				<p class="package-description" data-site-text="ten_description">Комплексная поддержка для устойчивых изменений и долгосрочных результатов.</p>
+				<div class="package-bottom"><button class="package-buy-button" type="button" data-buy-package="ten" data-site-text="ten_buy_button">Выбрать пакет</button><a class="package-button" href="#packages" data-booking="ten" data-site-text="ten_button">Записаться</a></div>
 			</article>
 		</div>
 	</section>
 	<section id="reviews" class="reviews-page" data-name="отзывы">
-		<div class="reviews-heading"><div><p class="reviews-eyebrow">ОТЗЫВЫ</p><h2>Отзывы клиентов</h2><p class="reviews-disclaimer">Эти отзывы приведены в качестве примеров оформления и не являются реальными отзывами клиентов.</p></div></div>
+		<div class="reviews-heading"><div><p class="reviews-eyebrow" data-site-text="reviews_label">Отзывы</p><h2 data-site-text="reviews_title">Отзывы клиентов</h2></div></div>
+		<div class="review-submit-action"><button id="review-submit-toggle" type="button" aria-expanded="false" aria-controls="public-review-modal" data-site-text="reviews_button">Написать отзыв</button></div>
+		<dialog id="public-review-modal" class="public-review-modal" aria-labelledby="public-review-title">
+		<button id="public-review-close" class="public-review-close" type="button" aria-label="Закрыть окно" data-site-text="review_close" data-site-text-attribute="aria-label">×</button>
+		<form id="public-review-form" class="public-review-form">
+			<h3 id="public-review-title" data-site-text="review_modal_title">Написать отзыв</h3>
+			<p data-site-text="review_modal_note">Отзыв появится на сайте после проверки администратором.</p>
+			<div class="review-form-top">
+				<div class="review-name-group">
+					<label class="review-name-field"><span data-site-text="review_name_label">Имя</span><input name="name" maxlength="80" autocomplete="name" placeholder="Ваше имя" data-site-text="review_name_placeholder" data-site-text-attribute="placeholder"></label>
+					<label class="review-anonymous"><input name="anonymous" type="checkbox"><span data-site-text="review_anonymous_label">Написать анонимно</span></label>
+				</div>
+				<div class="review-rating-group">
+					<span id="review-rating-label"><span data-site-text="review_rating_label">Оценка</span> <span id="review-rating-value" aria-live="polite">0/5</span></span>
+					<div class="review-rating-stars" role="radiogroup" aria-labelledby="review-rating-label" aria-required="true">
+						<button type="button" role="radio" aria-label="1 из 5 звезд" aria-checked="false" tabindex="0">☆</button>
+						<button type="button" role="radio" aria-label="2 из 5 звезд" aria-checked="false" tabindex="-1">☆</button>
+						<button type="button" role="radio" aria-label="3 из 5 звезд" aria-checked="false" tabindex="-1">☆</button>
+						<button type="button" role="radio" aria-label="4 из 5 звезд" aria-checked="false" tabindex="-1">☆</button>
+						<button type="button" role="radio" aria-label="5 из 5 звезд" aria-checked="false" tabindex="-1">☆</button>
+					</div>
+					<input name="rating" type="hidden" value="0">
+				</div>
+			</div>
+			<label><span data-site-text="review_text_label">Текст отзыва</span><textarea name="text" rows="5" maxlength="5000" required placeholder="Напишите свой отзыв" data-site-text="review_text_placeholder" data-site-text-attribute="placeholder"></textarea></label>
+			<p class="review-char-count" aria-live="polite">0 / 5000</p>
+			<button class="review-submit-button" type="submit" data-site-text="review_submit">Отправить</button>
+			<span hidden data-site-text="review_sending">Отправляем на проверку...</span>
+			<p id="public-review-status" role="status" aria-live="polite"></p>
+		</form>
+		</dialog>
+		<dialog id="review-success-modal" class="review-success-modal" aria-labelledby="review-success-title" aria-describedby="review-success-message">
+			<button id="review-success-close" class="public-review-close" type="button" aria-label="Закрыть">×</button>
+			<div class="booking-result-check" aria-hidden="true">✓</div>
+			<h3 id="review-success-title">Спасибо за ваш отзыв!</h3>
+			<p id="review-success-message" data-site-text="review_success">Ваше мнение очень важно для нас.</p>
+		</dialog>
+		<p class="reviews-empty" data-site-text="reviews_empty" hidden>Отзывы пока не опубликованы.</p>
 		<div class="reviews-carousel"><button class="review-arrow review-prev" type="button" aria-label="Предыдущий отзыв">←</button><div class="reviews-viewport"><div class="reviews-grid">
-			<article><div><div class="review-stars" aria-label="5 из 5 звезд">★★★★★</div><p>«Консультации помогли мне лучше понять себя и справляться с тревогой. Чувствую больше уверенности и спокойствия»</p></div><div class="review-author"><span class="avatar avatar-a">А</span><div><strong>Алексей</strong><small>Работа с тревожностью</small></div></div></article>
-			<article><div><div class="review-stars" aria-label="5 из 5 звезд">★★★★★</div><p>«Очень ценю, что Данил умеет слушать и задавать правильные вопросы. Благодаря этому я смогла по-новому взглянуть на свои отношения»</p></div><div class="review-author"><span class="avatar avatar-m">М</span><div><strong>Мария</strong><small>Работа с отношениями</small></div></div></article>
-			<article><div><div class="review-stars" aria-label="5 из 5 звезд">★★★★★</div><p>«Профессиональный, поддерживающий и внимательный специалист. Рекомендую!»</p></div><div class="review-author"><span class="avatar avatar-i">И</span><div><strong>Игорь</strong><small>Работа с самооценкой</small></div></div></article>
-			<article><div><div class="review-stars" aria-label="5 из 5 звезд">★★★★★</div><p>«С каждой встречей становилось легче замечать свои мысли и спокойнее реагировать на сложные ситуации»</p></div><div class="review-author"><span class="avatar avatar-a">Е</span><div><strong>Елена</strong><small>Работа с тревожностью</small></div></div></article>
-			<article><div><div class="review-stars" aria-label="5 из 5 звезд">★★★★★</div><p>«Данил помог разобраться в том, что действительно важно для меня, и научиться говорить о своих границах»</p></div><div class="review-author"><span class="avatar avatar-m">О</span><div><strong>Ольга</strong><small>Работа с границами</small></div></div></article>
-			<article><div><div class="review-stars" aria-label="5 из 5 звезд">★★★★★</div><p>«Очень бережный и понятный подход. После консультаций появилось больше ясности и внутренней опоры»</p></div><div class="review-author"><span class="avatar avatar-i">Д</span><div><strong>Дмитрий</strong><small>Работа с самооценкой</small></div></div></article>
-		</div></div><button class="review-arrow review-next" type="button" aria-label="Следующий отзыв">→</button></div><div class="review-dots" aria-label="Навигация по отзывам"><button class="active" type="button" aria-label="Позиция 1"></button><button type="button" aria-label="Позиция 2"></button><button type="button" aria-label="Позиция 3"></button><button type="button" aria-label="Позиция 4"></button><button type="button" aria-label="Позиция 5"></button><button type="button" aria-label="Позиция 6"></button></div>
+		</div></div><button class="review-arrow review-next" type="button" aria-label="Следующий отзыв">→</button></div><div class="review-dots" aria-label="Навигация по отзывам"></div>
 	</section>
 	<section id="contact" class="contact-page" data-name="контакты" aria-label="Контакты">
 		<div class="contact-image-layer contact-tree-layer" aria-hidden="true"><img class="contact-tree" src="images/derevo.png" alt=""></div>
-		<div class="contact-copy"><p class="contact-eyebrow">КОНТАКТЫ</p><h2>Вопросы и запись</h2><p>По вопросам консультаций и записи можно написать удобным способом.</p></div>
-		<div class="contact-social-area"><h3>Записаться на консультацию:</h3><div class="contact-socials"><a class="social instagram" href="https://www.instagram.com/danil.katkov.psy?stkn=ejdhY3FpMWZscmQ3&utm_source=qr" target="_blank" rel="noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg></a><a class="social telegram" href="https://t.me/DanielRise" target="_blank" rel="noreferrer" aria-label="Telegram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-3.2 18-6.2-5.2-3.7 3.5-.4-5.3L21 3Z"></path><path d="m7.5 14 8.7-7.2"></path></svg></a><a class="social facebook" href="https://www.facebook.com/danil.katkov.psy" target="_blank" rel="noreferrer" aria-label="Facebook">f</a><a class="social whatsapp" href="https://wa.me/37256946956" target="_blank" rel="noreferrer" aria-label="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4A8 8 0 1 1 20 11.5Z"></path><path d="M9 8.5c.5 2.3 2.2 4 4.5 4.5l1.2-1.2 1.8.8c.3.1.4.5.2.8l-.6.8c-.3.4-.8.6-1.3.5-3.3-.7-5.4-2.8-6.1-6.1-.1-.5.1-1 .5-1.3l.8-.6c.3-.2.7-.1.8.2l.8 1.8L9 8.5Z"></path></svg></a><a class="social email" href="mailto:danil.katkov.psy@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m4 7 8 6 8-6"></path></svg></a></div></div>
+		<div class="contact-copy"><p class="contact-eyebrow" data-site-text="contact_label">Контакты</p><h2 data-site-text="contact_title">Вопросы и запись</h2><p data-site-text="contact_body">По вопросам консультаций и записи можно написать удобным способом.</p></div>
+		<div class="contact-social-area"><h3 data-site-text="contact_social_title">Записаться на консультацию:</h3><div class="contact-socials"><a class="social instagram" href="https://www.instagram.com/danil.katkov.psy?stkn=ejdhY3FpMWZscmQ3&utm_source=qr" target="_blank" rel="noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg></a><a class="social telegram" href="https://t.me/DanielRise" target="_blank" rel="noreferrer" aria-label="Telegram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-3.2 18-6.2-5.2-3.7 3.5-.4-5.3L21 3Z"></path><path d="m7.5 14 8.7-7.2"></path></svg></a><a class="social facebook" href="https://www.facebook.com/danil.katkov.psy" target="_blank" rel="noreferrer" aria-label="Facebook">f</a><a class="social whatsapp" href="https://wa.me/37256946956" target="_blank" rel="noreferrer" aria-label="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4A8 8 0 1 1 20 11.5Z"></path><path d="M9 8.5c.5 2.3 2.2 4 4.5 4.5l1.2-1.2 1.8.8c.3.1.4.5.2.8l-.6.8c-.3.4-.8.6-1.3.5-3.3-.7-5.4-2.8-6.1-6.1-.1-.5.1-1 .5-1.3l.8-.6c.3-.2.7-.1.8.2l.8 1.8L9 8.5Z"></path></svg></a><a class="social email" href="mailto:danil.katkov.psy@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m4 7 8 6 8-6"></path></svg></a></div></div>
 		<div class="contact-image-layer contact-ficus-layer" aria-hidden="true"><img class="contact-plant" src="images/fikus.png" alt=""></div>
 	</section>
 	<div class="booking-modal" id="booking-modal" aria-hidden="true">
@@ -337,11 +389,13 @@
 	</dialog>
 	<footer class="site-footer" data-name="подвал сайта">
 		<div class="footer-content">
-			<div class="footer-brand" data-name="бренд подвала"><img src="images/logo.png" alt="Логотип"><strong>Данил Катков</strong><span>психолог, кпт-подход</span><p>Психологическая поддержка<br>для более осознанной и<br>гармоничной жизни.</p></div>
-			<nav class="footer-nav" aria-label="Навигация в подвале"><h3>Навигация</h3><a href="#top">Главная</a><a href="#about">Обо мне</a><a href="#services">Услуги</a><a href="#approach">Как проходит</a><a href="#packages">Стоимость</a><a href="#reviews">Отзывы</a><a href="#contact">Контакты</a></nav>
-			<div class="footer-details"><h3>Реквизиты и контакты</h3><p>ROLLMAN INVEST OÜ<br><small>Registrikood 14842530</small></p><a href="tel:+37256946956">+372 56946956</a><a href="mailto:danil.katkov.psy@gmail.com">danil.katkov.psy@gmail.com</a></div>
+			<div class="footer-brand" data-name="бренд подвала"><img src="images/logo.png" alt="Логотип"><strong data-site-text="footer_name">Данил Катков</strong><span data-site-text="footer_tagline">психолог, кпт-подход</span><p data-site-text="footer_description">Психологическая поддержка
+для более осознанной и
+гармоничной жизни.</p></div>
+			<nav class="footer-nav" aria-label="Навигация в подвале"><h3 data-site-text="footer_navigation">Навигация</h3><a href="#top">Главная</a><a href="#about" data-site-text="about_label">Обо мне</a><a href="#services" data-site-text="services_label">Услуги</a><a href="#approach" data-site-text="format_label">Как проходит</a><a href="#packages" data-site-text="pricing_label">Стоимость</a><a href="#reviews" data-site-text="reviews_label">Отзывы</a><a href="#contact" data-site-text="contact_label">Контакты</a></nav>
+			<div class="footer-details"><h3 data-site-text="footer_details_title">Реквизиты и контакты</h3><p><span data-site-text="footer_company">ROLLMAN INVEST OÜ</span><br><small>Registrikood <span data-site-text="footer_registration">14842530</span></small></p><a href="tel:+37256946956" data-site-text="footer_phone">+372 56946956</a><a href="mailto:danil.katkov.psy@gmail.com" data-site-text="footer_email">danil.katkov.psy@gmail.com</a></div>
 		</div>
-		<div class="footer-bottom">Данил Катков © 2026 Все права защищены.</div>
+		<div class="footer-bottom" data-site-text="footer_copyright">Данил Катков © 2026 Все права защищены.</div>
 	</footer>
 	<div class="diploma-modal" role="dialog" aria-modal="true" aria-label="Диплом Данила Каткова">
 		<button class="modal-close" type="button" aria-label="Закрыть диплом">×</button>
@@ -365,26 +419,49 @@
 			if (event.key === 'Escape') closeDiploma();
 		});
 		const reviewTrack = document.querySelector('.reviews-grid');
-		const reviewDots = [...document.querySelectorAll('.review-dots button')];
-		const reviewCount = reviewTrack.children.length;
+		let reviewDots = [];
 		let reviewIndex = 0;
 		const visibleReviews = () => window.innerWidth <= 800 ? 1 : 3;
 		const showReview = (index) => {
-			const maxIndex = reviewCount - visibleReviews();
+			document.querySelector('.reviews-carousel').hidden=reviewTrack.children.length===0;
+			const maxIndex = Math.max(0,reviewTrack.children.length - visibleReviews());
 			reviewIndex = Math.max(0, Math.min(index, maxIndex));
-			const reviewCardWidth = reviewTrack.children[0].getBoundingClientRect().width;
+			const reviewCardWidth = reviewTrack.children[0]?.getBoundingClientRect().width||0;
 			const slideWidth = reviewCardWidth + parseFloat(getComputedStyle(reviewTrack).gap || 0);
 			const viewportWidth = reviewViewport.getBoundingClientRect().width;
 			const mobileOffset = window.innerWidth <= 800 ? Math.max(0, (viewportWidth - reviewCardWidth) / 2) : 0;
+			const reviewAction = document.querySelector('.review-submit-action');
+			reviewAction.style.paddingLeft = `${Math.max(0, reviewViewport.getBoundingClientRect().left + mobileOffset - reviewAction.getBoundingClientRect().left)}px`;
 			reviewTrack.style.transform = `translateX(${mobileOffset - reviewIndex * slideWidth}px)`;
-			reviewDots.forEach((dot, dotIndex) => { dot.hidden = dotIndex > maxIndex; dot.classList.toggle('active', dotIndex === reviewIndex); });
+			let activeDot=0;
+			reviewDots.forEach((dot,dotIndex)=>{
+				const target=Number(dot.dataset.index);
+				if(Math.abs(target-reviewIndex)<Math.abs(Number(reviewDots[activeDot]?.dataset.index||0)-reviewIndex))activeDot=dotIndex;
+				dot.classList.toggle('active',dotIndex===activeDot);
+			});
 			reviewViewport.classList.toggle('has-prev', reviewIndex > 0);
 			reviewViewport.classList.toggle('has-next', reviewIndex < maxIndex);
+			document.querySelector('.review-prev').disabled=reviewIndex===0;
+			document.querySelector('.review-next').disabled=reviewIndex===maxIndex;
+			document.querySelector('.reviews-carousel').hidden=reviewTrack.children.length===0;
 		};
 		document.querySelector('.review-prev').addEventListener('click', () => showReview(reviewIndex - 1));
 		document.querySelector('.review-next').addEventListener('click', () => showReview(reviewIndex + 1));
-		reviewDots.forEach((dot, dotIndex) => dot.addEventListener('click', () => showReview(dotIndex)));
 		const reviewViewport = document.querySelector('.reviews-viewport');
+		const resetReviews=()=>{
+			const container=document.querySelector('.review-dots');
+			container.hidden=reviewTrack.children.length===0;
+			const maxIndex=Math.max(0,reviewTrack.children.length-visibleReviews());
+			const dotCount=Math.min(maxIndex+1,12);
+			reviewDots=Array.from({length:dotCount},(_,dotIndex)=>{
+				const index=dotCount===1?0:Math.round(dotIndex*maxIndex/(dotCount-1));
+				const dot=document.createElement('button');dot.type='button';dot.dataset.index=String(index);
+				dot.setAttribute('aria-label',`Позиция ${index+1}`);
+				dot.addEventListener('click',()=>showReview(index));return dot;
+			});
+			container.replaceChildren(...reviewDots);reviewIndex=0;showReview(0);
+		};
+		document.addEventListener('site-reviews-updated',resetReviews);
 		let touchStartX = 0;
 		let touchStartY = 0;
 		reviewViewport.addEventListener('touchstart', (event) => {
@@ -397,7 +474,7 @@
 			if (Math.abs(deltaX) < 40 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
 			showReview(reviewIndex + (deltaX < 0 ? 1 : -1));
 		}, { passive: true });
-		showReview(0);
+		resetReviews();
 		window.addEventListener('resize', () => showReview(reviewIndex));
 		const siteHeader = document.querySelector('.header');
 		const menuToggle = document.querySelector('.menu-toggle');
@@ -450,6 +527,11 @@
 		}
 	</script>
 	<script src="site-api.js"></script>
+	<script src="site-texts.js"></script>
+	<script src="site-logo.js"></script>
+	<script src="site-contacts.js"></script>
+	<script src="site-reviews.js"></script>
+	<script src="pricing.js"></script>
 	<script type="module">
 		const fetch = window.siteFetch;
 		import intlTelInput from '/vendor/intl-tel-input/js/intlTelInput.mjs';
@@ -577,9 +659,44 @@
 			purchaseConfirmation.close();
 		});
 		const purchasePackages = {
-			five: { title: bookingLabels.five, price: '225 €', count: '5 × 50 минут', duration: '50 минут каждая встреча', saving: 'Экономия 20 €', rate: '(45 € за консультацию)' },
-			ten: { title: bookingLabels.ten, price: '420 €', count: '10 × 50 минут', duration: '50 минут каждая встреча', saving: 'Экономия 70 €', rate: '(42 € за консультацию)' },
+			five: { title: bookingLabels.five, price: '', count: '5 × 50 минут', duration: '50 минут каждая встреча', saving: '', rate: '' },
+			ten: { title: bookingLabels.ten, price: '', count: '10 × 50 минут', duration: '50 минут каждая встреча', saving: '', rate: '' },
 		};
+		let servicePrices=null,purchaseQuote=null,priceLoadGeneration=0;
+		const priceStatus=document.createElement('p');
+		priceStatus.setAttribute('role','status');
+		document.querySelector('.packages-heading').append(priceStatus);
+		const refreshPrices=async()=>{
+			const current=++priceLoadGeneration;
+			const prices=await window.servicePricing.load();
+			if(current!==priceLoadGeneration)return servicePrices;
+			servicePrices=prices;
+			for(const key of window.servicePricing.keys){
+				const card=document.querySelector(`[data-booking="${key}"]`).closest('.package-card');
+				const metric=window.servicePricing.metrics(prices,key);
+				card.querySelector('.price-value').textContent=key==='free'&&prices.free===0?'Бесплатно':metric.total;
+				if(key==='free'){
+					bookingLabels.free=prices.free===0?'Первая бесплатная консультация':'Первая консультация';
+				}
+				if(purchasePackages[key]){
+					const saving=metric.saving>0?`Экономия ${window.servicePricing.money(metric.saving)}`:'';
+					const rate=`(${metric.rate} за консультацию)`;
+					Object.assign(purchasePackages[key],{price:metric.total,saving,rate});
+					card.querySelector('.package-badge').textContent=saving;
+					card.querySelector('.package-badge').hidden=!saving;
+					card.querySelector('.package-unit-rate').textContent=rate;
+				}
+			}
+			priceStatus.textContent='';
+			return prices;
+		};
+		for(const card of document.querySelectorAll('.package-card')){
+			card.querySelector('.price-value').textContent='...';
+			const badge=card.querySelector('.package-badge'),rate=card.querySelector('.package-unit-rate');
+			if(badge)badge.hidden=true;
+			if(rate&&badge)rate.textContent='';
+		}
+		refreshPrices().catch(error=>{priceStatus.textContent=error.message;});
 		let bookingWeekStart;
 		let bookingMonthCalendarOpen = false;
 		let bookingMobileStep = 1;
@@ -888,8 +1005,19 @@
 			document.getElementById('purchase-total').textContent = selectedPackage.price;
 			document.getElementById('purchase-saving').textContent = selectedPackage.saving;
 			document.getElementById('purchase-rate').textContent = selectedPackage.rate;
+			const submit=purchaseForm.querySelector('[type="submit"]');
+			submit.disabled=true;purchaseQuote=null;
 			purchaseModal.querySelectorAll('[data-purchase-icon]').forEach((icon) => icon.toggleAttribute('hidden', icon.dataset.purchaseIcon !== packageKey));
-			purchaseStatus.textContent = '';
+			purchaseStatus.textContent = 'Проверяем актуальную цену...';
+			refreshPrices().then(prices=>{
+				if(!purchaseModal.classList.contains('is-open')||purchasePackageName.value!==packageKey)return;
+				purchaseQuote={key:packageKey,cents:prices[packageKey]};
+				document.getElementById('purchase-total').textContent=selectedPackage.price;
+				document.getElementById('purchase-saving').textContent=selectedPackage.saving;
+				document.getElementById('purchase-saving').hidden=!selectedPackage.saving;
+				document.getElementById('purchase-rate').textContent=selectedPackage.rate;
+				purchaseStatus.textContent='';submit.disabled=false;
+			}).catch(error=>{purchaseStatus.textContent=error.message;purchaseStatus.classList.add('is-error');});
 			purchaseStatus.classList.remove('is-error', 'is-success');
 			purchaseModal.classList.add('is-open');
 			purchaseModal.setAttribute('aria-hidden', 'false');
@@ -1097,7 +1225,8 @@
 			purchaseStatus.textContent = 'Сохраняем заявку...';
 			purchaseStatus.classList.remove('is-error', 'is-success');
 			try {
-				const response = await fetch('/api/package-purchases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ packageName: purchasePackageName.value, name: document.getElementById('purchase-name').value.trim(), email: document.getElementById('purchase-email').value.trim(), additionalInfo: document.getElementById('purchase-additional-info').value.trim() }) });
+				if(!purchaseQuote||purchaseQuote.key!==purchasePackageName.value)throw new Error('Не удалось подтвердить цену. Откройте окно покупки заново.');
+				const response = await fetch('/api/package-purchases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ packageName: purchasePackageName.value, expectedPriceCents:purchaseQuote.cents, name: document.getElementById('purchase-name').value.trim(), email: document.getElementById('purchase-email').value.trim(), additionalInfo: document.getElementById('purchase-additional-info').value.trim() }) });
 				const data = await response.json();
 				if (!response.ok) throw new Error(data.error || 'Не удалось отправить заявку.');
 				const invoiceDelivery = data.invoiceEmailSent

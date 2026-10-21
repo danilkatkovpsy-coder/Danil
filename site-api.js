@@ -2,6 +2,11 @@
 	const remote = 'https://puipyonlhlyirbhwmsdq.supabase.co/functions/v1';
 	const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
 	const endpoints = {
+		'/api/site-logo': 'site-logo',
+		'/api/site-reviews': 'site-reviews',
+		'/api/site-contacts': 'site-contacts',
+		'/api/site-texts': 'site-texts',
+		'/api/prices': 'prices',
 		'/api/availability': 'availability',
 		'/api/book': 'book',
 		'/api/package-purchases': 'package-purchases',

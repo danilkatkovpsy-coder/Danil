@@ -435,13 +435,19 @@
 		if(get('calendar-range-form').closest('details').open)await loadRange();
 		if(!data.pendingReservations.length) status.textContent=data.settings.enabled?'':'Календарь пока не включен.';
 	}
-	function section(calendar) {
-		get('calendar-section').hidden=!calendar; get('vouchers-section').hidden=calendar;
-		get('section-calendar').setAttribute('aria-pressed',String(calendar));
-		get('section-vouchers').setAttribute('aria-pressed',String(!calendar));
-		if(calendar&&adminKey.value) load().catch(fail);
-		else if(!calendar&&adminAuthenticated) loadOrders();
-		else if(calendar) status.textContent='Введите ключ администратора и нажмите «Войти».';
+	function section(selected) {
+		for(const name of ['calendar','vouchers','prices','invoices','texts','reviews','contacts']){
+			get(`${name}-section`).hidden=name!==selected;
+			get(`section-${name}`).setAttribute('aria-pressed',String(name===selected));
+		}
+		if(!adminAuthenticated)return;
+		if(selected==='calendar')load().catch(fail);
+		else if(selected==='prices')loadPrices();
+		else if(selected==='invoices')loadInvoiceSettings();
+		else if(selected==='texts')loadTexts();
+		else if(selected==='contacts')loadContacts();
+		else if(selected==='reviews')loadReviews();
+		else loadOrders();
 	}
 	document.addEventListener('admin-logout',()=>{
 		generation++;data=null;createId=null;
@@ -472,9 +478,394 @@
 		load().catch(notificationFail);
 	});
 	get('admin-notifications-close').addEventListener('click',()=>get('admin-notifications').close());
-	get('section-calendar').addEventListener('click',()=>section(true));
-	get('section-vouchers').addEventListener('click',()=>section(false));
-	adminForm.addEventListener('submit',()=>{if(!get('calendar-section').hidden) load().catch(fail);});
+	for(const name of ['calendar','vouchers','prices','invoices','texts','reviews','contacts']){
+		get(`section-${name}`).addEventListener('click',()=>section(name));
+	}
+	const reviewsForm=get('reviews-form'),reviewsEditor=get('reviews-editor');
+	let reviewsGeneration=0,reviewsLoaded=false,reviewsDirty=false,reviewModerating=false;
+	const updateReviewAdd=()=>{get('reviews-add').disabled=!reviewsLoaded||reviewsEditor.children.length>=500;};
+	let pendingReviews=[],pendingOffset=0;
+	const validatePendingReviews=value=>{
+		if(!Array.isArray(value)||value.length>1000||!value.every(review=>review&&
+			typeof review.id==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(review.id)&&
+			typeof review.name==='string'&&review.name.length<=80&&typeof review.anonymous==='boolean'&&
+			Number.isInteger(review.rating)&&review.rating>=1&&review.rating<=5&&
+			typeof review.review_text==='string'&&review.review_text.length>0&&review.review_text.length<=5000&&
+			typeof review.submitted_at==='string'&&Number.isFinite(Date.parse(review.submitted_at))))
+			throw new Error('Некорректный список отзывов на проверку.');
+		return value;
+	};
+	const renderPending=()=>{
+		const list=get('reviews-pending'),end=Math.min(pendingOffset+50,pendingReviews.length);
+		for(const review of pendingReviews.slice(pendingOffset,end)){
+			const card=document.createElement('article');card.className='contact-editor-row';
+			const title=text('strong',review.anonymous?'Анонимно':review.name);card.append(title);
+			const meta=text('p',`${review.rating} / 5 ★ · ${new Date(review.submitted_at).toLocaleString('ru-RU')}`);card.append(meta);
+			const body=text('p',review.review_text);body.style.whiteSpace='pre-wrap';card.append(body);
+			for(const [action,label] of [['approve','Опубликовать отзыв'],['delete','Отклонить отзыв']]){
+				const button=text('button',label);button.type='button';
+				button.addEventListener('click',async()=>{
+					if(reviewModerating)return;
+					if(reviewsDirty&&!confirm('В редакторе есть несохраненные изменения. Продолжить без их сохранения?'))return;
+					if(action==='delete'&&!confirm('Отклонить отзыв? Заявка будет удалена и не появится на сайте.'))return;
+					const current=reviewsGeneration;reviewModerating=true;
+					const buttons=[...get('reviews-pending').querySelectorAll('button')];buttons.forEach(item=>{item.disabled=true;});
+					get('reviews-pending-status').textContent=action==='approve'?'Публикуем отзыв на сайте...':'Отклоняем отзыв...';
+					try{
+						await adminRequest('/api/admin/site-reviews',{method:'POST',headers:{'Content-Type':'application/json'},
+							body:JSON.stringify({action,id:review.id})});
+						if(current!==reviewsGeneration)return;
+						await loadReviews();
+						if(reviewsLoaded)get('reviews-pending-status').textContent=action==='approve'?'Отзыв опубликован на сайте.':'Отзыв отклонен и удален из заявок. На сайт он не опубликован.';
+					}catch(error){if(current===reviewsGeneration)get('reviews-pending-status').textContent=error.message;}
+					finally{reviewModerating=false;buttons.forEach(item=>{item.disabled=false;});}
+				});
+				card.append(button);
+			}
+			list.append(card);
+		}
+		pendingOffset=end;get('reviews-pending-more').hidden=pendingOffset>=pendingReviews.length;
+		if(!pendingReviews.length)get('reviews-pending-status').textContent='Новых отзывов на проверку нет.';
+		else if(pendingOffset>=pendingReviews.length)get('reviews-pending-status').textContent=`Ожидают проверки: ${pendingReviews.length}.`;
+	};
+	get('reviews-pending-more').addEventListener('click',renderPending);
+	const renumberReviews=()=>{
+		[...reviewsEditor.children].forEach((row,index)=>{
+			const position=row.querySelector('[data-review-position]');
+			position.value=String(index+1);position.max=String(reviewsEditor.children.length);
+		});
+	};
+	reviewsForm.addEventListener('input',()=>{reviewsDirty=true;});
+	function reviewRow(review={id:crypto.randomUUID(),name:'',text:'',rating:5,topic:'',example:false}){
+		const row=document.createElement('div');row.className='contact-editor-row';row.dataset.id=review.id;
+		const field=(title,input)=>{const label=text('label',title);label.append(input);row.append(label);};
+		const position=document.createElement('input');position.type='number';position.min='1';position.step='1';position.required=true;
+		position.dataset.reviewPosition='';field('Позиция на сайте',position);
+		position.addEventListener('change',()=>{
+			if(!position.reportValidity())return;
+			const others=[...reviewsEditor.children].filter(item=>item!==row);
+			reviewsEditor.insertBefore(row,others[Number(position.value)-1]||null);
+			renumberReviews();reviewsDirty=true;
+			get('reviews-status').textContent='Порядок изменен. Нажмите «Сохранить и опубликовать отзывы», чтобы применить его на сайте.';
+		});
+		for(const [key,title,max] of [['name','Имя автора',80],['text','Текст отзыва',5000]]){
+			const input=document.createElement(key==='text'?'textarea':'input');input.dataset.field=key;
+			input.value=review[key];input.maxLength=max;input.required=key!=='topic';if(key==='text')input.rows=5;
+			field(title,input);
+		}
+		const rating=document.createElement('select');rating.dataset.field='rating';
+		for(let value=1;value<=5;value++){const option=text('option',`${value} / 5 ${'★'.repeat(value)}`);option.value=String(value);rating.append(option);}
+		rating.value=String(review.rating);field('Рейтинг',rating);
+		const remove=text('button','Удалить отзыв');remove.type='button';
+		remove.addEventListener('click',()=>{row.remove();renumberReviews();reviewsDirty=true;updateReviewAdd();});
+		row.append(remove);reviewsEditor.append(row);renumberReviews();updateReviewAdd();
+	}
+	async function loadReviews(){
+		const current=++reviewsGeneration;reviewsLoaded=false;updateReviewAdd();
+		pendingReviews=[];pendingOffset=0;get('reviews-pending').replaceChildren();
+		get('reviews-pending-status').textContent='Загружаем отзывы на проверку...';
+		reviewsForm.querySelector('[type="submit"]').disabled=true;get('reviews-status').textContent='Загружаем отзывы...';
+		try{
+			const result=await adminRequest('/api/admin/site-reviews');
+			if(current!==reviewsGeneration)return;
+			const reviews=window.siteReviews.validate(result.reviews);
+			pendingReviews=validatePendingReviews(result.pending);
+			pendingOffset=0;get('reviews-pending').replaceChildren();renderPending();
+			reviewsEditor.replaceChildren();reviewsLoaded=true;
+			for(const review of reviews)reviewRow(review);
+			reviewsDirty=false;updateReviewAdd();reviewsForm.querySelector('[type="submit"]').disabled=false;get('reviews-status').textContent='';
+		}catch(error){if(current===reviewsGeneration){
+			get('reviews-status').textContent=error.message;get('reviews-pending-status').textContent=error.message;
+		}}
+	}
+	get('reviews-add').addEventListener('click',()=>{if(reviewsLoaded&&reviewsEditor.children.length<500){reviewRow();reviewsDirty=true;}});
+	reviewsForm.addEventListener('submit',async event=>{
+		event.preventDefault();if(!reviewsLoaded)return;
+		const current=reviewsGeneration,save=reviewsForm.querySelector('[type="submit"]');save.disabled=true;
+		get('reviews-status').textContent='Сохраняем отзывы...';
+		try{
+			const reviews=window.siteReviews.validate([...reviewsEditor.children].map(row=>({
+				id:row.dataset.id,topic:'',example:false,...Object.fromEntries([...row.querySelectorAll('[data-field]')].map(input=>
+					[input.dataset.field,input.type==='checkbox'?input.checked:input.dataset.field==='rating'?Number(input.value):input.value.replace(/\s+/g,' ').trim()]))
+			})));
+			await adminRequest('/api/admin/site-reviews',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reviews})});
+			if(current===reviewsGeneration){reviewsDirty=false;get('reviews-status').textContent='Отзывы и их порядок опубликованы. Изменения появятся при следующем открытии сайта.';}
+		}catch(error){if(current===reviewsGeneration)get('reviews-status').textContent=error.message;}
+		finally{if(current===reviewsGeneration)save.disabled=false;}
+	});
+	document.addEventListener('admin-login',()=>{if(!get('reviews-section').hidden)loadReviews();});
+	document.addEventListener('admin-logout',()=>{
+		reviewsGeneration++;reviewsLoaded=false;reviewsDirty=false;reviewsEditor.replaceChildren();get('reviews-status').textContent='';
+		pendingReviews=[];pendingOffset=0;get('reviews-pending').replaceChildren();get('reviews-pending-status').textContent='';
+		get('reviews-pending-more').hidden=true;
+		updateReviewAdd();reviewsForm.querySelector('[type="submit"]').disabled=true;
+	});
+	const contactsForm=get('contacts-form'),contactList=get('contacts-links');
+	const contactSaveButtons=[...contactsForm.querySelectorAll('[type="submit"]')];
+	const disableContactSave=disabled=>contactSaveButtons.forEach(button=>{button.disabled=disabled;});
+	let contactsGeneration=0,contactsLoaded=false;
+	function contactRow(link={type:'website',label:'',url:'',enabled:true}){
+		const row=document.createElement('div');row.className='contact-editor-row';
+		const field=(title,input)=>{const label=text('label',title);label.append(input);row.append(label);return input;};
+		const type=document.createElement('select');type.dataset.field='type';
+		for(const [key,title] of Object.entries(window.siteContacts.types)){const option=text('option',title);option.value=key;type.append(option);}
+		type.value=link.type;field('Соцсеть / тип кнопки',type);
+		for(const [key,title,max] of [['label','Название кнопки',60],['url','Ссылка',500]]){
+			const input=document.createElement('input');input.dataset.field=key;input.value=link[key];input.maxLength=max;input.required=true;
+			input.placeholder=key==='url'?'https://example.ee, mailto:email@example.ee или tel:+372...':'Название';
+			field(title,input);
+		}
+		const enabled=document.createElement('input');enabled.type='checkbox';enabled.dataset.field='enabled';enabled.checked=link.enabled;
+		field('Показывать кнопку на сайте',enabled).parentElement.className='contact-editor-toggle';
+		const remove=text('button','Удалить кнопку');remove.type='button';
+		remove.addEventListener('click',()=>{row.remove();get('contacts-add').disabled=!contactsLoaded||contactList.children.length>=12;});row.append(remove);
+		contactList.append(row);get('contacts-add').disabled=!contactsLoaded||contactList.children.length>=12;
+	}
+	async function loadContacts(){
+		const current=++contactsGeneration;contactsLoaded=false;
+		disableContactSave(true);get('contacts-add').disabled=true;
+		get('contacts-status').textContent='Загружаем контакты...';
+		try{
+			const result=await adminRequest('/api/admin/site-contacts');
+			if(current!==contactsGeneration)return;
+			const settings=window.siteContacts.validate(result.settings);
+			contactList.replaceChildren();contactsLoaded=true;
+			for(const link of settings.links)contactRow(link);
+			get('contacts-add').disabled=settings.links.length>=12;
+			disableContactSave(false);get('contacts-status').textContent='';
+		}catch(error){if(current===contactsGeneration)get('contacts-status').textContent=error.message;}
+	}
+	get('contacts-add').addEventListener('click',()=>{if(contactsLoaded&&contactList.children.length<12)contactRow();});
+	contactsForm.addEventListener('submit',async event=>{
+		event.preventDefault();if(!contactsLoaded)return;
+		const current=contactsGeneration;disableContactSave(true);
+		get('contacts-status').textContent='Сохраняем контакты...';
+		try{
+			const latest=await adminRequest('/api/admin/site-contacts');
+			if(current!==contactsGeneration)return;
+			const settings=window.siteContacts.validate({
+				footer:window.siteContacts.validate(latest.settings).footer,
+				links:[...contactList.children].map(row=>Object.fromEntries([...row.querySelectorAll('[data-field]')].map(input=>
+					[input.dataset.field,input.type==='checkbox'?input.checked:input.value.trim()])))
+			});
+			await adminRequest('/api/admin/site-contacts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({settings})});
+			if(current===contactsGeneration)get('contacts-status').textContent='Контакты сохранены. Изменения появятся при следующем открытии сайта. PDF-счета не изменены.';
+		}catch(error){if(current===contactsGeneration)get('contacts-status').textContent=error.message;}
+		finally{if(current===contactsGeneration)disableContactSave(false);}
+	});
+	document.addEventListener('admin-login',()=>{if(!get('contacts-section').hidden)loadContacts();});
+	document.addEventListener('admin-logout',()=>{
+		contactsGeneration++;contactsLoaded=false;contactsForm.reset();contactList.replaceChildren();get('contacts-status').textContent='';
+		disableContactSave(true);get('contacts-add').disabled=true;
+	});
+	const textsForm=get('texts-form');
+	let textsGeneration=0;
+	const textLabels={hero_eyebrow:'Верхняя подпись: Психолог · КПТ-подход · Онлайн',
+		hero_title_first:'Заголовок: первая строка',hero_title_second:'Заголовок: вторая строка',
+		hero_title_accent:'Заголовок: выделенная часть (курсив)',hero_intro:'Описание под заголовком',
+		hero_button:'Кнопка: Записаться на консультацию',
+		hero_benefit_online:'Преимущество: Консультации из любой точки',
+		hero_benefit_individual:'Преимущество: Индивидуальная работа',
+		hero_benefit_privacy:'Преимущество: Безопасность и конфиденциальность',
+		about_label:'Название блока (шапка, подвал и страница)',
+		about_title:'Заголовок: Опыт и образование',about_body:'Текст под заголовком: Меня зовут...',
+		about_sharing:'Абзац: Мне хочется делиться...',about_parent:'Абзац: Есть выражение...',
+		about_potential:'Абзац: Я верю...',approach_title:'Подзаголовок: Мой подход',approach_body:'Текст под подзаголовком: В своей практике...',
+		approach_changes:'Абзац: Когда привычные способы...',approach_result:'Абзац: И как результат...',
+		about_button:'Кнопка: Узнать больше',
+		services_label:'Название блока (шапка, подвал и страница)',services_title:'Заголовок: С чем я работаю',
+		services_intro:'Текст под заголовком',
+		service_anxiety_title:'Карточка 1: Тревожность - название',service_anxiety_body:'Карточка 1: Тревожность - описание',
+		service_relationships_title:'Карточка 2: Отношения - название',service_relationships_body:'Карточка 2: Отношения - описание',
+		service_selfesteem_title:'Карточка 3: Самооценка - название',service_selfesteem_body:'Карточка 3: Самооценка - описание',
+		service_burnout_title:'Карточка 4: Эмоциональное выгорание - название',service_burnout_body:'Карточка 4: Эмоциональное выгорание - описание',
+		service_boundaries_title:'Карточка 5: Личные границы - название',service_boundaries_body:'Карточка 5: Личные границы - описание',
+		service_awareness_title:'Карточка 6: Осознанность - название',service_awareness_body:'Карточка 6: Осознанность - описание',
+		format_label:'Название блока (шапка, подвал и страница)',format_title:'Заголовок: Как проходят консультации',
+		format_intro:'Текст под заголовком',format_online_title:'Онлайн - название',format_online_body:'Онлайн - описание',
+		format_duration_title:'Продолжительность - название',format_duration_body:'Продолжительность - описание',
+		format_booking_title:'Запись - название',format_booking_body:'Запись - описание',
+		format_science_title:'Научный подход - название',format_science_body:'Научный подход - описание',
+		format_quote:'Цитата',format_quote_author:'Автор цитаты',
+		pricing_label:'Название блока (шапка, подвал и страница)',pricing_title:'Заголовок: Пакеты консультаций',
+		pricing_intro:'Текст под заголовком',
+		free_title:'Первая консультация - название',free_description:'Первая консультация - описание',free_button:'Первая консультация - кнопка записи',
+		single_title:'Индивидуальная консультация - название',single_description:'Индивидуальная консультация - описание',single_button:'Индивидуальная консультация - кнопка записи',
+		five_title:'Пакет из 5 консультаций - название',five_description:'Пакет из 5 консультаций - описание',
+		five_button:'Пакет из 5 консультаций - кнопка записи',five_buy_button:'Пакет из 5 консультаций - кнопка покупки',
+		ten_title:'Пакет из 10 консультаций - название',ten_description:'Пакет из 10 консультаций - описание',
+		ten_button:'Пакет из 10 консультаций - кнопка записи',ten_buy_button:'Пакет из 10 консультаций - кнопка покупки',
+		reviews_label:'Название блока (шапка, подвал и страница)',reviews_title:'Заголовок: Отзывы клиентов',
+		reviews_button:'Кнопка: Написать отзыв',review_modal_title:'Окно: заголовок',review_modal_note:'Окно: пояснение о проверке',
+		review_name_label:'Имя - подпись поля',review_name_placeholder:'Имя - подсказка в поле',
+		review_anonymous_label:'Подпись выбора анонимности',review_rating_label:'Подпись оценки',
+		review_text_label:'Текст отзыва - подпись поля',review_text_placeholder:'Текст отзыва - подсказка в поле',
+		review_submit:'Кнопка отправки',review_close:'Название кнопки закрытия для озвучивания',
+		reviews_empty:'Текст, когда отзывов нет',review_sending:'Сообщение во время отправки',review_success:'Текст в окне благодарности после отправки',
+		contact_label:'Название блока (шапка, подвал и страница)',contact_title:'Заголовок: Вопросы и запись',
+		contact_body:'Текст под заголовком',contact_social_title:'Текст 2: Записаться на консультацию',
+		header_name:'Имя возле логотипа',header_tagline:'Подпись возле логотипа',header_button:'Текст кнопки записи',
+		footer_name:'Имя в подвале',footer_tagline:'Подпись: психолог, кпт-подход',
+		footer_description:'Описание под именем (Enter - перенос строки)',footer_navigation:'Заголовок: Навигация',
+		footer_details_title:'Заголовок: Реквизиты и контакты',footer_company:'Название фирмы',
+		footer_registration:'Регистрационный код',footer_phone:'Телефон подвала',footer_email:'Email подвала',
+		footer_copyright:'Нижняя строка: имя, год и права'};
+	for(const [key,title] of Object.entries(textLabels)){
+		const max=window.siteTexts.fields[key],label=text('label',title);
+		const input=document.createElement(key.startsWith('header_')||key.startsWith('footer_')&&key!=='footer_description'||!key.startsWith('service_')&&(!key.startsWith('format_')||key==='format_label'||key==='format_quote_author')&&(key.endsWith('_title')||key.endsWith('_label')||key.endsWith('_button')||['format_quote_author','hero_eyebrow','hero_title_first','hero_title_second'].includes(key))?'input':'textarea');
+		input.name=key;input.maxLength=max;input.required=true;
+		if(key==='footer_email')input.type='email';
+		if(key==='footer_phone')input.type='tel';
+		if(input.tagName==='TEXTAREA')input.rows=key.startsWith('service_')?key.endsWith('_title')?2:3:key.endsWith('_description')?3:5;
+		label.append(input);
+		get(key.startsWith('header_')?'texts-header-fields':key.startsWith('footer_')?'texts-footer-fields':key.startsWith('contact_')?'texts-contact-fields':/^(review|reviews)_/.test(key)?'texts-reviews-fields':key.startsWith('hero_')?'texts-hero-fields':key.startsWith('format_')?'texts-format-fields':key.startsWith('service_')||key.startsWith('services_')?'texts-services-fields':/^(pricing|free|single|five|ten)_/.test(key)?'texts-package-fields':'texts-about-fields').append(label);
+	}
+	textsForm.addEventListener('invalid',event=>{
+		for(let panel=event.target.closest('details');panel;panel=panel.parentElement.closest('details'))panel.open=true;
+	},true);
+	async function loadTexts(){
+		window.siteLogo.loadAdmin();
+		const current=++textsGeneration;
+		const save=textsForm.querySelector('[type="submit"]');
+		save.disabled=true;get('texts-status').textContent='Загружаем тексты...';
+		try{
+			const result=await adminRequest('/api/admin/site-texts');
+			if(current!==textsGeneration)return;
+			const texts=window.siteTexts.validate(result.texts);
+			for(const key of Object.keys(textLabels))textsForm.elements.namedItem(key).value=texts[key];
+			get('texts-status').textContent='';save.disabled=false;
+		}catch(error){if(current===textsGeneration)get('texts-status').textContent=error.message;}
+	}
+	textsForm.addEventListener('submit',async event=>{
+		event.preventDefault();
+		const current=textsGeneration,save=textsForm.querySelector('[type="submit"]');save.disabled=true;
+		get('texts-status').textContent='Сохраняем тексты...';
+		try{
+			const texts=window.siteTexts.validate(Object.fromEntries(Object.keys(textLabels).map(key=>
+				[key,window.siteTexts.normalize(key,textsForm.elements.namedItem(key).value)])));
+			await adminRequest('/api/admin/site-texts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texts})});
+			if(current!==textsGeneration)return;
+			for(const key of Object.keys(textLabels))textsForm.elements.namedItem(key).value=texts[key];
+			get('texts-status').textContent='Тексты сохранены. Посетители увидят их при следующем открытии сайта.';
+		}catch(error){if(current===textsGeneration)get('texts-status').textContent=error.message;}
+		finally{if(current===textsGeneration)save.disabled=false;}
+	});
+	document.addEventListener('admin-login',()=>{if(!get('texts-section').hidden)loadTexts();});
+	document.addEventListener('admin-logout',()=>{
+		textsGeneration++;textsForm.reset();get('texts-status').textContent='';
+		textsForm.querySelector('[type="submit"]').disabled=true;
+	});
+	const invoiceSettingsForm=get('invoice-settings-form');
+	let invoiceSettingsGeneration=0;
+	const invoiceFields=['name','address','registration_code','phone','email','website','bank','swift','iban'];
+	const invoiceVat=invoiceSettingsForm.elements.namedItem('vatRegistered');
+	const invoiceVatNumber=invoiceSettingsForm.elements.namedItem('vatNumber');
+	function calculateInvoiceVat(){
+		get('invoice-vat-number-field').hidden=!invoiceVat.checked;
+		invoiceVatNumber.disabled=!invoiceVat.checked;invoiceVatNumber.required=invoiceVat.checked;
+		const input=get('invoice-calculator-gross');
+		if(!input.validity.valid){get('invoice-calculator-result').textContent='Укажите корректную конечную цену.';return;}
+		const gross=Math.round(Number(input.value)*100);
+		const net=invoiceVat.checked?Math.round(gross*100/124):gross;
+		const money=window.servicePricing.money;
+		get('invoice-calculator-result').textContent=invoiceVat.checked
+			?`Без НДС: ${money(net)}. Käibemaks 24%: ${money(gross-net)}. Итого для клиента: ${money(gross)}.`
+			:`Без НДС. Итого для клиента: ${money(gross)}.`;
+	}
+	invoiceVat.addEventListener('change',calculateInvoiceVat);
+	get('invoice-calculator-gross').addEventListener('input',calculateInvoiceVat);
+	calculateInvoiceVat();
+	async function loadInvoiceSettings(){
+		window.invoiceLogo.loadAdmin();
+		const current=++invoiceSettingsGeneration;
+		const save=invoiceSettingsForm.querySelector('[type="submit"]');
+		save.disabled=true;get('invoice-settings-status').textContent='Загружаем реквизиты...';
+		try{
+			const result=await adminRequest('/api/admin/invoice-settings');
+			if(current!==invoiceSettingsGeneration)return;
+			if(!result.issuer||!invoiceFields.every(key=>typeof result.issuer[key]==='string')||
+				typeof result.vatRegistered!=='boolean'||typeof result.vatNumber!=='string')throw new Error('Не удалось прочитать реквизиты фирмы.');
+			for(const key of invoiceFields)invoiceSettingsForm.elements.namedItem(key).value=result.issuer[key];
+			invoiceVat.checked=result.vatRegistered;invoiceVatNumber.value=result.vatNumber;
+			calculateInvoiceVat();
+			get('invoice-settings-status').textContent='';save.disabled=false;
+		}catch(error){if(current===invoiceSettingsGeneration)get('invoice-settings-status').textContent=error.message;}
+	}
+	invoiceSettingsForm.addEventListener('submit',async event=>{
+		event.preventDefault();
+		const current=invoiceSettingsGeneration;
+		const save=invoiceSettingsForm.querySelector('[type="submit"]');save.disabled=true;
+		get('invoice-settings-status').textContent='Сохраняем реквизиты...';
+		const issuer=Object.fromEntries(invoiceFields.map(key=>[key,invoiceSettingsForm.elements.namedItem(key).value.trim()]));
+		issuer.iban=issuer.iban.replace(/\s/g,'').toUpperCase();
+		issuer.swift=issuer.swift.toUpperCase();
+		try{
+			const vatNumber=invoiceVat.checked?invoiceVatNumber.value.trim().toUpperCase():'';
+			await adminRequest('/api/admin/invoice-settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({issuer,vatRegistered:invoiceVat.checked,vatNumber})});
+			if(current!==invoiceSettingsGeneration)return;
+			for(const key of invoiceFields)invoiceSettingsForm.elements.namedItem(key).value=issuer[key];
+			invoiceVatNumber.value=vatNumber;
+			get('invoice-settings-status').textContent='Реквизиты сохранены. Новые заказы и PDF-счета будут с этими данными.';
+		}catch(error){if(current===invoiceSettingsGeneration)get('invoice-settings-status').textContent=error.message;}
+		finally{if(current===invoiceSettingsGeneration)save.disabled=false;}
+	});
+	document.addEventListener('admin-login',()=>{if(!get('invoices-section').hidden)loadInvoiceSettings();});
+	document.addEventListener('admin-logout',()=>{
+		invoiceSettingsGeneration++;invoiceSettingsForm.reset();
+		calculateInvoiceVat();
+		get('invoice-settings-status').textContent='';
+		invoiceSettingsForm.querySelector('[type="submit"]').disabled=true;
+	});
+	const pricesForm=get('prices-form');
+	let pricesGeneration=0;
+	const readPrices=()=>Object.fromEntries(window.servicePricing.keys.map(key=>[key,Math.round(Number(pricesForm.elements.namedItem(key).value)*100)]));
+	const calculatePrices=()=>{
+		if(!pricesForm.checkValidity())return;
+		const prices=readPrices();
+		for(const key of ['five','ten']){
+			const metric=window.servicePricing.metrics(prices,key);
+			get(`prices-${key}`).textContent=`Одна встреча: ${metric.rate}. Экономия: ${window.servicePricing.money(metric.saving)}.`;
+		}
+	};
+	async function loadPrices(){
+		const current=++pricesGeneration;
+		pricesForm.querySelector('[type="submit"]').disabled=true;
+		get('prices-status').textContent='Загружаем цены...';
+		try{
+			const result=await adminRequest('/api/admin/prices');
+			if(current!==pricesGeneration)return;
+			const prices=window.servicePricing.validate(result.prices);
+			for(const key of window.servicePricing.keys)pricesForm.elements.namedItem(key).value=(prices[key]/100).toFixed(2);
+			calculatePrices();get('prices-status').textContent='';
+			pricesForm.querySelector('[type="submit"]').disabled=false;
+		}catch(error){if(current===pricesGeneration)get('prices-status').textContent=error.message;}
+	}
+	document.addEventListener('admin-login',()=>{if(!get('prices-section').hidden)loadPrices();});
+	pricesForm.addEventListener('input',calculatePrices);
+	pricesForm.addEventListener('submit',async event=>{
+		event.preventDefault();
+		const save=pricesForm.querySelector('[type="submit"]');save.disabled=true;
+		const current=pricesGeneration;
+		try{
+			const prices=window.servicePricing.validate(readPrices());
+			await adminRequest('/api/admin/prices',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prices})});
+			if(current===pricesGeneration)get('prices-status').textContent='Цены сохранены. Новые заказы и счета будут с новой стоимостью.';
+		}catch(error){if(current===pricesGeneration)get('prices-status').textContent=error.message;}
+		finally{if(current===pricesGeneration)save.disabled=false;}
+	});
+	document.addEventListener('admin-logout',()=>{
+		pricesGeneration++;pricesForm.reset();get('prices-status').textContent='';
+		get('prices-five').textContent='';get('prices-ten').textContent='';
+		pricesForm.querySelector('[type="submit"]').disabled=true;
+	});
+	adminForm.addEventListener('submit',()=>{
+		if(!get('calendar-section').hidden)load().catch(fail);
+		else if(!get('prices-section').hidden)loadPrices();
+		else if(!get('invoices-section').hidden)loadInvoiceSettings();
+		else if(!get('texts-section').hidden)loadTexts();
+		else if(!get('contacts-section').hidden)loadContacts();
+		else if(!get('reviews-section').hidden)loadReviews();
+	});
 	for(const [id,delta] of [['calendar-prev',-1],['calendar-next',1]]){
 		get(id).addEventListener('click',()=>{
 			const value=new Date(`${month}-01T12:00:00Z`);

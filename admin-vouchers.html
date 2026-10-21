@@ -13,6 +13,9 @@
 		.eyebrow { margin: 0; color: #756b63; font-size: 12px; font-weight: 700; }
 		.admin-login, .order-card { padding: 18px; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; }
 		.admin-login { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; margin-top: clamp(48px, 12vh, 120px); }
+		.admin-login .admin-remember { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+		.admin-login .admin-remember input { width: 18px; height: 18px; margin: 0; }
+		.admin-remember-note { grid-column: 1 / -1; margin: 0; font-size: 13px; }
 		[hidden], .admin-login[hidden] { display: none !important; }
 		.admin-header { display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
 		.admin-site-link { display: inline-flex; align-items: center; min-height: 42px; margin-right: auto; padding: 8px 14px; border: 1px solid #d7cec5; border-radius: 6px; background: #fffdfa; color: #315f4f; font-weight: 600; text-decoration: none; }
@@ -34,6 +37,11 @@
 		#admin-status { min-height: 22px; margin: 14px 0; color: #315f4f; }
 		#admin-status.is-error { color: #8a3b33; }
 		main:has(#admin-workspace:not([hidden]) #calendar-section:not([hidden])) #admin-status:not(.is-error),
+		main:has(#admin-workspace:not([hidden]) #prices-section:not([hidden])) #admin-status:not(.is-error),
+		main:has(#admin-workspace:not([hidden]) #invoices-section:not([hidden])) #admin-status:not(.is-error),
+		main:has(#admin-workspace:not([hidden]) #texts-section:not([hidden])) #admin-status:not(.is-error),
+		main:has(#admin-workspace:not([hidden]) #contacts-section:not([hidden])) #admin-status:not(.is-error),
+		main:has(#admin-workspace:not([hidden]) #reviews-section:not([hidden])) #admin-status:not(.is-error),
 		#calendar-status:empty { display: none; }
 		.order-list { display: grid; gap: 12px; }
 		.order-card { display: grid; gap: 12px; }
@@ -101,6 +109,23 @@
 		.calendar-card summary { cursor: pointer; font-weight: 600; }
 		details.calendar-card[open] > :not(summary) { margin-top: 14px; }
 		.calendar-form { display: grid; gap: 10px; }
+		.contact-editor-row { display: grid; gap: 10px; padding: 14px; border: 1px solid #ded5cb; border-radius: 6px; min-width: 0; }
+		#reviews-section, #reviews-section .calendar-card, #reviews-section .calendar-form { min-width: 0; }
+		#reviews-section .contact-editor-row { grid-template-columns: minmax(0, 1fr); overflow-wrap: anywhere; }
+		#reviews-section .contact-editor-row > *, #reviews-section label, #reviews-section input, #reviews-section textarea, #reviews-section select { min-width: 0; max-width: 100%; }
+		#reviews-section button { white-space: normal; overflow-wrap: anywhere; }
+		.contact-editor-toggle { display: flex; gap: 10px; align-items: center; }
+		.contact-editor-toggle input { width: 20px; min-height: 20px; height: 20px; accent-color: #2d5647; }
+		#invoice-settings-form textarea, #texts-form textarea, #reviews-form textarea { width: 100%; min-height: 84px; padding: 9px 11px; border: 1px solid #d7cec5; border-radius: 4px; font: inherit; color: #292621; resize: vertical; }
+		@media (min-width: 700px) {
+			#invoice-settings-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+			#invoice-settings-form label:has([name="name"], [name="address"], [name="email"], [name="website"], [name="iban"]),
+			#invoice-settings-form button, #invoice-settings-form .invoice-vat-settings { grid-column: 1 / -1; }
+		}
+		.invoice-vat-settings { display: grid; gap: 12px; padding: 14px; border: 1px solid #ded5cb; border-radius: 6px; background: #fdfbf7; min-width: 0; margin: 0; }
+		.invoice-vat-toggle { display: flex; align-items: center; gap: 10px; }
+		.invoice-vat-toggle input { width: 20px; height: 20px; min-height: 20px; flex: 0 0 auto; accent-color: #2d5647; }
+		.invoice-vat-settings p { margin: 0; font-size: 13px; }
 		.calendar-form select { min-height: 42px; padding: 8px; font: inherit; color: #292621; background: white; border: 1px solid #d7cec5; border-radius: 4px; }
 		.calendar-week-row { display: grid; gap: 8px; margin: 16px 0; padding-bottom: 16px; border-bottom: 1px solid #e6ded5; }
 		.calendar-week-row > button { justify-self: start; }
@@ -260,7 +285,10 @@
 		<form id="admin-form" class="admin-login">
 			<label for="admin-key">Ключ администратора<input id="admin-key" type="password" autocomplete="current-password" required></label>
 			<button type="submit">Войти</button>
+			<label class="admin-remember"><input id="admin-remember" type="checkbox">Запомнить меня на этом устройстве</label>
+			<p class="admin-remember-note">Только для доверенного устройства. Ключ сохранится в этом браузере. Чтобы удалить его, нажмите «Выйти».</p>
 		</form>
+		<p id="admin-storage-status" role="alert" hidden></p>
 		<p id="admin-status" aria-live="polite"></p>
 		<div id="admin-workspace" hidden>
 		<nav class="admin-sidebar" aria-label="Разделы управления">
@@ -278,7 +306,160 @@
 			<p class="admin-sidebar-title">Панель управления</p>
 			<button id="section-vouchers" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 5v14M12 10h5M12 14h3"/></svg><span>Управление ваучерами</span></button>
 			<button id="section-calendar" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18M7 15h2M13 15h2"/></svg><span>Календарь</span></button>
+			<button id="section-prices" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5a7.5 7.5 0 1 0 0 13M4 10h11M4 14h9"/></svg><span>Цены</span></button>
+			<button id="section-invoices" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v5h4M9 12h7M9 16h7"/></svg><span>Счета</span></button>
+			<button id="section-texts" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M12 5v15M8 20h8"/></svg><span>Текста</span></button>
+			<button id="section-reviews" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L3 10l6-1z"/></svg><span>Отзывы</span></button>
+			<button id="section-contacts" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg><span>Контакты</span></button>
 		</nav>
+		<section id="reviews-section" hidden aria-label="Отзывы">
+			<div class="calendar-card">
+				<h2>Отзывы</h2>
+				<p>Добавляйте реальные отзывы вручную с согласия автора или публикуйте заявки после проверки. Имя, текст и рейтинг можно исправить. Вместо фото остается первая буква имени. Заявки посетителей не появляются на сайте до одобрения.</p>
+				<p>«Опубликовать отзыв» сразу размещает заявку на сайте в конце списка. «Отклонить отзыв» удаляет заявку без публикации.</p>
+				<p>В опубликованных отзывах задайте «Позицию на сайте»: 1 - первый отзыв, 2 - второй. При переносе остальные номера сдвигаются автоматически. Добавление, изменения, порядок и удаление карточек применяются кнопкой «Сохранить и опубликовать отзывы». До 500 отзывов, текст до 5000 символов.</p>
+				<h3>Ожидают проверки</h3>
+				<p id="reviews-pending-status" role="status"></p>
+				<div id="reviews-pending" class="calendar-form"></div>
+				<button id="reviews-pending-more" type="button" hidden>Показать еще</button>
+				<h3>Отзывы для публикации и порядок на сайте</h3>
+				<form id="reviews-form" class="calendar-form">
+					<div id="reviews-editor" class="calendar-form"></div>
+					<button id="reviews-add" type="button" disabled>Добавить отзыв</button>
+					<button type="submit" disabled>Сохранить и опубликовать отзывы</button>
+				</form>
+				<p id="reviews-status" role="status"></p>
+			</div>
+		</section>
+		<section id="contacts-section" hidden aria-label="Контакты">
+			<form id="contacts-form" class="calendar-form">
+				<div class="calendar-card">
+					<h2>КОНТАКТЫ: Вопросы и запись</h2>
+					<p>Выберите соцсеть и укажите полный адрес. Переключатель временно скрывает кнопку, сохраняя ее ссылку. Можно добавить до 12 кнопок. Для другой соцсети выберите «Сайт / другая ссылка».</p>
+					<div id="contacts-links" class="calendar-form"></div>
+					<button id="contacts-add" type="button">Добавить кнопку</button>
+					<p>Для TikTok добавьте кнопку, выберите тип TikTok и укажите ссылку на профиль. Он появится между WhatsApp и почтой. Снимите «Показывать кнопку на сайте», чтобы скрыть любую иконку без пустого места в ряду.</p>
+					<button type="submit" disabled>Сохранить изменения</button>
+				</div>
+				<p id="contacts-status" role="status"></p>
+			</form>
+		</section>
+		<section id="texts-section" hidden aria-label="Текста">
+			<form id="texts-form" class="calendar-form">
+				<details class="calendar-card">
+					<summary>Главная страница</summary>
+					<p>Каждая часть заголовка и каждое преимущество редактируются отдельно. В выделенной части заголовка и преимуществах Enter задает перенос строки. Курсив, иконки и оформление сохраняются.</p>
+					<div id="texts-hero-fields" class="calendar-form"></div>
+				</details>
+				<details class="calendar-card">
+					<summary>Обо мне</summary>
+					<p>Название блока меняется одновременно в шапке, подвале и на странице. Ниже отдельно редактируются заголовок, абзацы и подзаголовок «Мой подход» с его текстом. Оформление сохраняется.</p>
+					<div id="texts-about-fields" class="calendar-form"></div>
+				</details>
+				<details class="calendar-card">
+					<summary>Услуги</summary>
+					<p>Название блока меняется в шапке, подвале и на странице. Заголовок, вводный текст, названия и описания шести карточек редактируются отдельно. В карточках Enter задает перенос строки. Иконки и оформление сохраняются.</p>
+					<div id="texts-services-fields" class="calendar-form"></div>
+				</details>
+				<details class="calendar-card">
+					<summary>Как проходит</summary>
+					<p>Название блока связано с шапкой, подвалом и подписью на странице. Заголовок, основной текст, четыре пункта, цитата и ее автор редактируются отдельно. В заголовке, пунктах и цитате Enter задает перенос строки. Длительность здесь - только текст, настройки календаря не меняются.</p>
+					<div id="texts-format-fields" class="calendar-form"></div>
+				</details>
+				<details class="calendar-card">
+					<summary>Стоимость</summary>
+					<p>Название блока меняется в шапке, подвале и на странице. Заголовок, вводный текст, названия, описания и кнопки каждой карточки редактируются отдельно. Тексты кнопок не меняют их действия. Цены настраиваются в разделе «Цены».</p>
+					<div id="texts-package-fields" class="calendar-form"></div>
+				</details>
+				<details class="calendar-card">
+					<summary>Отзывы</summary>
+					<p>Название блока связано с шапкой, подвалом и страницей. Заголовок, кнопки, подписи и подсказки формы редактируются отдельно. Сообщение после отправки должно сообщать о проверке, а не о немедленной публикации. Анонимность, рейтинг, лимиты и модерация не меняются.</p>
+					<div id="texts-reviews-fields" class="calendar-form"></div>
+				</details>
+				<details class="calendar-card">
+					<summary>Контакты</summary>
+					<p>Название блока меняется в шапке, подвале и на странице. Заголовок, основной текст и подпись перед соцсетями редактируются отдельно. Ссылки настраиваются в разделе «Контакты», реквизиты подвала - ниже в «Шапка и подвал».</p>
+					<div id="texts-contact-fields" class="calendar-form"></div>
+				</details>
+				<details class="calendar-card">
+					<summary>Шапка и подвал</summary>
+					<details class="calendar-card">
+						<summary>Логотип</summary>
+						<p>Один логотип для шапки и подвала. Выберите PNG, JPEG или WebP до 5 МБ, желательно с прозрачным фоном. Изображение будет уменьшено до 512 x 512 пикселей с сохранением пропорций. PDF-счета, иконка вкладки и изображение для соцсетей не меняются.</p>
+						<img id="logo-preview" src="images/logo.png" alt="Предпросмотр логотипа" style="display:block;max-width:200px;max-height:140px;object-fit:contain">
+						<label>Новый логотип<input id="logo-file" type="file" accept="image/png,image/jpeg,image/webp" disabled></label>
+						<button id="logo-save" type="button" disabled>Сохранить логотип</button>
+						<button id="logo-reset" type="button" disabled>Вернуть исходный логотип</button>
+						<p id="logo-status" role="status"></p>
+					</details>
+					<details class="calendar-card">
+						<summary>Шапка</summary>
+						<p>Имя и подпись возле логотипа, а также название кнопки записи редактируются отдельно. Регистр букв сохраняется. Действие кнопки не меняется.</p>
+						<div id="texts-header-fields" class="calendar-form"></div>
+					</details>
+					<details class="calendar-card">
+						<summary>Подвал</summary>
+						<p>Имя, подпись, описание, заголовки и контакты подвала. Пункты навигации меняются в настройках соответствующих блоков. Эти данные не влияют на реквизиты и контакты в PDF-счетах.</p>
+						<div id="texts-footer-fields" class="calendar-form"></div>
+					</details>
+				</details>
+				<button type="submit" disabled>Сохранить тексты</button>
+				<p id="texts-status" role="status"></p>
+			</form>
+		</section>
+		<section id="invoices-section" hidden aria-label="Счета">
+			<div class="calendar-card">
+				<h2>Данные фирмы</h2>
+				<p>Реквизиты и НДС в PDF-счетах для новых заказов. Старые заказы и счета сохраняют прежние данные. Цены на сайте всегда конечные для клиента, налог не добавляется сверху.</p>
+				<form id="invoice-settings-form" class="calendar-form">
+					<label>Название фирмы<input name="name" maxlength="100" required></label>
+					<label>Адрес<textarea name="address" rows="3" maxlength="240" required></textarea></label>
+					<label>Регистрационный код<input name="registration_code" maxlength="30" required></label>
+					<fieldset class="invoice-vat-settings">
+						<legend>Käibemaks / НДС</legend>
+						<label class="invoice-vat-toggle"><input name="vatRegistered" type="checkbox">Фирма является плательщиком НДС (24%)</label>
+						<label id="invoice-vat-number-field" hidden>Номер KMKR<input name="vatNumber" maxlength="11" pattern="EE[0-9]{9}" placeholder="EE123456789" disabled></label>
+						<p>НДС включен в цену. Если переключатель выключен, счет формируется без НДС, как раньше.</p>
+						<label>Калькулятор: конечная цена, евро<input id="invoice-calculator-gross" type="number" min="0.01" max="100000" step="0.01" value="225" required></label>
+						<p id="invoice-calculator-result" role="status"></p>
+					</fieldset>
+					<label>Телефон<input name="phone" type="tel" maxlength="40" required></label>
+					<label>Электронная почта<input name="email" type="email" maxlength="120" required></label>
+					<label>Веб-сайт<input name="website" maxlength="120" placeholder="danilpsy.ee" required></label>
+					<label>Банк<input name="bank" maxlength="80" required></label>
+					<label>SWIFT / BIC<input name="swift" maxlength="11" pattern="[A-Za-z]{6}[A-Za-z0-9]{2}([A-Za-z0-9]{3})?" required></label>
+					<label>IBAN<input name="iban" maxlength="42" required></label>
+					<button type="submit" disabled>Сохранить реквизиты</button>
+				</form>
+				<p id="invoice-settings-status" role="status"></p>
+				<details class="calendar-card">
+					<summary>Логотип в PDF-счетах</summary>
+					<p>Отдельно от логотипа сайта. Загрузите PNG, JPEG или WebP до 5 МБ. Изображение будет уменьшено до 512 x 512 пикселей с сохранением пропорций. Изменения применяются только к новым заказам. Старые заказы сохраняют свой логотип, даже если PDF создается позже.</p>
+					<img id="invoice-logo-preview" src="images/logo.png" alt="Предпросмотр логотипа PDF-счета" style="display:block;max-width:200px;max-height:140px;object-fit:contain">
+					<label>Новый логотип для PDF<input id="invoice-logo-file" type="file" accept="image/png,image/jpeg,image/webp" disabled></label>
+					<button id="invoice-logo-save" type="button" disabled>Сохранить логотип</button>
+					<button id="invoice-logo-remove" type="button" disabled>Удалить логотип из счетов</button>
+					<button id="invoice-logo-reset" type="button" disabled>Вернуть исходный логотип</button>
+					<p id="invoice-logo-status" role="status"></p>
+				</details>
+			</div>
+		</section>
+		<section id="prices-section" hidden aria-label="Цены">
+			<div class="calendar-card">
+				<h2>Цены</h2>
+				<p>Цены в евро. Изменения применяются к сайту и новым заказам. Старые заказы и счета сохраняют прежнюю сумму.</p>
+				<form id="prices-form" class="calendar-form">
+					<label>Знакомство (0 - бесплатно)<input name="free" type="number" min="0" max="100000" step="0.01" required></label>
+					<label>Индивидуальная консультация<input name="single" type="number" min="0.01" max="100000" step="0.01" required></label>
+					<label>Пакет 5 встреч<input name="five" type="number" min="0.01" max="100000" step="0.01" required></label>
+					<p id="prices-five"></p>
+					<label>Пакет 10 встреч<input name="ten" type="number" min="0.01" max="100000" step="0.01" required></label>
+					<p id="prices-ten"></p>
+					<button type="submit" disabled>Сохранить цены</button>
+				</form>
+				<p id="prices-status" role="status"></p>
+			</div>
+		</section>
 		<div id="vouchers-section">
 		<nav class="admin-tabs" role="tablist" aria-label="Заявки и ваучеры">
 			<button class="admin-tab" id="tab-applications" type="button" role="tab" aria-controls="order-list" aria-selected="true" data-tab="applications">Заявки <span class="admin-tab-count">0</span></button>
@@ -290,7 +471,7 @@
 			<form id="gift-voucher-form" class="gift-voucher-form" hidden>
 				<label for="gift-voucher-name">Имя получателя<input id="gift-voucher-name" name="name" type="text" maxlength="120" autocomplete="name" required></label>
 				<label for="gift-voucher-email">Email получателя<input id="gift-voucher-email" name="email" type="email" maxlength="254" autocomplete="email" required></label>
-				<label for="gift-voucher-package">Пакет<select id="gift-voucher-package" name="packageName" required><option value="five">5 консультаций · 225 €</option><option value="ten">10 консультаций · 420 €</option></select></label>
+				<label for="gift-voucher-package">Пакет<select id="gift-voucher-package" name="packageName" required><option value="five">5 консультаций · Подарок</option><option value="ten">10 консультаций · Подарок</option></select></label>
 				<button type="submit">Создать</button>
 			</form>
 		</div>
@@ -430,9 +611,35 @@
 		</dialog>
 	</main>
 	<script src="site-api.js"></script>
+	<script src="pricing.js"></script>
+	<script src="site-texts.js"></script>
+	<script src="site-contacts.js"></script>
+	<script src="site-reviews.js"></script>
 	<script>
 		const adminForm = document.getElementById('admin-form');
 		const adminKey = document.getElementById('admin-key');
+		const adminRemember = document.getElementById('admin-remember');
+		const adminStorageKey = 'danilpsy-admin-key';
+		const storageStatus = document.getElementById('admin-storage-status');
+		const storedAdminKey = (operation, value) => {
+			try {
+				const storage = window.localStorage;
+				if (operation === 'read') return storage.getItem(adminStorageKey);
+				if (operation === 'save') storage.setItem(adminStorageKey, value);
+				else storage.removeItem(adminStorageKey);
+				storageStatus.hidden = true;
+			} catch (error) {
+				console.error('Не удалось получить доступ к хранилищу входа.', error);
+				storageStatus.textContent = operation === 'remove'
+					? 'Не удалось удалить сохраненный ключ. Очистите данные этого сайта в настройках браузера.'
+					: 'Браузер не разрешил сохранение входа. Ключ нужно будет ввести снова.';
+				storageStatus.hidden = false;
+			}
+			return null;
+		};
+		adminRemember.addEventListener('change', () => {
+			if (!adminRemember.checked) storedAdminKey('remove');
+		});
 		const adminStatus = document.getElementById('admin-status');
 		const orderList = document.getElementById('order-list');
 		const adminTabs = [...document.querySelectorAll('.admin-tab')];
@@ -466,6 +673,8 @@
 		};
 		const logoutAdmin = () => {
 			adminSessionVersion++;
+			storedAdminKey('remove');
+			adminRemember.checked = false;
 			adminKey.value = '';
 			setAdminAuthenticated(false);
 			renderOrders([]);
@@ -495,7 +704,7 @@
 		document.getElementById('admin-account-logout').addEventListener('click', () => {
 			logoutAdmin();
 			adminStatus.classList.remove('is-error');
-			adminStatus.textContent = 'Вы вышли. Ключ удален из этой страницы.';
+			adminStatus.textContent = 'Вы вышли. Ключ удален из этой страницы и сохраненного входа.';
 			adminKey.focus();
 		});
 		document.getElementById('admin-account-refresh').addEventListener('click', () => {
@@ -515,6 +724,8 @@
 			if (response.status === 401 || response.status === 403) logoutAdmin();
 			if (!response.ok) throw new Error(data.error || 'Не удалось выполнить запрос.');
 			if (!adminAuthenticated) {
+				if (adminRemember.checked) storedAdminKey('save', adminKey.value);
+				else storedAdminKey('remove');
 				setAdminAuthenticated(true);
 				adminStatus.classList.remove('is-error');
 				adminStatus.textContent = 'Вы вошли как администратор.';
@@ -905,9 +1116,17 @@
 		};
 		adminForm.addEventListener('submit', (event) => {
 			event.preventDefault();
-			if (document.getElementById('calendar-section').hidden) loadOrders();
+			if (!document.getElementById('vouchers-section').hidden) loadOrders();
+		});
+		document.addEventListener('DOMContentLoaded', () => {
+			const rememberedKey = storedAdminKey('read');
+			if (!rememberedKey) return;
+			adminKey.value = rememberedKey;
+			adminRemember.checked = true;
+			adminForm.requestSubmit();
 		});
 	</script>
+	<script src="site-logo.js"></script>
 	<script src="admin-calendar.js"></script>
 </body>
 </html>
