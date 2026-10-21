@@ -132,8 +132,8 @@
 		status.classList.toggle('is-error',Boolean(result.warning));
 	}
 	const renderAppointment = appointment => {
-		const card = text('article','', 'order-card');
-		card.append(text('h3', `${formatAdminDateTime(appointment.start_at)} - ${appointment.name}`));
+		const card = text('details','', 'order-card calendar-appointment');
+		card.append(text('summary', `${formatAdminDateTime(appointment.start_at)} - ${appointment.name}`));
 		card.append(text('p', `${appointment.email||'Без email'} · ${appointment.platform} · ${appointment.status === 'cancelled' ? 'Отменена' : 'Подтверждена'} · ${appointment.package_name}`));
 		if (appointment.contact) card.append(text('p',appointment.contact));
 		if (appointment.client_request) card.append(text('p',appointment.client_request));
@@ -465,7 +465,7 @@
 		get('admin-notifications').close();
 		get('admin-notifications-count').hidden=true;
 		get('admin-notifications-status').textContent='';
-		incomingOrders=[];incomingReviews=[];mailNotificationCount=0;
+		incomingOrders=[];incomingReviews=[];incomingBookings=[];mailNotificationCount=0;
 		get('admin-incoming-notifications').replaceChildren();
 		clearTimeout(liveTimer);
 		for(const id of ['calendar-grid','calendar-week-editor','calendar-day-events','calendar-journal','calendar-mail-queue','calendar-details-content']) get(id).replaceChildren();
@@ -481,6 +481,7 @@
 	get('calendar-history-more').addEventListener('click',()=>loadHistory(true));
 	get('admin-notifications-toggle').addEventListener('click',()=>{
 		get('admin-notifications').showModal();
+		acknowledgeBookings();
 		get('admin-notifications-status').textContent='Обновляем уведомления...';
 		refreshLive();
 	});
@@ -490,12 +491,51 @@
 	}
 	const reviewsForm=get('reviews-form'),reviewsEditor=get('reviews-editor');
 	let incomingOrders=[],incomingReviews=[],mailNotificationCount=0,liveTimer=null,liveBusy=false;
+	let incomingBookings=[],seenBookingIds=new Set();
+	const bookingSeenKey='danilpsy-seen-bookings';
+	const bookingStorageError=error=>{
+		console.error('Не удалось сохранить просмотр уведомлений.',error);
+		get('admin-notifications-status').textContent='Браузер не разрешил сохранить просмотр броней. После перезагрузки уведомления могут появиться снова.';
+	};
+	try{
+		const saved=JSON.parse(localStorage.getItem(bookingSeenKey)||'[]');
+		if(!Array.isArray(saved)||!saved.every(id=>typeof id==='string'))throw new Error('Некорректные данные просмотренных броней.');
+		seenBookingIds=new Set(saved);
+	}catch(error){bookingStorageError(error);}
+	const acknowledgeBookings=()=>{
+		if(!incomingBookings.length)return;
+		for(const entry of incomingBookings)seenBookingIds.add(entry.id);
+		try{localStorage.setItem(bookingSeenKey,JSON.stringify([...seenBookingIds]));}
+		catch(error){bookingStorageError(error);}
+		updateIncomingNotifications();
+	};
+	const fetchBookingNotifications=async()=>{
+		const entries=[];
+		let cursor='';
+		do{
+			const page=await adminRequest(`/api/admin/calendar/history${cursor}`);
+			entries.push(...page.entries.filter(entry=>entry.kind==='created'&&!seenBookingIds.has(entry.id)));
+			const last=page.entries.at(-1);
+			if(page.more&&!last)throw new Error('Не удалось прочитать историю новых броней.');
+			cursor=page.more?`?before=${encodeURIComponent(last.at)}&id=${encodeURIComponent(last.id)}`:'';
+		}while(cursor);
+		return entries;
+	};
 	const updateIncomingNotifications=()=>{
-		const count=incomingOrders.length+incomingReviews.length+mailNotificationCount;
+		const unreadBookings=incomingBookings.filter(entry=>!seenBookingIds.has(entry.id));
+		const count=incomingOrders.length+incomingReviews.length+mailNotificationCount+unreadBookings.length;
 		get('admin-notifications-count').textContent=String(count);
 		get('admin-notifications-count').hidden=count===0;
-		get('admin-notifications-toggle').setAttribute('aria-label',`Уведомления: заявки на ваучеры - ${incomingOrders.length}, отзывы на проверку - ${incomingReviews.length}, письма для проверки - ${mailNotificationCount}`);
+		get('admin-notifications-toggle').setAttribute('aria-label',`Уведомления: новые брони - ${unreadBookings.length}, заявки на ваучеры - ${incomingOrders.length}, отзывы на проверку - ${incomingReviews.length}, письма для проверки - ${mailNotificationCount}`);
 		const list=get('admin-incoming-notifications');list.replaceChildren();
+		for(const entry of incomingBookings){
+			const open=text('button',`Новая бронь · ${formatAdminDateTime(entry.start)} · ${entry.name}`);open.type='button';
+			open.addEventListener('click',()=>{
+				get('admin-notifications').close();
+				selectedDay=localDate(entry.start);month=selectedDay.slice(0,7);section('calendar');
+			});
+			list.append(open);
+		}
 		for(const [items,label,target] of [[incomingOrders,'Заявки на ваучеры','vouchers'],[incomingReviews,'Отзывы на проверку','reviews']]){
 			if(!items.length)continue;
 			const open=text('button',`${label}: ${items.length}`);open.type='button';
@@ -507,7 +547,7 @@
 			});
 			list.append(open);
 		}
-		if(!count)list.append(text('p','Новых уведомлений нет.'));
+		if(!count&&!incomingBookings.length)list.append(text('p','Новых уведомлений нет.'));
 	};
 	const scheduleLive=()=>{
 		clearTimeout(liveTimer);
@@ -524,15 +564,18 @@
 		const next=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()+1,1,12)).toISOString().slice(0,10);
 		const until=weekStart(next)===next?next:addDays(weekStart(next),7);
 		try{
-			const [orders,reviews,calendar]=await Promise.all([
+			const [orders,reviews,calendar,bookings]=await Promise.all([
 				adminRequest('/api/admin/package-orders'),adminRequest('/api/admin/site-reviews'),
 				adminRequest(`/api/admin/calendar?from=${weekStart(`${requestedMonth}-01`)}&to=${until}`),
+				fetchBookingNotifications(),
 			]);
 			if(!adminAuthenticated||session!==adminSessionVersion||mutationVersion!==adminMutationVersion)return;
 			incomingOrders=orders.orders.filter(order=>order.status==='pending'&&!order.voucherCode);
 			incomingReviews=validatePendingReviews(reviews.pending);
 			mailNotificationCount=calendar.notifications.length;
+			incomingBookings=bookings;
 			updateIncomingNotifications();get('admin-notifications-status').textContent='';
+			if(get('admin-notifications').open)acknowledgeBookings();
 			if(!get('vouchers-section').hidden&&JSON.stringify(currentOrders)!==JSON.stringify(orders.orders)&&
 				!adminMutations&&!get('order-list').dataset.liveDirty&&!get('order-list').contains(document.activeElement)){
 				renderOrders(orders.orders);

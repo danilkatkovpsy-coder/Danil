@@ -147,6 +147,9 @@
 		.calendar-custom-time-error { color: #8a3b33; font-size: 12px; }
 		.calendar-custom-time-error:empty { display: none; }
 		.calendar-card .order-card { overflow-wrap: anywhere; }
+		.order-card.calendar-appointment { display: block; }
+		.calendar-appointment > summary { cursor: pointer; font-weight: 600; }
+		.calendar-appointment[open] > :not(summary) { margin-top: 12px; }
 		.calendar-overview { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 20px; }
 		.calendar-mini { width: 100%; min-width: 0; margin-bottom: 16px; padding: 8px; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; }
 		#admin-workspace:has(#calendar-section[hidden]) .calendar-mini { display: none; }
@@ -516,7 +519,10 @@
 					<p>Добавьте время кнопкой «+» или уберите крестиком. «Свое время» в конце списка позволяет указать начало и конец по минутам; по умолчанию - 50 минут. Без времени день закрыт. Уже созданные встречи не отменяются.</p>
 					<div class="calendar-actions"><button type="submit">Сохранить день</button><button id="calendar-day-close" type="button">Закрыть день</button><button id="calendar-day-reset" type="button">Вернуть недельное расписание</button></div>
 				</form>
-				<div id="calendar-day-events" class="order-list"></div>
+				<details id="calendar-day-events-toggle">
+					<summary>Записи за выбранный день</summary>
+					<div id="calendar-day-events" class="order-list"></div>
+				</details>
 			</section>
 			<details class="calendar-card">
 				<summary>Недельное расписание</summary>
