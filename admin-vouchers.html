@@ -557,6 +557,7 @@
 			<div class="invoice-tabs" role="tablist" aria-label="Настройки счета">
 				<button id="invoice-tab-company" type="button" role="tab" aria-controls="invoice-panel-company" aria-selected="true">Данные фирмы</button>
 				<button id="invoice-tab-design" type="button" role="tab" aria-controls="invoice-panel-design" aria-selected="false" tabindex="-1">Оформление счета</button>
+				<button id="invoice-tab-products" type="button" role="tab" aria-controls="invoice-panel-products" aria-selected="false" tabindex="-1">Товар</button>
 				<button id="invoice-tab-email" type="button" role="tab" aria-controls="invoice-panel-email" aria-selected="false" tabindex="-1">Автоматическая отправка писем</button>
 			</div>
 			<div id="invoice-panel-company" role="tabpanel" aria-labelledby="invoice-tab-company" class="invoice-workbench">
@@ -618,6 +619,20 @@
 					<p id="invoice-design-preview-status" role="status"></p>
 					<div id="invoice-design-preview" class="invoice-pdf-pages" role="img" aria-label="Предпросмотр оформления PDF-счета"></div>
 				</div>
+			</div>
+			<div id="invoice-panel-products" role="tabpanel" aria-labelledby="invoice-tab-products" hidden>
+				<form id="invoice-products-form" class="calendar-card calendar-form">
+					<h2>Товар</h2>
+					<p>Название и артикул в PDF-счете. Изменения применяются к новым заказам после сохранения. Цены, пакеты и автоматическая отправка не меняются.</p>
+					<h3>Товар (пакет 5)</h3>
+					<label>Название / описание в счете<input name="fiveName" maxlength="120" required disabled></label>
+					<label>Артикул<input name="fiveArticle" maxlength="20" required disabled></label>
+					<h3>Товар (пакет 10)</h3>
+					<label>Название / описание в счете<input name="tenName" maxlength="120" required disabled></label>
+					<label>Артикул<input name="tenArticle" maxlength="20" required disabled></label>
+					<button type="submit" disabled>Сохранить</button>
+					<p id="invoice-products-status" role="status"></p>
+				</form>
 			</div>
 			<div id="invoice-panel-email" role="tabpanel" aria-labelledby="invoice-tab-email" class="invoice-workbench" hidden>
 				<form id="invoice-email-form" class="calendar-card calendar-form">
@@ -1593,7 +1608,7 @@
 		});
 	</script>
 	<script src="site-logo.js"></script>
-	<script src="admin-invoices.js"></script>
+	<script src="admin-invoices.js?v=202610221755"></script>
 	<script src="admin-voucher-email.js?v=202610220809"></script>
 	<script src="admin-booking-email.js"></script>
 	<script src="admin-calendar-link-email.js?v=202610220807"></script>

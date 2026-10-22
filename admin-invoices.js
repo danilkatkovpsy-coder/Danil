@@ -1,10 +1,10 @@
 (() => {
 	const get=id=>document.getElementById(id);
-	const form=get('invoice-settings-form'),emailForm=get('invoice-email-form');
+	const form=get('invoice-settings-form'),emailForm=get('invoice-email-form'),productsForm=get('invoice-products-form');
 	const fields=['name','address','registration_code','phone','email','website','bank','swift','iban'];
 	const vat=form.elements.namedItem('vatRegistered'),vatNumber=form.elements.namedItem('vatNumber');
 	const gross=get('invoice-calculator-gross'),theme=get('invoice-theme');
-	const sections=['company','design','email'],blocks=['estonian','russian','signature'];
+	const sections=['company','design','products','email'],blocks=['estonian','russian','signature'];
 	const editors=blocks.map(key=>get(`invoice-email-${key}`));
 	const emailSource=get('invoice-email-source'),emailLanguage=get('invoice-email-language');
 	const formatButtons=[...get('invoice-email-toolbar').querySelectorAll('[data-format]')];
@@ -12,6 +12,17 @@
 	let generation=0,loaded=false,loading=false,active='company',savedCompany=null,savedDesign=null,draftLogo='default',replyTo='';
 	let logoSelection=0,logoBusy=false,designBusy=false,companyBusy=false,emailBusy=false,activeEditor=null;
 	let previewVersion=0,previewTimer;
+	let productsBusy=false,savedProducts=null;
+	const readProducts=()=>Object.fromEntries(['five','ten'].map(key=>[key,{
+		name:productsForm.elements.namedItem(`${key}Name`).value.trim(),
+		article:productsForm.elements.namedItem(`${key}Article`).value.trim(),
+	}]));
+	const showProducts=products=>{
+		for(const key of ['five','ten']){
+			productsForm.elements.namedItem(`${key}Name`).value=products[key].name;
+			productsForm.elements.namedItem(`${key}Article`).value=products[key].article;
+		}
+	};
 	const status=(id,message)=>{get(id).textContent=message;};
 	const post=(path,input)=>adminRequest(`/api/admin/${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
 	const confirmSaved=result=>{if(result.ok!==true)throw new Error('Сервер не подтвердил сохранение.');};
@@ -20,6 +31,7 @@
 		vatRegistered:vat.checked,vatNumber:vat.checked?vatNumber.value.trim().toUpperCase():'',
 	});
 	function controls(){
+		productsForm.querySelectorAll('input,button').forEach(el=>{el.disabled=!loaded||productsBusy;});
 		form.querySelectorAll('input,textarea,button').forEach(el=>{el.disabled=!loaded||companyBusy;});
 		vatNumber.disabled=!loaded||companyBusy||!vat.checked;
 		theme.disabled=!loaded||designBusy;
@@ -57,14 +69,14 @@
 	function schedulePreview(){
 		clearTimeout(previewTimer);
 		const version=++previewVersion,current=generation,panel=active;
-		if(!loaded||panel==='email')return;
+		if(!loaded||!['company','design'].includes(panel))return;
 		status(`invoice-${panel}-preview-status`,'Обновляем PDF...');
 		previewTimer=setTimeout(async()=>{
 			try{
 				if(!gross.validity.valid)throw new Error('Для образца укажите корректную конечную цену.');
 				const details=panel==='company'?company():savedCompany;
 				const design=panel==='design'?{theme:theme.value,logo:draftLogo}:savedDesign;
-				const result=await post('invoice-preview',{...details,...design,priceCents:Math.round(Number(gross.value)*100)});
+				const result=await post('invoice-preview',{...details,...design,product:savedProducts.five,sessions:5,priceCents:Math.round(Number(gross.value)*100)});
 				if(current!==generation||version!==previewVersion)return;
 				if(result.ok!==true||typeof result.pdf!=='string'||!result.pdf.startsWith('JVBERi0'))throw new Error('Не удалось прочитать PDF предпросмотра.');
 				const bytes=Uint8Array.from(atob(result.pdf),char=>char.charCodeAt(0));
@@ -109,12 +121,24 @@
 		const tab=get(`invoice-tab-${key}`);
 		tab.addEventListener('click',()=>selectTab(key));
 		tab.addEventListener('keydown',event=>{
-			const target=event.key==='ArrowRight'?(index+1)%3:event.key==='ArrowLeft'?(index+2)%3:
-				event.key==='Home'?0:event.key==='End'?2:null;
+			const target=event.key==='ArrowRight'?(index+1)%sections.length:event.key==='ArrowLeft'?(index+sections.length-1)%sections.length:
+				event.key==='Home'?0:event.key==='End'?sections.length-1:null;
 			if(target===null)return;
 			event.preventDefault();selectTab(sections[target]);get(`invoice-tab-${sections[target]}`).focus();
 		});
 	}
+	productsForm.addEventListener('submit',async event=>{
+		event.preventDefault();if(!loaded||productsBusy)return;
+		const current=generation,products=readProducts();
+		productsBusy=true;controls();status('invoice-products-status','Сохраняем товары...');
+		try{
+			confirmSaved(await post('invoice-products',{products}));
+			if(current!==generation)return;
+			savedProducts=products;showProducts(products);
+			status('invoice-products-status','Сохранено для новых заказов. Автоматическая отправка работает как прежде.');
+		}catch(error){if(current===generation)status('invoice-products-status',error.message);}
+		finally{if(current===generation){productsBusy=false;controls();}}
+	});
 	form.addEventListener('input',()=>{calculate();schedulePreview();});
 	form.addEventListener('change',()=>{calculate();schedulePreview();});
 	form.addEventListener('submit',async event=>{
@@ -310,34 +334,39 @@
 	async function load(){
 		if(loaded||loading)return;
 		const current=++generation;loading=true;controls();status('invoice-settings-status','Загружаем настройки счета...');
+		status('invoice-products-status','Загружаем товары...');
 		try{
-			const [details,design,email]=await Promise.all(['invoice-settings','invoice-design','invoice-email'].map(path=>adminRequest(`/api/admin/${path}`)));
+			const [details,design,email,productSettings]=await Promise.all(['invoice-settings','invoice-design','invoice-email','invoice-products'].map(path=>adminRequest(`/api/admin/${path}`)));
 			if(current!==generation)return;
-			if(!details.issuer||!fields.every(key=>typeof details.issuer[key]==='string')||
+			if(!productSettings.products||!['five','ten'].every(key=>productSettings.products[key]&&
+				['name','article'].every(field=>typeof productSettings.products[key][field]==='string'))||
+				!details.issuer||!fields.every(key=>typeof details.issuer[key]==='string')||
 				typeof details.vatRegistered!=='boolean'||typeof details.vatNumber!=='string'||
 				!['beige','green','blue','purple'].includes(design.theme)||!(design.logo===null||typeof design.logo==='string')||
 				!email.template||typeof email.replyTo!=='string'||!['original','custom'].includes(email.source)||
 				!['both','estonian','russian'].includes(email.language)||
 				![email.original,email.custom].every(template=>template&&blocks.every(key=>Array.isArray(template[key]))))throw new Error('Не удалось прочитать настройки счета.');
 			savedCompany=details;savedDesign=design;draftLogo=design.logo;replyTo=email.replyTo;
+			savedProducts=productSettings.products;showProducts(savedProducts);
 			for(const key of fields)form.elements.namedItem(key).value=details.issuer[key];
 			vat.checked=details.vatRegistered;vatNumber.value=details.vatNumber;theme.value=design.theme;
 			originalEmail=email.original;customEmail=email.custom;selectedEmailSource=email.source;
 			emailSource.value=email.source;emailLanguage.value=email.language;
 			loaded=true;showEmail(email.source==='original'?originalEmail:customEmail);showLogo();calculate();schedulePreview();
 			status('invoice-settings-status','');
-		}catch(error){if(current===generation)status('invoice-settings-status',error.message);}
+			status('invoice-products-status','');
+		}catch(error){if(current===generation){status('invoice-settings-status',error.message);status('invoice-products-status',error.message);}}
 		finally{if(current===generation){loading=false;controls();}}
 	}
 	document.addEventListener('admin-login',()=>{if(!get('invoices-section').hidden)load();});
 	document.addEventListener('admin-logout',()=>{
-		generation++;logoSelection++;loaded=false;loading=false;logoBusy=false;designBusy=false;companyBusy=false;emailBusy=false;
+		generation++;logoSelection++;loaded=false;loading=false;logoBusy=false;designBusy=false;companyBusy=false;emailBusy=false;productsBusy=false;savedProducts=null;
 		savedCompany=null;savedDesign=null;draftLogo='default';activeEditor=null;replyTo='';
 		originalEmail=null;customEmail=null;selectedEmailSource='original';emailSelection=null;
-		form.reset();emailForm.reset();editors.forEach(editor=>editor.replaceChildren());
+		form.reset();emailForm.reset();productsForm.reset();editors.forEach(editor=>editor.replaceChildren());
 		get('invoice-email-preview').replaceChildren();get('invoice-email-preview-subject').textContent='';
 		get('invoice-logo-file').value='';clearPreview();showLogo();controls();calculate();
-		for(const id of ['invoice-settings-status','invoice-design-status','invoice-email-status','invoice-logo-status',
+		for(const id of ['invoice-settings-status','invoice-design-status','invoice-products-status','invoice-email-status','invoice-logo-status',
 			'invoice-company-preview-status','invoice-design-preview-status'])status(id,'');
 	});
 	window.adminInvoices={load};
