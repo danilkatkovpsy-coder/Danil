@@ -519,7 +519,7 @@
 		get('admin-notifications').close();
 		get('admin-notifications-count').hidden=true;
 		get('admin-notifications-status').textContent='';
-		incomingOrders=[];incomingReviews=[];incomingBookings=[];mailNotificationCount=0;
+		incomingOrders=[];incomingReviews=[];incomingBookings=[];mailNotificationCount=0;invoiceNotificationCount=0;
 		get('admin-incoming-notifications').replaceChildren();
 		clearTimeout(liveTimer);
 		for(const id of ['calendar-grid','calendar-week-editor','calendar-day-events','calendar-journal','calendar-mail-queue','calendar-details-content']) get(id).replaceChildren();
@@ -547,7 +547,7 @@
 		get(`section-${name}`).addEventListener('click',()=>section(name));
 	}
 	const reviewsForm=get('reviews-form'),reviewsEditor=get('reviews-editor');
-	let incomingOrders=[],incomingReviews=[],mailNotificationCount=0,liveTimer=null,liveBusy=false;
+	let incomingOrders=[],incomingReviews=[],mailNotificationCount=0,invoiceNotificationCount=0,liveTimer=null,liveBusy=false;
 	let incomingBookings=[],seenBookingIds=new Set();
 	const bookingSeenKey='danilpsy-seen-bookings';
 	const bookingStorageError=error=>{
@@ -580,10 +580,10 @@
 	};
 	const updateIncomingNotifications=()=>{
 		const unreadBookings=incomingBookings.filter(entry=>!seenBookingIds.has(entry.id));
-		const count=incomingOrders.length+incomingReviews.length+mailNotificationCount+unreadBookings.length;
+		const count=incomingOrders.length+incomingReviews.length+mailNotificationCount+unreadBookings.length+invoiceNotificationCount;
 		get('admin-notifications-count').textContent=String(count);
 		get('admin-notifications-count').hidden=count===0;
-		get('admin-notifications-toggle').setAttribute('aria-label',`Уведомления: новые брони - ${unreadBookings.length}, заявки на ваучеры - ${incomingOrders.length}, отзывы на проверку - ${incomingReviews.length}, письма для проверки - ${mailNotificationCount}`);
+		get('admin-notifications-toggle').setAttribute('aria-label',`Уведомления: новые брони - ${unreadBookings.length}, заявки на ваучеры - ${incomingOrders.length}, отзывы на проверку - ${incomingReviews.length}, письма для проверки - ${mailNotificationCount}, счета - ${invoiceNotificationCount}`);
 		const list=get('admin-incoming-notifications');list.replaceChildren();
 		for(const entry of incomingBookings){
 			const open=text('button',`Новая бронь · ${formatAdminDateTime(entry.start)} · ${entry.name}`);open.type='button';
@@ -621,16 +621,18 @@
 		const next=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()+1,1,12)).toISOString().slice(0,10);
 		const until=weekStart(next)===next?next:addDays(weekStart(next),7);
 		try{
-			const [orders,reviews,calendar,bookings]=await Promise.all([
+			const [orders,reviews,calendar,bookings,invoiceNotifications]=await Promise.all([
 				adminRequest('/api/admin/package-orders'),adminRequest('/api/admin/site-reviews'),
 				adminRequest(`/api/admin/calendar?from=${weekStart(`${requestedMonth}-01`)}&to=${until}`),
 				fetchBookingNotifications(),
+				adminRequest('/api/admin/invoice-notifications'),
 			]);
 			if(!adminAuthenticated||session!==adminSessionVersion||mutationVersion!==adminMutationVersion)return;
 			incomingOrders=orders.orders.filter(order=>order.status==='pending'&&!order.voucherCode);
 			incomingReviews=validatePendingReviews(reviews.pending);
 			mailNotificationCount=calendar.notifications.length;
 			incomingBookings=bookings;
+			invoiceNotificationCount=window.adminAutoInvoices.renderNotifications(invoiceNotifications);
 			updateIncomingNotifications();get('admin-notifications-status').textContent='';
 			if(get('admin-notifications').open)acknowledgeBookings();
 			if(!get('vouchers-section').hidden&&JSON.stringify(currentOrders)!==JSON.stringify(orders.orders)&&

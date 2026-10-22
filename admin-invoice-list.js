@@ -57,8 +57,11 @@
 				button.addEventListener('click', action); actions.append(button);
 			}
 			cell(row, '').append(actions); rows.append(row);
+			const history = document.createElement('button'); history.type = 'button'; history.textContent = 'История отправок';
+			history.addEventListener('click', () => window.adminInvoiceDelivery.open(invoice));
+			cell(row, '').append(history);
 		}
-		if (!invoices.length) { const row = document.createElement('tr'); cell(row, 'Счета не найдены.').colSpan = 8; rows.append(row); }
+		if (!invoices.length) { const row = document.createElement('tr'); cell(row, 'Счета не найдены.').colSpan = 9; rows.append(row); }
 		controls();
 	}
 	async function load(force = false) {

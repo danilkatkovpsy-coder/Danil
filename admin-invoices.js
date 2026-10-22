@@ -4,7 +4,7 @@
 	const fields=['name','address','registration_code','phone','email','website','bank','swift','iban'];
 	const vat=form.elements.namedItem('vatRegistered'),vatNumber=form.elements.namedItem('vatNumber');
 	const gross=get('invoice-calculator-gross'),theme=get('invoice-theme');
-	const sections=['list','company','design','products','email'],blocks=['estonian','russian','signature'];
+	const sections=['list','company','design','products','email','automatic'],blocks=['estonian','russian','signature'];
 	const editors=blocks.map(key=>get(`invoice-email-${key}`));
 	const emailSource=get('invoice-email-source'),emailLanguage=get('invoice-email-language');
 	const formatButtons=[...get('invoice-email-toolbar').querySelectorAll('[data-format]')];
@@ -126,6 +126,7 @@
 		}
 		clearPreview();schedulePreview();
 		if(key==='list')window.adminInvoiceList.load();
+		else if(key==='automatic')window.adminAutoInvoices?.load();
 		else if(!loaded)load();
 	}
 	for(const [index,key] of sections.entries()){
@@ -363,6 +364,7 @@
 	async function load(){
 		if(get('admin-workspace').hidden)return;
 		if(active==='list'){window.adminInvoiceList.load();return;}
+		if(active==='automatic'){window.adminAutoInvoices?.load();return;}
 		if(loaded||loading)return;
 		const current=++generation;loading=true;controls();status('invoice-settings-status','Загружаем настройки счета...');
 		status('invoice-products-status','Загружаем товары...');

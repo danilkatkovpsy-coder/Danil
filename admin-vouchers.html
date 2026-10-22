@@ -174,6 +174,13 @@
 		.calendar-card summary { cursor: pointer; font-weight: 600; }
 		details.calendar-card[open] > :not(summary) { margin-top: 14px; }
 		.calendar-form { display: grid; gap: 10px; }
+		#auto-invoice-form { max-width: 420px; }
+		#auto-invoice-form .calendar-checkbox { display: flex; align-items: center; gap: 8px; }
+		#auto-invoice-form input[type="checkbox"] { width: 16px; min-height: 16px; margin: 0; flex-shrink: 0; }
+		#auto-invoice-panel button, #invoice-delivery-dialog button, #auto-invoice-notifications-read { width: fit-content; min-height: 32px; padding: 5px 10px; border-radius: 4px; font-size: 13px; }
+		.auto-invoice-delay-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+		.auto-invoice-delay-fields label { min-width: 0; }
+		.auto-invoice-delay-fields input { width: 100%; min-width: 0; min-height: 34px; padding: 6px 9px; font-size: 14px; }
 		.manual-invoice-form, .manual-invoice-form label { min-width: 0; }
 		.manual-invoice-form select { width: 100%; min-width: 0; max-width: 100%; }
 		.manual-invoice-form p { overflow-wrap: anywhere; }
@@ -424,7 +431,7 @@
 			</aside>
 			<p class="admin-sidebar-title">Панель управления</p>
 			<button id="section-calendar" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18M7 15h2M13 15h2"/></svg><span>Календарь</span></button>
-			<button id="section-vouchers" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 5v14M12 10h5M12 14h3"/></svg><span>Управление ваучерами</span></button>
+			<button id="section-vouchers" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 5v14M12 10h5M12 14h3"/></svg><span>Ваучера</span></button>
 			<button id="section-prices" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5a7.5 7.5 0 1 0 0 13M4 10h11M4 14h9"/></svg><span>Цены</span></button>
 			<button id="section-invoices" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v5h4M9 12h7M9 16h7"/></svg><span>Счета</span></button>
 			<button id="section-texts" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M12 5v15M8 20h8"/></svg><span>Текста</span></button>
@@ -583,6 +590,7 @@
 				<button id="invoice-tab-design" type="button" role="tab" aria-controls="invoice-panel-design" aria-selected="false" tabindex="-1">Оформление счета</button>
 				<button id="invoice-tab-products" type="button" role="tab" aria-controls="invoice-panel-products" aria-selected="false" tabindex="-1">Товар</button>
 				<button id="invoice-tab-email" type="button" role="tab" aria-controls="invoice-panel-email" aria-selected="false" tabindex="-1">Автоматическая отправка писем</button>
+				<button id="invoice-tab-automatic" type="button" role="tab" aria-controls="invoice-panel-automatic" aria-selected="false" tabindex="-1">Автоматическая отправка счетов</button>
 			</div>
 			<div id="invoice-panel-list" role="tabpanel" aria-labelledby="invoice-tab-list">
 				<div class="calendar-card">
@@ -604,7 +612,7 @@
 					<p id="invoice-list-status" role="status"></p>
 					<div class="invoice-list-table-wrap">
 						<table class="invoice-list-table">
-							<thead><tr><th scope="col">Выбор</th><th scope="col">№</th><th scope="col">Имя клиента</th><th scope="col">Email</th><th scope="col">Сумма</th><th scope="col">Номер счета</th><th scope="col">Дата выставления</th><th scope="col">Действия</th></tr></thead>
+							<thead><tr><th scope="col">Выбор</th><th scope="col">№</th><th scope="col">Имя клиента</th><th scope="col">Email</th><th scope="col">Сумма</th><th scope="col">Номер счета</th><th scope="col">Дата выставления</th><th scope="col">Действия</th><th scope="col">Отправка счетов</th></tr></thead>
 							<tbody id="invoice-list-rows"></tbody>
 						</table>
 					</div>
@@ -733,7 +741,7 @@
 				<form id="invoice-email-form" class="calendar-card calendar-form">
 					<h2>Письмо со счетом</h2>
 					<p>Общее письмо для пакетов на 5 и 10 консультаций. PDF прикрепляется автоматически. Изменения применяются после сохранения к новым отправкам, уже подготовленные письма и повторы сохраняют прежний текст.</p>
-					<p>Ручные счета из календаря и карточки клиента отправляются с кратким сопроводительным письмом без обещания выдачи ваучера. Используются выбранный здесь язык и сохраненная подпись.</p>
+					<p>Ручные счета из календаря и карточки клиента, а также автоматические счета после разовой консультации отправляются с кратким сопроводительным письмом без обещания выдачи ваучера. Используются выбранный здесь язык и сохраненная подпись.</p>
 					<label>Шаблон письма<select id="invoice-email-source" disabled>
 						<option value="original">Исходный шаблон (сохраненная копия)</option>
 						<option value="custom">Мое письмо (редактируемый вариант)</option>
@@ -768,6 +776,28 @@
 					<p>Пример для пакета на 5 консультаций. Письмо не отправляется.</p>
 					<strong id="invoice-email-preview-subject"></strong>
 					<div id="invoice-email-preview" class="invoice-email-preview"></div>
+				</div>
+			</div>
+			<div id="invoice-panel-automatic" role="tabpanel" aria-labelledby="invoice-tab-automatic" hidden>
+				<div id="auto-invoice-panel" class="calendar-card">
+					<h2>Автоматическая отправка счетов</h2>
+					<p>Только разовые платные индивидуальные консультации без ваучера, не отмененные в календаре. Счет создается после окончания встречи и указанной задержки. Проверка выполняется на сервере раз в минуту, даже когда сайт закрыт.</p>
+					<p>При включении учитываются только встречи, которые закончатся после включения. Если встреча не состоялась, отмените ее в календаре до отправки. Бесплатные знакомства и пакетные встречи не учитываются.</p>
+					<form id="auto-invoice-form" class="calendar-form">
+						<label class="calendar-checkbox"><input id="auto-invoice-enabled" type="checkbox" disabled>Автоматически генерировать и отправлять счета</label>
+						<p>Через сколько после окончания консультации:</p>
+						<div class="auto-invoice-delay-fields">
+							<label>Дни<input id="auto-invoice-delay-days" type="number" min="0" max="7" step="1" value="0" required disabled></label>
+							<label>Часы<input id="auto-invoice-delay-hours" type="number" min="0" max="168" step="1" value="0" required disabled></label>
+							<label>Минуты<input id="auto-invoice-delay" type="number" min="0" max="10080" step="1" value="30" required disabled></label>
+						</div>
+						<p>Дни, часы и минуты складываются. Например: 0 дней, 1 час и 29 минут. Общая задержка — от 0 до 7 дней; все нули — отправка при ближайшей проверке после окончания.</p>
+						<button id="auto-invoice-save" type="submit" disabled>Сохранить задержку</button>
+						<p id="auto-invoice-status" role="status"></p>
+					</form>
+					<p>Сумма, название и артикул берутся из сохраненного товара «Индивидуальная консультация» при создании счета. Для встречи, по которой уже создан разовый счет вручную, автоматический счет не отправляется.</p>
+					<p>PDF сохраняется в «Счета», дата и email — в «Истории отправок». Отправка означает прием письма почтовым сервисом, а не подтверждение доставки или оплаты.</p>
+					<p id="auto-invoice-last-run"></p>
 				</div>
 			</div>
 		</section>
@@ -1056,9 +1086,22 @@
 			<button id="admin-notifications-close" type="button">Закрыть</button>
 			<h2 id="admin-notifications-title">Уведомления</h2>
 			<div id="admin-incoming-notifications" class="order-list"></div>
+			<h3>Автоматическая отправка счетов</h3>
+			<p>Последние 50 уведомлений; непрочитанные показываются в первую очередь. История отправок каждого счета хранится в разделе «Счета».</p>
+			<button id="auto-invoice-notifications-read" type="button" disabled>Отметить показанные прочитанными</button>
+			<p id="auto-invoice-notifications-status" role="status"></p>
+			<div id="auto-invoice-notifications" class="order-list"></div>
 			<p>Ниже показаны письма, отправку которых нужно проверить. Повтор доступен в течение 23 часов. Позже сначала проверьте отправку в Resend, чтобы не отправить дубликат.</p>
 			<p id="admin-notifications-status" role="status"></p>
 			<div id="calendar-mail-queue" class="order-list"></div>
+		</dialog>
+		<dialog id="invoice-delivery-dialog" class="calendar-details-dialog" aria-labelledby="invoice-delivery-title">
+			<button id="invoice-delivery-close" type="button">Закрыть</button>
+			<h2 id="invoice-delivery-title">История отправок</h2>
+			<p>Время указано по Таллину. «Отправлен» означает, что почтовый сервис принял письмо; доставка в почтовый ящик не подтверждается.</p>
+			<p id="invoice-delivery-status" role="status"></p>
+			<div id="invoice-delivery-rows" class="order-list"></div>
+			<button id="invoice-delivery-more" type="button" hidden>Показать еще</button>
 		</dialog>
 	</main>
 	<script src="site-api.js"></script>
@@ -1737,14 +1780,16 @@
 	</script>
 	<script src="site-logo.js"></script>
 	<script src="invoice-zip.js?v=202610221815"></script>
-	<script src="admin-invoice-list.js?v=202610221828"></script>
-	<script src="admin-invoices.js?v=202610221959"></script>
+	<script src="admin-invoice-delivery.js?v=202610222130"></script>
+	<script src="admin-invoice-list.js?v=202610222130"></script>
+	<script src="admin-invoices.js?v=202610222140"></script>
 	<script src="admin-voucher-email.js?v=202610220809"></script>
 	<script src="admin-booking-email.js"></script>
 	<script src="admin-calendar-link-email.js?v=202610220807"></script>
 	<script src="admin-texts.js?v=202610220911"></script>
 	<script src="admin-manual-invoice.js?v=202610221900"></script>
-	<script src="admin-calendar.js?v=202610222004"></script>
+	<script src="admin-auto-invoices.js?v=202610222150"></script>
+	<script src="admin-calendar.js?v=202610222130"></script>
 	<script src="admin-clients.js?v=202610221955"></script>
 </body>
 </html>
