@@ -4,7 +4,7 @@
 	const fields=['name','address','registration_code','phone','email','website','bank','swift','iban'];
 	const vat=form.elements.namedItem('vatRegistered'),vatNumber=form.elements.namedItem('vatNumber');
 	const gross=get('invoice-calculator-gross'),theme=get('invoice-theme');
-	const sections=['company','design','products','email'],blocks=['estonian','russian','signature'];
+	const sections=['list','company','design','products','email'],blocks=['estonian','russian','signature'];
 	const editors=blocks.map(key=>get(`invoice-email-${key}`));
 	const emailSource=get('invoice-email-source'),emailLanguage=get('invoice-email-language');
 	const formatButtons=[...get('invoice-email-toolbar').querySelectorAll('[data-format]')];
@@ -13,12 +13,13 @@
 	let logoSelection=0,logoBusy=false,designBusy=false,companyBusy=false,emailBusy=false,activeEditor=null;
 	let previewVersion=0,previewTimer;
 	let productsBusy=false,savedProducts=null;
-	const readProducts=()=>Object.fromEntries(['five','ten'].map(key=>[key,{
+	const editingProducts=new Set();
+	const readProduct=key=>({
 		name:productsForm.elements.namedItem(`${key}Name`).value.trim(),
 		article:productsForm.elements.namedItem(`${key}Article`).value.trim(),
-	}]));
+	});
 	const showProducts=products=>{
-		for(const key of ['five','ten']){
+		for(const key of ['single','five','ten']){
 			productsForm.elements.namedItem(`${key}Name`).value=products[key].name;
 			productsForm.elements.namedItem(`${key}Article`).value=products[key].article;
 		}
@@ -32,6 +33,14 @@
 	});
 	function controls(){
 		productsForm.querySelectorAll('input,button').forEach(el=>{el.disabled=!loaded||productsBusy;});
+		for(const key of ['single','five','ten']){
+			const editing=editingProducts.has(key),card=get(`invoice-product-${key}-title`).closest('article');
+			card.dataset.locked=String(!editing);
+			for(const suffix of ['Name','Article'])productsForm.elements.namedItem(`${key}${suffix}`).disabled=!loaded||productsBusy||!editing;
+			get(`invoice-product-${key}-edit`).hidden=editing;
+			get(`invoice-product-${key}-cancel`).hidden=!editing;
+			card.querySelector('[type="submit"]').hidden=!editing;
+		}
 		form.querySelectorAll('input,textarea,button').forEach(el=>{el.disabled=!loaded||companyBusy;});
 		vatNumber.disabled=!loaded||companyBusy||!vat.checked;
 		theme.disabled=!loaded||designBusy;
@@ -116,6 +125,8 @@
 			get(`invoice-panel-${name}`).hidden=!selected;
 		}
 		clearPreview();schedulePreview();
+		if(key==='list')window.adminInvoiceList.load();
+		else if(!loaded)load();
 	}
 	for(const [index,key] of sections.entries()){
 		const tab=get(`invoice-tab-${key}`);
@@ -127,16 +138,34 @@
 			event.preventDefault();selectTab(sections[target]);get(`invoice-tab-${sections[target]}`).focus();
 		});
 	}
+	for(const key of ['single','five','ten']){
+		get(`invoice-product-${key}-edit`).addEventListener('click',()=>{
+			if(!loaded||productsBusy)return;
+			editingProducts.add(key);status(`invoice-product-${key}-status`,'');controls();
+			productsForm.elements.namedItem(`${key}Name`).focus();
+		});
+		get(`invoice-product-${key}-cancel`).addEventListener('click',()=>{
+			if(!loaded||productsBusy)return;
+			productsForm.elements.namedItem(`${key}Name`).value=savedProducts[key].name;
+			productsForm.elements.namedItem(`${key}Article`).value=savedProducts[key].article;
+			editingProducts.delete(key);status(`invoice-product-${key}-status`,'');controls();
+		});
+	}
 	productsForm.addEventListener('submit',async event=>{
 		event.preventDefault();if(!loaded||productsBusy)return;
-		const current=generation,products=readProducts();
-		productsBusy=true;controls();status('invoice-products-status','Сохраняем товары...');
+		const key=event.submitter?.dataset.product;
+		if(!['single','five','ten'].includes(key)||!editingProducts.has(key))return;
+		for(const suffix of ['Name','Article'])if(!productsForm.elements.namedItem(`${key}${suffix}`).reportValidity())return;
+		const current=generation,product=readProduct(key),statusId=`invoice-product-${key}-status`;
+		productsBusy=true;controls();status(statusId,'Сохраняем товар...');
 		try{
-			confirmSaved(await post('invoice-products',{products}));
+			confirmSaved(await post('invoice-products',{key,product}));
 			if(current!==generation)return;
-			savedProducts=products;showProducts(products);
-			status('invoice-products-status','Сохранено для новых заказов. Автоматическая отправка работает как прежде.');
-		}catch(error){if(current===generation)status('invoice-products-status',error.message);}
+			savedProducts={...savedProducts,[key]:product};
+			editingProducts.delete(key);
+			for(const field of ['name','article'])productsForm.elements.namedItem(`${key}${field==='name'?'Name':'Article'}`).value=product[field];
+			status(statusId,'Товар сохранен. Изменения применятся к новым счетам.');
+		}catch(error){if(current===generation)status(statusId,error.message);}
 		finally{if(current===generation){productsBusy=false;controls();}}
 	});
 	form.addEventListener('input',()=>{calculate();schedulePreview();});
@@ -332,13 +361,15 @@
 		finally{if(current===generation){emailBusy=false;controls();}}
 	});
 	async function load(){
+		if(get('admin-workspace').hidden)return;
+		if(active==='list'){window.adminInvoiceList.load();return;}
 		if(loaded||loading)return;
 		const current=++generation;loading=true;controls();status('invoice-settings-status','Загружаем настройки счета...');
 		status('invoice-products-status','Загружаем товары...');
 		try{
 			const [details,design,email,productSettings]=await Promise.all(['invoice-settings','invoice-design','invoice-email','invoice-products'].map(path=>adminRequest(`/api/admin/${path}`)));
 			if(current!==generation)return;
-			if(!productSettings.products||!['five','ten'].every(key=>productSettings.products[key]&&
+			if(!productSettings.products||!['single','five','ten'].every(key=>productSettings.products[key]&&
 				['name','article'].every(field=>typeof productSettings.products[key][field]==='string'))||
 				!details.issuer||!fields.every(key=>typeof details.issuer[key]==='string')||
 				typeof details.vatRegistered!=='boolean'||typeof details.vatNumber!=='string'||
@@ -364,6 +395,8 @@
 		savedCompany=null;savedDesign=null;draftLogo='default';activeEditor=null;replyTo='';
 		originalEmail=null;customEmail=null;selectedEmailSource='original';emailSelection=null;
 		form.reset();emailForm.reset();productsForm.reset();editors.forEach(editor=>editor.replaceChildren());
+		editingProducts.clear();
+		for(const key of ['single','five','ten'])status(`invoice-product-${key}-status`,'');
 		get('invoice-email-preview').replaceChildren();get('invoice-email-preview-subject').textContent='';
 		get('invoice-logo-file').value='';clearPreview();showLogo();controls();calculate();
 		for(const id of ['invoice-settings-status','invoice-design-status','invoice-products-status','invoice-email-status','invoice-logo-status',
@@ -371,6 +404,6 @@
 	});
 	window.adminInvoices={load};
 	window.emailEditor={readRuns,fillEditor};
-	selectTab(window.adminNavigation.read('invoice',sections,'company'));
+	selectTab(window.adminNavigation.read('invoice',sections,'list'));
 	controls();calculate();
 })();

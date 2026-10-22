@@ -141,6 +141,9 @@
 		if (appointment.contact) card.append(text('p',appointment.contact));
 		if (appointment.client_request) card.append(text('p',appointment.client_request));
 		if (appointment.source === 'google') card.append(text('small','Перенесено из Google. Старое событие в Google не изменяется.'));
+		const invoiceActions=text('div','');
+		window.adminManualInvoice.mount(invoiceActions,{appointmentId:appointment.id,name:appointment.name,email:appointment.email});
+		card.append(invoiceActions);
 		if (appointment.status === 'confirmed' && ['Zoom','Microsoft Teams'].includes(appointment.platform)) {
 			if (!appointment.email) card.append(text('p','Для отправки ссылки у записи должен быть указан email клиента.'));
 			else {
@@ -1102,9 +1105,21 @@
 	const loadInvoiceSettings=()=>window.adminInvoices.load();
 	const pricesForm=get('prices-form');
 	let pricesGeneration=0;
+	let savedPrices=null,pricesBusy=false;
+	const editingPrices=new Set();
+	function priceControls(){
+		for(const key of window.servicePricing.keys){
+			const editing=editingPrices.has(key),field=pricesForm.elements.namedItem(key),card=field.closest('article');
+			field.disabled=!savedPrices||!editing||pricesBusy;card.dataset.locked=String(!editing);
+			const edit=get(`prices-${key}-edit`),cancel=get(`prices-${key}-cancel`),save=card.querySelector('[type="submit"]');
+			edit.hidden=editing;edit.disabled=!savedPrices||pricesBusy;
+			cancel.hidden=!editing;cancel.disabled=pricesBusy;
+			save.hidden=!editing;save.disabled=!savedPrices||pricesBusy;
+		}
+	}
 	const readPrices=()=>Object.fromEntries(window.servicePricing.keys.map(key=>[key,Math.round(Number(pricesForm.elements.namedItem(key).value)*100)]));
 	const calculatePrices=()=>{
-		if(!pricesForm.checkValidity())return;
+		if(![...pricesForm.querySelectorAll('input')].every(input=>input.validity.valid))return;
 		const prices=readPrices();
 		for(const key of ['five','ten']){
 			const metric=window.servicePricing.metrics(prices,key);
@@ -1113,34 +1128,56 @@
 	};
 	async function loadPrices(){
 		const current=++pricesGeneration;
-		pricesForm.querySelector('[type="submit"]').disabled=true;
+		savedPrices=null;editingPrices.clear();pricesBusy=false;priceControls();
 		get('prices-status').textContent='Загружаем цены...';
 		try{
 			const result=await adminRequest('/api/admin/prices');
 			if(current!==pricesGeneration)return;
 			const prices=window.servicePricing.validate(result.prices);
+			savedPrices=prices;
 			for(const key of window.servicePricing.keys)pricesForm.elements.namedItem(key).value=(prices[key]/100).toFixed(2);
 			calculatePrices();get('prices-status').textContent='';
-			pricesForm.querySelector('[type="submit"]').disabled=false;
+			priceControls();
 		}catch(error){if(current===pricesGeneration)get('prices-status').textContent=error.message;}
 	}
 	document.addEventListener('admin-login',()=>{if(!get('prices-section').hidden)loadPrices();});
+	for(const key of window.servicePricing.keys){
+	get(`prices-${key}-edit`).addEventListener('click',()=>{
+		if(!savedPrices||pricesBusy)return;
+		editingPrices.add(key);get(`prices-${key}-status`).textContent='';priceControls();
+		pricesForm.elements.namedItem(key).focus();
+	});
+	get(`prices-${key}-cancel`).addEventListener('click',()=>{
+		if(!savedPrices||pricesBusy)return;
+		pricesForm.elements.namedItem(key).value=(savedPrices[key]/100).toFixed(2);
+		editingPrices.delete(key);priceControls();calculatePrices();get(`prices-${key}-status`).textContent='';
+	});
+	}
 	pricesForm.addEventListener('input',calculatePrices);
 	pricesForm.addEventListener('submit',async event=>{
 		event.preventDefault();
-		const save=pricesForm.querySelector('[type="submit"]');save.disabled=true;
+		const key=event.submitter?.dataset.price;
+		if(!savedPrices||!editingPrices.has(key)||pricesBusy)return;
+		const field=pricesForm.elements.namedItem(key);
+		if(!field.reportValidity())return;
+		const cents=Math.round(Number(field.value)*100),status=get(`prices-${key}-status`);
+		pricesBusy=true;priceControls();
 		const current=pricesGeneration;
 		try{
-			const prices=window.servicePricing.validate(readPrices());
-			await adminRequest('/api/admin/prices',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prices})});
-			if(current===pricesGeneration)get('prices-status').textContent='Цены сохранены. Новые заказы и счета будут с новой стоимостью.';
-		}catch(error){if(current===pricesGeneration)get('prices-status').textContent=error.message;}
-		finally{if(current===pricesGeneration)save.disabled=false;}
+			const result=await adminRequest('/api/admin/prices',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,cents})});
+			if(result.ok!==true)throw new Error('Сервер не подтвердил сохранение цен.');
+			if(current===pricesGeneration){
+				savedPrices={...savedPrices,[key]:cents};editingPrices.delete(key);field.value=(cents/100).toFixed(2);
+				status.textContent='Цена сохранена. Применяется к новым заказам и счетам.';
+			}
+		}catch(error){if(current===pricesGeneration)status.textContent=error.message;}
+		finally{if(current===pricesGeneration){pricesBusy=false;priceControls();}}
 	});
 	document.addEventListener('admin-logout',()=>{
-		pricesGeneration++;pricesForm.reset();get('prices-status').textContent='';
+		pricesGeneration++;savedPrices=null;editingPrices.clear();pricesBusy=false;pricesForm.reset();get('prices-status').textContent='';
+		for(const key of window.servicePricing.keys)get(`prices-${key}-status`).textContent='';
 		get('prices-five').textContent='';get('prices-ten').textContent='';
-		pricesForm.querySelector('[type="submit"]').disabled=true;
+		priceControls();
 	});
 	adminForm.addEventListener('submit',()=>{
 		if(!get('calendar-section').hidden)load().catch(fail);
