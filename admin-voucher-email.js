@@ -24,8 +24,7 @@
 				const parts=substitute(run.text).split('https://danilpsy.ee/#packages');
 				parts.forEach((part,index)=>{
 					if(index){
-						const link=document.createElement('a');link.href='https://danilpsy.ee/#packages';link.textContent='пакетам консультаций\u00a0↗';link.target='_blank';link.rel='noopener';
-						link.style.cssText='display:inline-block;padding:4px 10px;background:#edf3ef;border:1px solid #b8cbbf;border-radius:6px;color:#36574b;font-weight:700;text-decoration:underline;text-underline-offset:3px';
+						const link=document.createElement('a');link.href='https://danilpsy.ee/#packages';link.textContent='https://danilpsy.ee/#packages';link.target='_blank';link.rel='noopener';
 						span.append(link);
 					}
 					span.append(document.createTextNode(part));
@@ -40,10 +39,17 @@
 				const copy=document.createElement('button');copy.type='button';copy.setAttribute('aria-label','Скопировать ваучер');copy.title='Скопировать ваучер';
 				const icon=document.createElement('span');icon.className='voucher-copy-icon';icon.setAttribute('aria-hidden','true');copy.append(icon);
 				const status=document.createElement('p');status.setAttribute('role','status');
-				copy.addEventListener('click',async()=>{
+				copy.addEventListener('click',async event=>{
+					event.preventDefault();event.stopPropagation();
 					try{
-						if(!navigator.clipboard)throw new Error('Копирование недоступно. Выделите код и скопируйте вручную.');
-						await navigator.clipboard.writeText(code.textContent);status.textContent='Код ваучера скопирован.';
+						try{if(!navigator.clipboard)throw new Error('Clipboard API unavailable');await navigator.clipboard.writeText(code.textContent);}
+						catch{
+							const field=document.createElement('textarea');field.value=code.textContent;field.setAttribute('readonly','');
+							field.style.position='fixed';field.style.opacity='0';document.body.append(field);field.select();
+							const copied=document.execCommand('copy');field.remove();
+							if(!copied)throw new Error('Копирование недоступно. Выделите код и скопируйте вручную.');
+						}
+						status.textContent='Код ваучера скопирован.';
 					}catch(error){status.textContent=error.message||'Не удалось скопировать. Выделите код и скопируйте вручную.';}
 				});
 				const row=document.createElement('div');row.className='voucher-mail-row';row.append(code,copy);

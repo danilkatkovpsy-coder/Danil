@@ -12,7 +12,7 @@
 		h1 { margin: 8px 0 22px; color: #1d2c27; font-size: 30px; }
 		.eyebrow { margin: 0; color: #756b63; font-size: 12px; font-weight: 700; }
 		.admin-login, .order-card { padding: 18px; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; }
-		.admin-login { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; margin-top: clamp(48px, 12vh, 120px); }
+		.admin-login { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; width: 50%; margin: clamp(48px, 12vh, 120px) auto 0; }
 		.admin-login .admin-remember { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
 		.admin-login .admin-remember input { width: 18px; height: 18px; margin: 0; }
 		.admin-remember-note { grid-column: 1 / -1; margin: 0; font-size: 13px; }
@@ -32,7 +32,8 @@
 		label { display: grid; gap: 6px; color: #514940; font-size: 13px; font-weight: 600; }
 		input, button { min-height: 42px; border: 1px solid #d7cec5; border-radius: 4px; font: inherit; }
 		input { width: 100%; padding: 9px 11px; background: #fff; color: #292621; }
-		button { padding: 8px 14px; background: #2d5647; color: #fff; font-weight: 600; cursor: pointer; }
+		button { padding: 8px 14px; background: #1f4034; color: #fff; font-weight: 600; cursor: pointer; }
+		button:where(:hover:not(:disabled)) { background: #294f40; }
 		button:disabled { opacity: .6; cursor: wait; }
 		#admin-status { min-height: 22px; margin: 14px 0; color: #315f4f; }
 		#admin-status.is-error { color: #8a3b33; }
@@ -129,8 +130,8 @@
 		.admin-sidebar-brand { display: flex; align-items: center; gap: 12px; margin: 0 10px 12px; padding-bottom: 18px; border-bottom: 1px solid #bdb2a840; color: #bdb2a8; font-size: 23px; font-weight: 700; letter-spacing: .04em; text-decoration: none; }
 		.admin-sidebar-brand img { width: 42px; height: 42px; padding: 3px; object-fit: contain; border-radius: 50%; background: #201b16; }
 		.admin-sidebar > button { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: transparent; color: #e6eee9; text-align: left; }
-		.admin-sidebar > button[aria-pressed="true"] { background: #365d4e; color: #fff; box-shadow: inset 3px 0 #b7cfb6; }
-		.admin-sidebar > button:hover { background: #2d493e; }
+		.admin-sidebar > button[aria-pressed="true"] { background: #1f4034; color: #fff; box-shadow: inset 3px 0 #b7cfb6; }
+		.admin-sidebar > button:hover:not(:disabled) { background: #294f40; }
 		.admin-sidebar button:focus-visible, .admin-sidebar-brand:focus-visible { outline: 2px solid #b7cfb6; outline-offset: 2px; }
 		.admin-sidebar svg { flex: 0 0 20px; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 		@media (min-width: 761px) {
@@ -228,7 +229,8 @@
 		.calendar-mini { width: 100%; min-width: 0; margin-bottom: 16px; padding: 8px; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; }
 		#admin-workspace:has(#calendar-section[hidden]) .calendar-mini { display: none; }
 		#admin-workspace:has(#calendar-section[hidden]) #calendar-add { display: none; }
-		#calendar-add { margin-bottom: 8px; background: #365d4e; justify-content: center; }
+		#calendar-add { margin-bottom: 8px; background: #1f4034; justify-content: center; }
+		#calendar-add:hover:not(:disabled) { background: #294f40; }
 		.calendar-create-times { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 		#calendar-create-form, #calendar-create-form label, #calendar-create-form input, #calendar-create-form select { min-width: 0; max-width: 100%; }
 		#calendar-create-status { margin: 0; color: #8a3b33; }
@@ -264,7 +266,7 @@
 		.calendar-create-select-options button { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 10px 12px; border: 0; border-radius: 6px; background: transparent; color: #514940; font-size: 13px; text-align: left; }
 		.calendar-create-select-options button:hover { background: #f0ebe4; }
 		.calendar-create-select-options button[aria-pressed="true"] { background: #e8f0e9; color: #234b3d; }
-		.calendar-create-select-options button[aria-pressed="true"]::after { content: '✓'; }
+		.calendar-create-select-options button[aria-pressed="true"]::after { content: '✓'; color: #1f4034; }
 		.calendar-create-select :focus-visible { outline: 2px solid #789888; outline-offset: 2px; }
 		#calendar-create-form [type="checkbox"] { width: 18px; min-height: 18px; height: 18px; accent-color: #315f4f; }
 		#calendar-create-form [type="submit"] { min-height: 48px; border-radius: 8px; }
@@ -320,17 +322,30 @@
 		.calendar-range-day { min-height: 40px; padding: 4px; background: #fffdfa; color: #514940; }
 		.calendar-range-day.is-closed { background: #d5d5d5; border-color: #bcbcbc; color: #737373; }
 		.calendar-range-day.is-in-range { background: #c5dfcc; border-color: #98bda3; color: #234b35; }
-		.calendar-range-day[aria-pressed="true"] { background: #315f4f; color: #fff; }
+		.calendar-range-day[aria-pressed="true"] { background: #1f4034; color: #fff; }
+		.calendar-range-day[aria-pressed="true"]:hover:not(:disabled) { background: #294f40; }
 		#calendar-range-open[aria-pressed="false"], #calendar-range-close[aria-pressed="false"] { background: #fffdfa; color: #315f4f; }
 		#calendar-range-open, #calendar-range-close { display: inline-flex; align-items: center; gap: 10px; border: 2px solid #d7cec5; border-radius: 10px; }
 		#calendar-range-open::before, #calendar-range-close::before { content: ''; display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid currentColor; border-radius: 50%; }
-		#calendar-range-open[aria-pressed="true"], #calendar-range-close[aria-pressed="true"] { border-color: #1d3e31; background: #2d5647; color: #fff; box-shadow: 0 0 0 3px #2d564720; }
-		#calendar-range-open[aria-pressed="true"]::before, #calendar-range-close[aria-pressed="true"]::before { content: '✓'; background: #fff; color: #2d5647; }
+		#calendar-range-open[aria-pressed="true"], #calendar-range-close[aria-pressed="true"] { border-color: #1d3e31; background: #1f4034; color: #fff; box-shadow: 0 0 0 3px #2d564720; }
+		#calendar-range-open[aria-pressed="true"]:hover:not(:disabled), #calendar-range-close[aria-pressed="true"]:hover:not(:disabled) { background: #294f40; }
+		#calendar-range-open[aria-pressed="true"]::before, #calendar-range-close[aria-pressed="true"]::before { content: '✓'; background: #fff; color: #1f4034; }
 		#calendar-range-action { padding: 10px 12px; border-left: 3px solid #315f4f; border-radius: 4px; background: #e8f0e9; color: #234b3d; font-weight: 600; }
 		.calendar-details-dialog { width: min(560px, calc(100% - 32px)); max-height: 90dvh; padding: 20px; border: 1px solid #ded5cb; border-radius: 8px; background: #fffdfa; color: #292621; }
 		.calendar-details-dialog::backdrop { background: #19251f80; }
 		.calendar-details-dialog > button { display: block; margin: 0 0 12px auto; }
+		.calendar-link-send-form { margin-top: 16px; padding: 14px; border: 1px solid #ded5cb; border-radius: 6px; background: #f8f4ef; }
+		.calendar-link-send-form textarea, #calendar-link-email-form textarea { width: 100%; min-height: 100px; padding: 9px 11px; border: 1px solid #d7cec5; border-radius: 4px; color: #292621; font: inherit; resize: vertical; }
+		.calendar-link-send-status.is-error { color: #8a3b33; }
+		.booking-email-tabs { display: flex; gap: 8px; margin: 14px 0 18px; border-bottom: 1px solid #ded5cb; }
+		.booking-email-tabs button { min-height: 40px; border-radius: 4px 4px 0 0; background: #eee8e0; color: #514940; }
+		.booking-email-tabs button[aria-selected="true"] { background: #1f4034; color: #fff; }
+		.booking-email-tabs button[aria-selected="true"]:hover:not(:disabled) { background: #294f40; }
+		.booking-email-tab-panel[hidden] { display: none; }
+		.calendar-link-email-preview { min-height: 180px; padding: 18px; border: 1px solid #ded5cb; border-radius: 6px; background: #fffdfa; overflow-wrap: anywhere; }
+		.calendar-link-email-preview-subject { display: block; margin-bottom: 12px; }
 		@media (max-width: 560px) {
+			.admin-login { width: 100%; }
 			main { margin: 24px auto; }
 			h1 { font-size: 25px; }
 			.admin-login, .order-activate { grid-template-columns: 1fr; }
@@ -682,7 +697,7 @@
 				</div>
 				<label id="voucher-email-body-label">Благодарность и вступление</label>
 				<div id="voucher-email-body" class="invoice-email-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-labelledby="voucher-email-body-label"></div>
-				<p>Здесь автоматически добавляется цветной блок с кодом ваучера и кнопкой перехода на сайт для копирования.</p>
+						<p>Здесь автоматически добавляется цветной блок с кодом ваучера и кнопкой копирования кода.</p>
 				<label id="voucher-email-instructions-label">Инструкция</label>
 				<div id="voucher-email-instructions" class="invoice-email-editor" contenteditable="false" role="textbox" aria-multiline="true" aria-labelledby="voucher-email-instructions-label"></div>
 				<label id="voucher-email-signature-label">Подпись</label>
@@ -833,7 +848,12 @@
 			</details>
 			<details id="booking-email-panel" class="calendar-card">
 				<summary>Автоматическое письмо</summary>
-				<p>Письмо клиенту при новой записи на сеанс, на одном языке, без перевода. Изменения действуют после сохранения для новых отправок. Уже подготовленные письма, уведомления о переносе и отмене и служебные письма не меняются.</p>
+				<div class="booking-email-tabs" role="tablist" aria-label="Письма клиенту">
+					<button id="booking-email-tab-confirmation" type="button" role="tab" aria-selected="true" aria-controls="booking-email-confirmation-panel">Подтверждение бронирования</button>
+					<button id="booking-email-tab-link" type="button" role="tab" aria-selected="false" aria-controls="booking-email-link-panel" tabindex="-1">Отправка ссылки</button>
+				</div>
+				<section id="booking-email-confirmation-panel" class="booking-email-tab-panel" role="tabpanel" aria-labelledby="booking-email-tab-confirmation">
+				<p>Письмо клиенту при новой записи. Изменения применяются к новым подтверждениям после сохранения.</p>
 				<div class="invoice-workbench">
 					<form id="booking-email-form" class="calendar-form">
 						<label>Шаблон<select id="booking-email-source" disabled><option value="original">Исходный шаблон</option><option value="custom">Мое письмо</option></select></label>
@@ -853,8 +873,38 @@
 						<button type="submit" disabled>Сохранить письмо</button>
 						<p id="booking-email-status" role="status"></p>
 					</form>
-					<div><h3>Предпросмотр</h3><p>Пример записи через Google Meet. Письмо не отправляется. В настоящем письме используются данные выбранного сеанса и способа связи.</p><p id="booking-email-preview-status" role="status"></p><strong id="booking-email-preview-subject"></strong><div id="booking-email-preview" class="invoice-email-preview"></div></div>
+					<div><h3>Предпросмотр</h3><p>Пример записи через ZOOM. Письмо не отправляется. В настоящем письме используются данные выбранного сеанса и способа связи.</p><p id="booking-email-preview-status" role="status"></p><strong id="booking-email-preview-subject"></strong><div id="booking-email-preview" class="invoice-email-preview"></div></div>
 				</div>
+				</section>
+				<section id="booking-email-link-panel" class="booking-email-tab-panel" role="tabpanel" aria-labelledby="booking-email-tab-link" hidden>
+					<p>Отдельное письмо с данными Zoom или Microsoft Teams. Отправляется только вручную из карточки записи.</p>
+					<div class="invoice-workbench">
+						<form id="calendar-link-email-form" class="calendar-form">
+							<label>Шаблон<select id="calendar-link-email-source" disabled><option value="original">Исходный шаблон</option><option value="custom">Мое письмо</option></select></label>
+							<button id="calendar-link-email-restore" type="button" disabled>Восстановить исходное письмо</button>
+							<p>Для редактирования выберите «Мое письмо». Подстановки: <code>{{name}}</code>, <code>{{start}}</code>, <code>{{end}}</code>, <code>{{meeting_link}}</code>, <code>{{meeting_id}}</code>, <code>{{meeting_password}}</code>.</p>
+							<label>Тема<input id="calendar-link-email-subject" value="Ссылка на консультацию" maxlength="200" required disabled></label>
+							<label for="calendar-link-email-body">Текст письма</label>
+							<textarea id="calendar-link-email-body" rows="12" maxlength="4000" required disabled>Здравствуйте!
+
+Наша консультация скоро начнется. Подключиться можно по ссылке:
+
+{{meeting_link}}
+
+**Данные для входа:**
+
+- Номер конференции: {{meeting_id}}
+- Пароль: {{meeting_password}}
+
+До встречи!</textarea>
+							<label for="calendar-link-email-signature">Подпись</label>
+							<textarea id="calendar-link-email-signature" rows="3" maxlength="2000" required disabled>Данил Катков</textarea>
+							<button id="calendar-link-email-save" type="submit" disabled>Сохранить письмо</button>
+							<p id="calendar-link-email-status" role="status"></p>
+						</form>
+						<div><h3>Предпросмотр</h3><p id="calendar-link-email-preview-status" role="status"></p><strong id="calendar-link-email-preview-subject" class="calendar-link-email-preview-subject"></strong><div id="calendar-link-email-preview" class="calendar-link-email-preview"></div></div>
+					</div>
+				</section>
 			</details>
 		</section>
 		</div>
@@ -1543,10 +1593,11 @@
 	</script>
 	<script src="site-logo.js"></script>
 	<script src="admin-invoices.js"></script>
-	<script src="admin-voucher-email.js"></script>
+	<script src="admin-voucher-email.js?v=202610220809"></script>
 	<script src="admin-booking-email.js"></script>
-	<script src="admin-texts.js"></script>
-	<script src="admin-calendar.js"></script>
+	<script src="admin-calendar-link-email.js?v=202610220807"></script>
+	<script src="admin-texts.js?v=202610220911"></script>
+	<script src="admin-calendar.js?v=202610220911"></script>
 	<script src="admin-clients.js"></script>
 </body>
 </html>

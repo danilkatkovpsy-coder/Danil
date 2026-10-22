@@ -7,8 +7,14 @@
 	label.textContent=code;button.disabled=false;
 	button.addEventListener('click',async()=>{
 		try{
-			if(!navigator.clipboard)throw new Error('Копирование недоступно. Выделите код и скопируйте его вручную.');
-			await navigator.clipboard.writeText(code);status.textContent='Код ваучера скопирован.';
+			try{await navigator.clipboard.writeText(code);}
+			catch{
+				const field=document.createElement('textarea');field.value=code;field.setAttribute('readonly','');
+				field.style.position='fixed';field.style.opacity='0';document.body.append(field);field.select();
+				const copied=document.execCommand('copy');field.remove();
+				if(!copied)throw new Error('Копирование недоступно. Выделите код и скопируйте его вручную.');
+			}
+			status.textContent='Код ваучера скопирован.';
 		}catch(error){status.textContent=error.message||'Не удалось скопировать. Выделите код и скопируйте вручную.';}
 	});
 })();

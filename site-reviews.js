@@ -16,7 +16,7 @@
 	const validateSubmission=review=>Boolean(review&&typeof review==='object'&&
 		Object.keys(review).length===4&&typeof review.name==='string'&&review.name===review.name.trim()&&
 		review.name.length<=80&&!/[\x00-\x1f\x7f]/.test(review.name)&&
-		typeof review.text==='string'&&review.text.trim()===review.text&&review.text.length>0&&review.text.length<=5000&&
+		typeof review.text==='string'&&review.text.trim()===review.text&&review.text.length>0&&review.text.length<=1500&&
 		!/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(review.text)&&Number.isInteger(review.rating)&&
 		review.rating>=1&&review.rating<=5&&typeof review.anonymous==='boolean'&&(review.anonymous||review.name.length>0));
 	window.siteReviews={validate,validateSubmission};
@@ -120,7 +120,7 @@
 			});
 		});
 		anonymous.addEventListener('change',updateNameField);
-		reviewText.addEventListener('input',()=>{charCount.textContent=`${reviewText.value.length} / 5000`;});
+		reviewText.addEventListener('input',()=>{charCount.textContent=`${reviewText.value.length} / 1500`;});
 		toggle.addEventListener('click',()=>{
 			lockPageScroll();
 			modal.showModal();toggle.setAttribute('aria-expanded','true');
@@ -155,12 +155,17 @@
 					headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
 				const result=await response.json();
 				if(!response.ok)throw new Error(result.error||'Не удалось отправить отзыв.');
-				form.reset();updateNameField();selectRating(0);charCount.textContent='0 / 5000';
+				form.reset();updateNameField();selectRating(0);charCount.textContent='0 / 1500';
 				formStatus.textContent='';
 				modal.close();lockPageScroll();successModal.showModal();successClose.focus({preventScroll:true});
 			}catch(error){formStatus.textContent=error.message;}
 			finally{submit.disabled=false;}
 		});
+		if(window.siteAdminPreview?.dialog==='review'){
+			lockPageScroll();modal.showModal();toggle.setAttribute('aria-expanded','true');
+			submit.disabled=true;formStatus.textContent='Предпросмотр. Отправка отключена.';
+			document.getElementById('public-review-title').focus({preventScroll:true});
+		}
 	}
 	const status=node('p','','reviews-load-status');status.setAttribute('role','status');
 	const message=node('span',''),retry=node('button','Повторить');retry.type='button';

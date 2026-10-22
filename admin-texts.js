@@ -16,7 +16,8 @@
 		frame=document.createElement('iframe');frame.title='Сайт с несохраненными изменениями';
 		frame.setAttribute('sandbox','allow-scripts allow-same-origin');
 		overlay.append(back,frame);document.body.append(overlay);document.body.style.overflow='hidden';
-		frame.src=`index.html?admin-preview=1#${encodeURIComponent(value.anchor)}`;back.focus();
+		const dialogQuery=value.dialog?`&dialog=${encodeURIComponent(value.dialog)}`:'';
+		frame.src=`index.html?admin-preview=1${dialogQuery}#${encodeURIComponent(value.anchor)}`;back.focus();
 	}
 	document.addEventListener('keydown',event=>{if(overlay&&event.key==='Escape'){event.preventDefault();closePreview();}});
 	document.addEventListener('admin-logout',closePreview);
@@ -32,7 +33,7 @@
 			const preview=document.createElement('button');preview.type='button';preview.textContent='Предпросмотр';
 			const status=document.createElement('p');status.setAttribute('role','status');
 			actions.append(save,preview);panel.append(actions,status);
-			return {fields,panel,save,preview,status,anchor,keys:keys.filter(key=>fields.contains(form.elements.namedItem(key)))};
+			return {name,fields,panel,save,preview,status,anchor,keys:keys.filter(key=>fields.contains(form.elements.namedItem(key)))};
 		});
 		const controls=()=>{
 			groups.forEach(group=>{group.save.disabled=group.preview.disabled=!loaded||busy;});
@@ -58,7 +59,7 @@
 				if(current!==generation)return;
 				const texts=merge(window.siteTexts.validate(result.texts),group);
 				if(preview){
-					openPreview({texts,anchor:group.anchor});group.status.textContent='Предпросмотр открыт. Изменения не сохранены.';
+					openPreview({texts,anchor:group.anchor,...(group.name==='reviews'?{dialog:'review'}:{})});group.status.textContent='Предпросмотр открыт. Изменения не сохранены.';
 				}else{
 					const saved=await adminRequest('/api/admin/site-texts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texts})});
 					if(current!==generation)return;

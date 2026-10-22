@@ -16,6 +16,7 @@
 	const pending = new Map();
 	const previewMode=new URL(location.search||'',location.origin).searchParams.get('admin-preview')==='1';
 	const preview=previewMode&&window.parent!==window?window.parent.adminTextPreview?.read(window):null;
+	window.siteAdminPreview=previewMode?preview:null;
 	window.siteFetch = async (input, init = {}) => {
 		const url = new URL(input, location.origin);
 		if(previewMode){

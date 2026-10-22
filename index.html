@@ -17,7 +17,7 @@
 	<meta name="twitter:card" content="summary">
 	<meta name="twitter:image" content="https://danilpsy.ee/images/og-logo.png">
 	<link rel="stylesheet" href="/vendor/intl-tel-input/css/intlTelInput.css">
-	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="style.css?v=202610221558">
 </head>
 <body>
 	<header class="header" data-name="верхняя навигация">
@@ -216,11 +216,14 @@
 		<div class="reviews-heading"><div><p class="reviews-eyebrow" data-site-text="reviews_label">Отзывы</p><h2 data-site-text="reviews_title">Отзывы клиентов</h2></div></div>
 		<div class="review-submit-action"><button id="review-submit-toggle" type="button" aria-expanded="false" aria-controls="public-review-modal" data-site-text="reviews_button">Написать отзыв</button></div>
 		<dialog id="public-review-modal" class="public-review-modal" aria-labelledby="public-review-title">
+		<div class="public-review-shell">
 		<button id="public-review-close" class="public-review-close" type="button" aria-label="Закрыть окно" data-site-text="review_close" data-site-text-attribute="aria-label">×</button>
-		<form id="public-review-form" class="public-review-form">
-			<h3 id="public-review-title" data-site-text="review_modal_title">Написать отзыв</h3>
-			<p data-site-text="review_modal_note">Отзыв появится на сайте после проверки администратором.</p>
-			<div class="review-form-top">
+		<div class="public-review-main">
+			<header class="public-review-copy">
+				<h3 id="public-review-title" tabindex="-1" data-site-text="review_modal_title">Поделитесь своим отзывом</h3>
+				<p data-site-text="review_modal_note">Ваш отзыв очень важен для нас. Он помогает улучшать качество консультаций и поддерживает других людей в выборе.</p>
+			</header>
+			<form id="public-review-form" class="public-review-form">
 				<div class="review-name-group">
 					<label class="review-name-field"><span data-site-text="review_name_label">Имя</span><input name="name" maxlength="80" autocomplete="name" placeholder="Ваше имя" data-site-text="review_name_placeholder" data-site-text-attribute="placeholder"></label>
 					<label class="review-anonymous"><input name="anonymous" type="checkbox"><span data-site-text="review_anonymous_label">Написать анонимно</span></label>
@@ -236,13 +239,15 @@
 					</div>
 					<input name="rating" type="hidden" value="0">
 				</div>
-			</div>
-			<label><span data-site-text="review_text_label">Текст отзыва</span><textarea name="text" rows="5" maxlength="5000" required placeholder="Напишите свой отзыв" data-site-text="review_text_placeholder" data-site-text-attribute="placeholder"></textarea></label>
-			<p class="review-char-count" aria-live="polite">0 / 5000</p>
-			<button class="review-submit-button" type="submit" data-site-text="review_submit">Отправить</button>
+				<label><span data-site-text="review_text_label">Текст отзыва</span><textarea name="text" rows="5" maxlength="1500" required placeholder="Напишите свой отзыв" data-site-text="review_text_placeholder" data-site-text-attribute="placeholder"></textarea></label>
+			<p class="review-char-count" aria-live="polite">0 / 1500</p>
+			<button class="review-submit-button" type="submit"><span data-site-text="review_submit">Отправить</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
 			<span hidden data-site-text="review_sending">Отправляем на проверку...</span>
 			<p id="public-review-status" role="status" aria-live="polite"></p>
 		</form>
+		</div>
+		<div class="public-review-visual" aria-hidden="true"><picture><source media="(max-width: 700px)" srcset="images/review-plant.png"><img class="review-flower" src="images/otzqvq%20.png" alt=""></picture><span class="public-review-heart">&#9825;</span><span class="public-review-heart-spark"></span></div>
+		</div>
 		</dialog>
 		<dialog id="review-success-modal" class="review-success-modal" aria-labelledby="review-success-title" aria-describedby="review-success-message">
 			<button id="review-success-close" class="public-review-close" type="button" aria-label="Закрыть">×</button>
@@ -317,16 +322,18 @@
 						</div>
 					</form>
 					<section id="booking-result" class="booking-result" aria-live="polite" hidden>
-						<div class="booking-result-check" aria-hidden="true">✓</div>
+						<div class="booking-result-check" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="m8 16 6 7L25 7"></path></svg></div>
 						<h4>Вы успешно записаны!</h4>
 						<p class="booking-result-caption">Консультация подтверждена.</p>
-						<p id="booking-result-email" class="booking-result-connection" role="status"></p>
-						<p id="booking-result-connection" class="booking-result-connection"></p>
+						<div class="booking-result-notice">
+							<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 6 9 6 9-6"></path></svg>
+							<div><p id="booking-result-email" role="status"></p><p id="booking-result-connection"></p></div>
+						</div>
 						<div class="booking-result-details">
-							<p><span aria-hidden="true">▦</span><strong id="booking-result-date"></strong></p>
-							<p><span aria-hidden="true">◷</span><strong id="booking-result-time"></strong></p>
-							<p><span aria-hidden="true">◉</span><strong id="booking-result-platform"></strong></p>
-							<p id="booking-result-balance" hidden><strong id="booking-result-balance-text"></strong></p>
+							<p><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg><strong id="booking-result-date"></strong></p>
+							<p><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 6v6l4 2"></path></svg><strong id="booking-result-time"></strong></p>
+							<p><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="14" rx="2"></rect><path d="m16 10 6-4v12l-6-4"></path></svg><strong id="booking-result-platform"></strong></p>
+							<p id="booking-result-balance" hidden><svg data-booking-result-icon="five" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="m12 3 10 5-10 5L2 8l10-5ZM2 12l10 5 10-5M2 16l10 5 10-5"></path></svg><svg data-booking-result-icon="ten" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M6 3h12l4 6-10 13L2 9l4-6Z"></path><path d="m10 3-2 6 4 13 4-13-2-6M2 9h20"></path></svg><span id="booking-result-balance-text"></span></p>
 						</div>
 						<div id="booking-history-panel" class="booking-history-panel" hidden>
 							<h5>История ваучера</h5>
@@ -336,7 +343,7 @@
 						</div>
 						<div class="booking-result-actions">
 							<button id="booking-add-calendar" class="booking-result-calendar" type="button"><svg class="calendar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg>Добавить в календарь</button>
-							<button id="booking-my-appointments" class="booking-result-history" type="button" hidden>Мои записи <span aria-hidden="true">›</span></button>
+							<button id="booking-my-appointments" class="booking-result-history" type="button" hidden>Мои записи <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"></path></svg></button>
 						</div>
 					</section>
 				</div>
@@ -640,7 +647,7 @@
 		const purchaseConfirmation = document.getElementById('purchase-confirmation');
 		let modalScrollPosition = null;
 		const updateModalScrollLock = () => {
-			const isOpen = bookingModal.classList.contains('is-open') || purchaseModal.classList.contains('is-open') || purchaseConfirmation.open;
+			const isOpen = bookingModal.classList.contains('is-open') || purchaseModal.classList.contains('is-open') || purchaseConfirmation.open || Boolean(document.querySelector('.calendar-choice[open]'));
 			if (isOpen && modalScrollPosition === null) {
 				modalScrollPosition = window.scrollY;
 				document.body.style.top = `-${modalScrollPosition}px`;
@@ -1092,7 +1099,7 @@
 		}
 		document.addEventListener('keydown', (event) => {
 			if (event.key !== 'Escape') return;
-			if (purchaseConfirmation.open) return;
+			if (purchaseConfirmation.open || document.querySelector('.calendar-choice[open]')) return;
 			if (purchaseModal.classList.contains('is-open')) closePurchase();
 			else if (bookingModal.classList.contains('is-open')) closeBooking();
 		});
@@ -1163,28 +1170,39 @@
 			}
 		});
 		const escapeCalendarText = (value) => String(value).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
-		const formatCalendarDate = (value) => new Date(value).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+		const calendarChoice = document.createElement('dialog');
+		calendarChoice.className = 'calendar-choice';
+		calendarChoice.setAttribute('aria-label', 'Добавить в календарь');
+		const calendarChoiceClose = document.createElement('button');
+		calendarChoiceClose.type = 'button';
+		calendarChoiceClose.className = 'calendar-choice-close';
+		calendarChoiceClose.setAttribute('aria-label', 'Закрыть выбор календаря');
+		calendarChoiceClose.textContent = '×';
+		const calendarChoiceFrame = document.createElement('iframe');
+		calendarChoiceFrame.title = 'Выбор календаря';
+		calendarChoice.append(calendarChoiceClose, calendarChoiceFrame);
+		document.body.append(calendarChoice);
+		calendarChoiceClose.addEventListener('click', () => calendarChoice.close());
+		calendarChoice.addEventListener('click', (event) => {
+			if (event.target === calendarChoice) {
+				const bounds = calendarChoice.getBoundingClientRect();
+				if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) calendarChoice.close();
+			}
+		});
+		calendarChoice.addEventListener('close', () => {
+			updateModalScrollLock();
+			bookingAddCalendar.focus({ preventScroll: true });
+		});
 		bookingAddCalendar.addEventListener('click', () => {
 			const platform = bookingResultPlatform.textContent.replace(/^Онлайн · /, '');
-			const calendarContent = [
-				'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Danil Katkov//Consultation//RU', 'CALSCALE:GREGORIAN',
-				'X-WR-TIMEZONE:Europe/Tallinn',
-				'BEGIN:VEVENT',
-				`UID:${escapeCalendarText(bookingAddCalendar.dataset.eventId || `${Date.now()}@danilpsy.ee`)}`,
-				`DTSTAMP:${formatCalendarDate(new Date())}`,
-				`DTSTART:${formatCalendarDate(bookingStart.value)}`,
-				`DTEND:${formatCalendarDate(bookingEnd.value)}`,
-				`SUMMARY:${escapeCalendarText('Консультация с Данилом Катковым')}`,
-				`DESCRIPTION:${escapeCalendarText(`По Таллинскому времени: ${bookingResultDate.textContent}, ${formatBookingTime(bookingStart.value)}–${formatBookingTime(bookingEnd.value)} (Europe/Tallinn). Индивидуальная онлайн-консультация. Платформа: ${platform}`)}`,
-				'END:VEVENT', 'END:VCALENDAR', '',
-			].join('\r\n');
-			const file = new Blob([calendarContent], { type: 'text/calendar;charset=utf-8' });
-			const url = URL.createObjectURL(file);
-			const download = document.createElement('a');
-			download.href = url;
-			download.download = 'consultation.ics';
-			download.click();
-			setTimeout(() => URL.revokeObjectURL(url), 1000);
+			const url = new URL('/calendar.html?embed=1', location.origin);
+			url.hash = new URLSearchParams({
+				start: bookingStart.value, end: bookingEnd.value, platform,
+				uid: bookingAddCalendar.dataset.eventId || '', version: '0',
+			}).toString();
+			calendarChoiceFrame.src = url.href;
+			calendarChoice.showModal();
+			updateModalScrollLock();
 		});
 		const renderBookingHistory = (data) => {
 			bookingHistoryBalance.textContent = `Осталось ${data.remainingSessions} из ${data.totalSessions} консультаций`;
@@ -1381,12 +1399,15 @@
 				bookingResultDate.textContent = confirmedDate;
 				bookingResultTime.textContent = `${formatBookingTime(bookingStart.value)}–${formatBookingTime(bookingEnd.value)} · Таллин (${Math.round((Date.parse(bookingEnd.value)-Date.parse(bookingStart.value))/60000)} мин.)`;
 				bookingResultPlatform.textContent = selectedPlatform === 'WhatsApp' ? 'Видео / аудио · WhatsApp' : `Онлайн · ${selectedPlatform}`;
-				bookingResultConnection.textContent = data.connectionNotice || '';
+				bookingResultConnection.textContent = selectedPlatform === 'Zoom' || selectedPlatform === 'Microsoft Teams'
+					? 'Ссылку для подключения мы пришлем за 15 минут до начала консультации.'
+					: data.connectionNotice || '';
 				document.getElementById('booking-result-email').textContent = data.clientEmailSent
-					? 'Подтверждение и кнопка добавления в календарь отправлены на ваш email.'
-					: 'Запись сохранена, но доставка письма не подтверждена. Свяжитесь с нами, если письмо не придёт.';
+					? 'Подтверждение отправлено на вашу почту.'
+					: 'Запись сохранена, но доставка письма не подтверждена. Свяжитесь с нами, если письмо не придет.';
 				bookingResultBalance.hidden = !packageNeedsVoucher;
-				if (packageNeedsVoucher) bookingResultBalanceText.textContent = `Пакет из ${data.totalSessions} консультаций\nОсталось ${data.remainingSessions} из ${data.totalSessions} консультаций`;
+				bookingResultBalance.querySelectorAll('[data-booking-result-icon]').forEach((icon) => icon.toggleAttribute('hidden', icon.dataset.bookingResultIcon !== bookingPackage.value));
+				if (packageNeedsVoucher) bookingResultBalanceText.textContent = `Пакет: ${data.totalSessions} консультаций · Осталось ${data.remainingSessions}`;
 				bookingAddCalendar.dataset.eventId = data.eventId || '';
 				bookingMyAppointments.hidden = !packageNeedsVoucher;
 				bookingVoucherHistoryButton.hidden = true;

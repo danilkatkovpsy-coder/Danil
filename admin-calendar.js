@@ -131,10 +131,9 @@
 		status.textContent = result.warning || 'Изменения сохранены.';
 		status.classList.toggle('is-error',Boolean(result.warning));
 	}
-	const renderAppointment = (appointment, expanded=false) => {
-		const card = text('details','', 'order-card calendar-appointment');
-		card.open=expanded;
-		card.append(text('summary', `${formatAdminDateTime(appointment.start_at)} - ${appointment.name}`));
+	const renderAppointment = appointment => {
+		const card = text('article','', 'order-card calendar-appointment');
+		card.append(text('h3', `${formatAdminDateTime(appointment.start_at)} - ${appointment.name}`));
 		if(appointment.voucher_code)card.append(text('p',`Номер ваучера: ${appointment.voucher_code}`));
 		if(appointment.voucher_position)card.append(text('p',`Консультация ${appointment.voucher_position} из ${appointment.voucher_total} по ваучеру`));
 		const packageLabel={free:'Бесплатное знакомство',single:'Индивидуальная консультация',five:'Ваучер на 5 встреч',ten:'Ваучер на 10 встреч'}[appointment.package_name]||appointment.package_name;
@@ -142,6 +141,49 @@
 		if (appointment.contact) card.append(text('p',appointment.contact));
 		if (appointment.client_request) card.append(text('p',appointment.client_request));
 		if (appointment.source === 'google') card.append(text('small','Перенесено из Google. Старое событие в Google не изменяется.'));
+		if (appointment.status === 'confirmed' && ['Zoom','Microsoft Teams'].includes(appointment.platform)) {
+			if (!appointment.email) card.append(text('p','Для отправки ссылки у записи должен быть указан email клиента.'));
+			else {
+				const reveal=text('button','Отправить ссылку');reveal.type='button';
+				const form=text('form','','calendar-form calendar-link-send-form');
+				form.hidden=true;
+				const linkInput=document.createElement('input');linkInput.type='url';linkInput.name='link';linkInput.required=true;
+				linkInput.maxLength=2048;linkInput.placeholder='https://';linkInput.autocomplete='url';
+				reveal.addEventListener('click',()=>{
+					form.hidden=!form.hidden;reveal.textContent=form.hidden?'Отправить ссылку':'Скрыть';
+					if(!form.hidden)linkInput.focus();
+				});
+				const linkLabel=text('label','Ссылка на встречу');linkLabel.append(linkInput);
+				const meetingId=document.createElement('input');meetingId.name='meetingId';meetingId.maxLength=200;meetingId.autocomplete='off';
+				const meetingIdLabel=text('label','Номер конференции');meetingIdLabel.append(meetingId);
+				const meetingPassword=document.createElement('input');meetingPassword.name='meetingPassword';meetingPassword.maxLength=200;meetingPassword.autocomplete='off';
+				const meetingPasswordLabel=text('label','Пароль конференции');meetingPasswordLabel.append(meetingPassword);
+				const accessDetails=document.createElement('textarea');accessDetails.name='accessDetails';accessDetails.maxLength=5000;
+				accessDetails.rows=5;accessDetails.placeholder='Можно вставить дополнительные инструкции Zoom или Teams';
+				const accessLabel=text('label','Дополнительный текст приглашения');accessLabel.append(accessDetails);
+				const submit=text('button','Отправить');submit.type='submit';
+				const sendStatus=text('p','','calendar-link-send-status');sendStatus.setAttribute('role','status');
+				let deliveryId=crypto.randomUUID();
+				form.addEventListener('input',()=>{deliveryId=crypto.randomUUID();});
+				form.addEventListener('submit',async event=>{
+					event.preventDefault();if(!form.reportValidity())return;
+					submit.disabled=true;sendStatus.textContent='Отправляем письмо...';sendStatus.classList.remove('is-error');
+					try{
+						await adminRequest('/api/admin/calendar-link-email/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+							appointmentId:appointment.id,link:linkInput.value.trim(),meetingId:meetingId.value.trim(),
+							meetingPassword:meetingPassword.value.trim(),accessDetails:accessDetails.value.trim(),deliveryId,
+						})});
+						sendStatus.textContent=`Письмо отправлено на ${appointment.email}.`;deliveryId=crypto.randomUUID();
+					}catch(error){
+						sendStatus.textContent=/операция не найдена|not found/i.test(error.message)
+							?'Сервис отправки ссылок не обновлен. Обновите admin Edge Function.':error.message;
+						sendStatus.classList.add('is-error');
+					}
+					finally{submit.disabled=false;}
+				});
+				form.append(linkLabel,meetingIdLabel,meetingPasswordLabel,accessLabel,submit,sendStatus);card.append(reveal,form);
+			}
+		}
 		if (appointment.status === 'confirmed' && Date.parse(appointment.start_at) > Date.now()) {
 			const editor = text('div','', 'calendar-form');
 			const label = text('label','Новое время');
@@ -317,7 +359,7 @@
 				const card=button('',async()=>{
 					selectedDay=day;month=day.slice(0,7);render();
 					const content=get('calendar-details-content');content.replaceChildren();
-					if(item.kind==='appointment')content.append(renderAppointment(item,true));
+					if(item.kind==='appointment')content.append(renderAppointment(item));
 					else content.append(text('p',`${label} · ${formatAdminDateTime(item.start_at)} - ${formatAdminDateTime(item.end_at)}`));
 					get('calendar-details').showModal();
 				});
@@ -1030,7 +1072,7 @@
 		ten_title:'Пакет из 10 консультаций - название',ten_description:'Пакет из 10 консультаций - описание',
 		ten_button:'Пакет из 10 консультаций - кнопка записи',ten_buy_button:'Пакет из 10 консультаций - кнопка покупки',
 		reviews_label:'Название блока (шапка, подвал и страница)',reviews_title:'Заголовок: Отзывы клиентов',
-		reviews_button:'Кнопка: Написать отзыв',review_modal_title:'Окно: заголовок',review_modal_note:'Окно: пояснение о проверке',
+		reviews_button:'Кнопка: Написать отзыв',review_modal_title:'Окно отзыва: заголовок',review_modal_note:'Окно отзыва: текст под заголовком',
 		review_name_label:'Имя - подпись поля',review_name_placeholder:'Имя - подсказка в поле',
 		review_anonymous_label:'Подпись выбора анонимности',review_rating_label:'Подпись оценки',
 		review_text_label:'Текст отзыва - подпись поля',review_text_placeholder:'Текст отзыва - подсказка в поле',

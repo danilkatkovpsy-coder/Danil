@@ -3,7 +3,8 @@ main { max-width: 520px; margin: 8vh auto; padding: 28px; background: #fffdfa; b
 .voucher-ticket { padding: 24px; background: #ede4d8; border-radius: 20px; text-align: center; }
 .voucher-code { display: inline-flex; max-width: 100%; box-sizing: border-box; align-items: center; gap: 12px; padding: 6px; margin-top: 16px; background: #36574b; border-radius: 10px; }
 .voucher-code strong { min-width: 0; padding: 8px 16px; color: #fff; font-size: 20px; letter-spacing: 2px; overflow-wrap: anywhere; user-select: all; }
-button { position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; padding: 10px; border: 0; border-radius: 8px; background: #ffffff33; color: #fff; font: inherit; cursor: pointer; }
+button { position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; padding: 10px; border: 0; border-radius: 8px; background: #1f4034; color: #fff; font: inherit; cursor: pointer; }
+button:hover:not(:disabled) { background: #294f40; }
 button::before { content: ""; position: absolute; left: -7px; top: 8px; bottom: 8px; width: 1px; background: #ffffff66; }
 .voucher-hint { margin-top: 16px; color: #696154; }
 .voucher-copy-icon { display: inline-block; position: relative; width: 16px; height: 18px; border: 2px solid currentColor; border-radius: 2px; }

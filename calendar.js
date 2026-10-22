@@ -1,4 +1,5 @@
 (() => {
+	if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embedded');
 	const params=new URLSearchParams(location.hash.slice(1));
 	history.replaceState(null,'',location.pathname);
 	const start=new Date(params.get('start')),end=new Date(params.get('end'));
@@ -12,10 +13,15 @@
 		return;
 	}
 	const title='Консультация с Данилом Катковым';
-	const description=`Время Таллина (Europe/Tallinn). Платформа: ${platform}.`;
+	const description=`Время Таллина. Платформа: ${platform}.`;
 	const stamp=date=>date.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');
-	const format=new Intl.DateTimeFormat('ru-RU',{dateStyle:'long',timeStyle:'short',timeZone:'Europe/Tallinn'});
-	document.getElementById('details').textContent=`${format.format(start)} - ${format.format(end)}. ${description}`;
+	const dateFormat=new Intl.DateTimeFormat('ru-RU',{dateStyle:'long',timeZone:'Europe/Tallinn'});
+	const timeFormat=new Intl.DateTimeFormat('ru-RU',{timeStyle:'short',timeZone:'Europe/Tallinn'});
+	const startDate=dateFormat.format(start),endDate=dateFormat.format(end);
+	const interval=startDate===endDate
+		? `${startDate}, ${timeFormat.format(start)}–${timeFormat.format(end)}`
+		: `${startDate}, ${timeFormat.format(start)} - ${endDate}, ${timeFormat.format(end)}`;
+	document.getElementById('details').textContent=`${interval}. ${description}`;
 	const google=new URL('https://calendar.google.com/calendar/render');
 	google.search=new URLSearchParams({action:'TEMPLATE',text:title,dates:`${stamp(start)}/${stamp(end)}`,details:description,ctz:'Europe/Tallinn'});
 	document.getElementById('google').href=google.href;
