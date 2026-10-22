@@ -1,0 +1,10 @@
+@media (max-width: 800px), (pointer: coarse) {
+	/* iOS zooms focused fields when their font is smaller than 16px. */
+	input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="range"]):not([type="color"]):not([type="image"]),
+	select,
+	textarea,
+	[contenteditable="true"],
+	[contenteditable="plaintext-only"] {
+		font-size: 16px !important;
+	}
+}
