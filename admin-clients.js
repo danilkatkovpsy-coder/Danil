@@ -86,6 +86,7 @@
 		remove.hidden=true;remove.disabled=false;removing=false;
 		get('client-created-at').hidden=true;get('client-created-at').textContent='';
 		resetting=false;get('client-free-settings').hidden=true;get('client-free-status').textContent='';
+		get('client-free-settings').open=false;
 		get('client-invoice-actions').replaceChildren();
 		get('client-purchases-toggle').open=false;
 		get('client-visits-toggle').open=false;

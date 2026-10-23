@@ -370,6 +370,24 @@
 		.calendar-details-dialog { width: min(560px, calc(100% - 32px)); max-height: 90dvh; padding: 20px; border: 1px solid #ded5cb; border-radius: 8px; background: #fffdfa; color: #292621; }
 		.calendar-details-dialog::backdrop { background: #19251f80; }
 		.calendar-details-dialog > button { display: block; margin: 0 0 12px auto; }
+		#client-dialog { width: min(620px, calc(100% - 24px)); max-height: calc(100dvh - 24px); padding: 18px; }
+		#client-dialog > h2 { margin: 0 100px 4px 0; font-size: 22px; }
+		#client-dialog > #client-close { float: right; display: inline-flex; align-items: center; justify-content: center; width: 36px; min-height: 36px; padding: 8px; margin: 0 0 8px 12px; border: 0; background: transparent; color: #315f4f; }
+		#client-dialog > #client-close:hover { background: #e9ede7; }
+		#client-dialog > p { margin: 0 0 10px; font-size: 13px; }
+		#client-dialog p:empty { display: none; }
+		#client-dialog .client-name-phone { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+		#client-dialog label { min-width: 0; gap: 3px; font-size: 13px; }
+		#client-dialog input { min-height: 36px; padding: 6px 9px; }
+		#client-dialog textarea { min-height: 56px; height: 56px; padding: 6px 9px; }
+		#client-dialog .calendar-actions { margin: 0; }
+		#client-dialog #client-free-settings { position: relative; width: fit-content; max-width: 100%; margin: 8px 0 0; padding: 0; border: 0; background: transparent; }
+		#client-dialog #client-free-settings > .client-free-content { margin-top: 8px; display: grid; gap: 10px; }
+		#client-dialog #client-history { display: grid; gap: 8px; margin-top: 10px; }
+		#client-dialog #client-history[hidden] { display: none; }
+		#client-dialog #client-invoice-actions { margin-top: 10px; }
+		#client-dialog summary { cursor: pointer; font-weight: 600; }
+		@media (max-width: 400px) { #client-dialog .client-name-phone { grid-template-columns: minmax(0, 1fr); } }
 		.calendar-link-send-form { margin-top: 16px; padding: 14px; border: 1px solid #ded5cb; border-radius: 6px; background: #f8f4ef; }
 		.calendar-link-send-form textarea, #calendar-link-email-form textarea { width: 100%; min-height: 100px; padding: 9px 11px; border: 1px solid #d7cec5; border-radius: 4px; color: #292621; font: inherit; resize: vertical; }
 		.calendar-link-send-status.is-error { color: #8a3b33; }
@@ -493,29 +511,23 @@
 				<button id="clients-more" type="button" hidden>Показать еще</button>
 			</div>
 			<dialog id="client-dialog" class="calendar-details-dialog" aria-labelledby="client-title">
-				<button id="client-close" type="button">Закрыть</button>
+				<button id="client-close" type="button" aria-label="Закрыть" title="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
 				<h2 id="client-title">Клиент</h2>
 				<p id="client-created-at" hidden></p>
 				<p id="client-status" role="status"></p>
 				<form id="client-form" class="calendar-form">
 					<label>Email (определяет клиента)<input name="email" type="email" required maxlength="254"></label>
-					<label>Имя<input name="name" required maxlength="120"></label>
-					<p>Это имя используется для новых записей с тем же email. Ввод другого имени на сайте не меняет карточку клиента. Исправить имя можно здесь; прежние записи и документы сохраняются.</p>
-					<label>Телефон<input name="phone" type="tel" maxlength="80"></label>
-					<label>Контакты / мессенджеры<textarea name="contact" maxlength="1000" rows="3"></textarea></label>
-					<label>Заметки<textarea name="notes" maxlength="5000" rows="4"></textarea></label>
+					<div class="client-name-phone">
+						<label>Имя<input name="name" required maxlength="120"></label>
+						<label>Телефон<input name="phone" type="tel" maxlength="80"></label>
+					</div>
+					<label>Контакты / мессенджеры<textarea name="contact" maxlength="1000" rows="2"></textarea></label>
+					<label>Заметки<textarea name="notes" maxlength="5000" rows="2"></textarea></label>
 					<div class="calendar-actions">
 						<button type="submit">Сохранить клиента</button>
 						<button id="client-delete" type="button" aria-label="Удалить клиента" title="Удалить клиента" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg></button>
 					</div>
 				</form>
-				<div id="client-free-settings" class="calendar-card" hidden>
-					<h3>Бесплатная консультация</h3>
-					<p id="client-free-limit"></p>
-					<p>Отмена записи не возвращает лимит. Сброс разрешает одну дополнительную бесплатную запись; повторное нажатие не накапливает разрешения.</p>
-					<button id="client-free-reset" type="button">Сбросить лимит</button>
-					<p id="client-free-status" role="status"></p>
-				</div>
 				<div id="client-invoice-actions"></div>
 				<div id="client-history" hidden>
 					<details id="client-purchases-toggle">
@@ -531,6 +543,14 @@
 					<button id="client-visits-more" type="button" hidden>Еще записи</button>
 					</details>
 				</div>
+				<details id="client-free-settings" class="calendar-card" hidden>
+					<summary>Бесплатная консультация</summary>
+					<div class="client-free-content">
+						<p id="client-free-limit"></p>
+						<button id="client-free-reset" type="button">Сбросить лимит</button>
+						<p id="client-free-status" role="status"></p>
+					</div>
+				</details>
 			</dialog>
 		</section>
 		<section id="contacts-section" hidden aria-label="Контакты">
@@ -2018,6 +2038,6 @@
 	<script src="admin-manual-invoice.js?v=202610221900"></script>
 	<script src="admin-auto-invoices.js?v=202610222150"></script>
 	<script src="admin-calendar.js?v=202610231512"></script>
-	<script src="admin-clients.js?v=202610231705"></script>
+	<script src="admin-clients.js?v=202610231720"></script>
 </body>
 </html>
