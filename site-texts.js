@@ -2,6 +2,8 @@
 	const fields={hero_eyebrow:120,hero_title_first:120,hero_title_second:120,hero_title_accent:120,hero_intro:2000,
 		hero_benefit_online:120,hero_benefit_individual:120,hero_benefit_privacy:120,
 		about_label:60,about_title:120,about_body:2000,about_sharing:2000,about_parent:2000,about_potential:2000,
+		about_cbt_title:120,about_cbt_body:400,about_individual_title:120,about_individual_body:400,
+		about_education_title:120,about_education_body:400,
 		approach_title:120,approach_body:2000,approach_changes:2000,approach_result:2000,
 		services_label:60,services_title:120,services_intro:400,
 		service_anxiety_title:120,service_anxiety_body:400,service_relationships_title:120,service_relationships_body:400,

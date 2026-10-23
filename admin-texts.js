@@ -93,6 +93,7 @@
 		async function load(){
 			if(loaded||loading)return;
 			window.siteLogo.loadAdmin();
+			window.siteImages?.load();
 			const current=++generation;loading=true;controls();globalStatus.textContent='Загружаем тексты...';
 			try{
 				const result=await adminRequest('/api/admin/site-texts');
@@ -105,6 +106,7 @@
 		}
 		function leave(){
 			closePreview();
+			window.siteImages?.leave();
 			generation++;loaded=false;loading=false;busy=false;form.reset();globalStatus.textContent='';
 			groups.forEach(group=>{group.status.textContent='';});controls();
 		}

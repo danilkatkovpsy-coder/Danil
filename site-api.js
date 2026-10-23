@@ -3,6 +3,7 @@
 	const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
 	const endpoints = {
 		'/api/site-logo': 'site-logo',
+		'/api/site-images': 'site-images',
 		'/api/site-reviews': 'site-reviews',
 		'/api/site-contacts': 'site-contacts',
 		'/api/site-texts': 'site-texts',
