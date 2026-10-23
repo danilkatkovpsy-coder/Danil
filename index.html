@@ -328,7 +328,7 @@
 						<p class="booking-result-caption">Консультация подтверждена.</p>
 						<div class="booking-result-notice">
 							<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 6 9 6 9-6"></path></svg>
-							<div><p id="booking-result-email" role="status"></p><p id="booking-result-connection"></p></div>
+							<div><p id="booking-result-client"></p><p id="booking-result-email" role="status"></p><p id="booking-result-connection"></p></div>
 						</div>
 						<div class="booking-result-details">
 							<p><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M7 3v4M17 3v4M3 10h18"></path></svg><strong id="booking-result-date"></strong></p>
@@ -534,9 +534,9 @@
 			});
 		}
 	</script>
-	<script src="site-api.js?v=202610231525"></script>
+	<script src="site-api.js?v=202610231710"></script>
 	<script src="site-texts.js?v=202610231512"></script>
-	<script src="site-images.js?v=202610231525"></script>
+	<script src="site-images.js?v=202610231710"></script>
 	<script src="site-logo.js"></script>
 	<script src="site-contacts.js"></script>
 	<script src="site-reviews.js"></script>
@@ -1419,6 +1419,11 @@
 				const response = await fetch('/api/book', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: bookingDate.value, start: bookingStart.value, end: bookingEnd.value, name: document.getElementById('booking-name').value.trim(), email: document.getElementById('booking-email').value.trim(), request: document.getElementById('booking-request').value.trim(), packageName: bookingPackage.value, voucherCode: bookingVoucher.value.trim(), platform: selectedPlatform, telegramUsername: bookingTelegramUsername.value.trim(), telegramContactByUser: selectedPlatform === 'Telegram' && bookingTelegramNoUsername.checked, phone: selectedPlatform === 'WhatsApp' ? bookingPhoneInput.getNumber() : '' }) });
 				const data = await response.json();
 				if (!response.ok) throw new Error(data.error || 'Не удалось создать запись.');
+				if(typeof data.clientName==='string'&&data.clientName.trim()){
+					bookingName.value=data.clientName;
+					bookingName.readOnly=true;
+					document.getElementById('booking-result-client').textContent=`Запись на имя: ${data.clientName}`;
+				}else document.getElementById('booking-result-client').textContent='';
 				const confirmedDate = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: window.googleCalendarConfig.timezone }).format(new Date(bookingStart.value));
 				bookingTitle.textContent = 'Запись подтверждена';
 				bookingTitle.hidden = true;

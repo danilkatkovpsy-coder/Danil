@@ -1,5 +1,11 @@
 (() => {
-	const originals={hero:'images/daniel.png',diploma:'images/diplom.jpg'};
+	const originals={hero:'images/daniel.png',diploma:'images/diplom.jpg',approach:'images/komnata.png',quote:'images/les.png'};
+	const locations={
+		hero:{selector:'.hero-photo',status:'.hero-copy',anchor:'top'},
+		diploma:{selector:'.diploma-frame img, .diploma-modal > img',status:'.diploma-wrap',anchor:'about'},
+		approach:{selector:'.approach-main',status:'.approach-content',anchor:'approach',background:true},
+		quote:{selector:'.quote-card',status:'.quote-content',anchor:'approach',background:true},
+	};
 	const validate=image=>{
 		if(image!==null&&(typeof image!=='string'||image.length>5592430||!/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(image))){
 			throw new Error('Сервер вернул некорректное изображение.');
@@ -26,12 +32,14 @@
 	function editor(kind){
 		const file=document.getElementById(`image-${kind}-file`),preview=document.getElementById(`image-${kind}-preview`),
 			apply=document.getElementById(`image-${kind}-apply`),reset=document.getElementById(`image-${kind}-reset`),
+			sitePreview=document.getElementById(`image-${kind}-site-preview`),
 			status=document.getElementById(`image-${kind}-status`);
 		let generation=0,selection=0,loaded=false,busy=false,saved=null,pending=null;
 		const show=image=>{preview.src=image||originals[kind];};
 		const controls=()=>{
 			file.disabled=!loaded||busy;apply.disabled=!loaded||busy||pending===null;
 			reset.disabled=!loaded||busy||saved===null;
+			sitePreview.disabled=!loaded||busy;
 		};
 		function leave(){
 			generation++;selection++;loaded=false;busy=false;saved=null;pending=null;
@@ -56,7 +64,7 @@
 				const prepared=await prepare(image);
 				if(current!==generation||chosen!==selection)return;
 				pending=prepared;show(pending);
-				status.textContent='Предпросмотр готов. На сайте пока прежнее фото. Нажмите «Применить», чтобы заменить его.';
+				status.textContent='Фото подготовлено. Нажмите «Предпросмотр», чтобы увидеть его на сайте без сохранения, или «Применить», чтобы заменить.';
 			}catch(error){if(current===generation&&chosen===selection)status.textContent=error.message;}
 			finally{if(current===generation&&chosen===selection){busy=false;controls();}}
 		});
@@ -72,6 +80,10 @@
 			finally{if(current===generation){busy=false;controls();}}
 		}
 		apply.addEventListener('click',()=>{if(loaded&&!busy&&pending!==null)return persist(pending);});
+		sitePreview.addEventListener('click',()=>{
+			if(!loaded||busy)return;
+			window.adminTextPreview.open({images:{[kind]:pending??saved},anchor:locations[kind].anchor});
+		});
 		reset.addEventListener('click',()=>{
 			if(loaded&&!busy&&saved!==null&&confirm('Вернуть исходное изображение на сайте?'))return persist(null);
 		});
@@ -85,12 +97,12 @@
 		return;
 	}
 	for(const kind of Object.keys(originals)){
-		const targets=[...document.querySelectorAll(kind==='hero'?'.hero-photo':'.diploma-frame img, .diploma-modal > img')];
+		const location=locations[kind],targets=[...document.querySelectorAll(location.selector)];
 		if(!targets.length)continue;
 		const status=document.createElement('p'),message=document.createElement('span'),retry=document.createElement('button');
 		status.setAttribute('role','status');status.hidden=true;retry.type='button';retry.textContent='Повторить';
 		status.append(message,' ',retry);
-		document.querySelector(kind==='hero'?'.hero-copy':'.diploma-wrap').append(status);
+		document.querySelector(location.status).append(status);
 		const load=async()=>{
 			retry.disabled=true;
 			try{
@@ -98,7 +110,10 @@
 				if(!response.ok)throw new Error(result.error||'Не удалось загрузить изображение.');
 				const image=validate(result.image)||originals[kind],check=new Image();
 				check.src=image;await check.decode();
-				targets.forEach(target=>{target.src=image;});status.hidden=true;
+				targets.forEach(target=>{
+					if(location.background)target.style.backgroundImage=`url("${image}")`;
+					else target.src=image;
+				});status.hidden=true;
 			}catch(error){message.textContent=`${error.message} Изображение не заменено.`;status.hidden=false;}
 			finally{retry.disabled=false;}
 		};

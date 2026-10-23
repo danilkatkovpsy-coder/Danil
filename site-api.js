@@ -23,8 +23,11 @@
 		if(previewMode){
 			if(!preview)throw new Error('Предпросмотр недоступен. Откройте его из редактора текстов.');
 			if((init.method||'GET').toUpperCase()!=='GET')return Response.json({error:'В предпросмотре отправка отключена. Вернитесь в редактор кнопкой «Назад».'},{status:403});
-			if(url.pathname==='/api/site-texts')return Response.json({texts:preview.texts});
+			if(url.pathname==='/api/site-texts'&&Object.hasOwn(preview,'texts'))return Response.json({texts:preview.texts});
 			if(url.pathname==='/api/site-logo'&&Object.hasOwn(preview,'logo'))return Response.json({image:preview.logo});
+			if(url.pathname==='/api/site-images'&&preview.images&&Object.hasOwn(preview.images,url.searchParams.get('kind'))){
+				return Response.json({image:preview.images[url.searchParams.get('kind')]});
+			}
 		}
 		let endpoint = endpoints[url.pathname];
 		if (url.pathname.startsWith('/api/admin/')) endpoint = `admin/${url.pathname.slice('/api/admin/'.length)}`;

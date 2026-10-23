@@ -3,9 +3,9 @@
 	const form=get('client-form'),dialog=get('client-dialog');
 	const remove=get('client-delete');
 	const fields=['email','name','phone','contact','notes'];
-	const labels={single:'Индивидуальная консультация',five:'Пакет 5 встреч',ten:'Пакет 10 встреч'};
-	let generation=0,detailGeneration=0,offset=0,search='',email=null,visitsOffset=0,purchasesOffset=0;
-	let removing=false;
+	const labels={free:'Бесплатная консультация',single:'Индивидуальная консультация',five:'Пакет 5 встреч',ten:'Пакет 10 встреч'};
+	let generation=0,detailGeneration=0,offset=0,search='',email=null,visitsOffset=0,purchasesOffset=0,group='paid';
+	let removing=false,resetting=false;
 	const text=(tag,value)=>{
 		const node=document.createElement(tag);node.textContent=value;return node;
 	};
@@ -17,7 +17,7 @@
 		if(!append){offset=0;search=get('clients-search').value.trim();get('clients-list').replaceChildren();}
 		get('clients-more').hidden=true;get('clients-status').textContent='Загружаем клиентов...';
 		try{
-			const result=await adminRequest(`/api/admin/clients?search=${encodeURIComponent(search)}&offset=${offset}`);
+			const result=await adminRequest(`/api/admin/clients?search=${encodeURIComponent(search)}&offset=${offset}&group=${group}`);
 			if(current!==generation)return;
 			for(const client of result.clients){
 				const card=text('article','');card.className='order-card';
@@ -51,7 +51,7 @@
 			}
 			list.append(card);
 		}
-		if(!list.children.length)list.append(text('p',purchases?'Покупок пока нет.':'Платных записей пока нет.'));
+		if(!list.children.length)list.append(text('p',purchases?'Покупок пока нет.':'Записей пока нет.'));
 		get(`client-${kind}-more`).hidden=!(purchases?result.morePurchases:result.moreVisits);
 	}
 	async function loadDetail(kind=null){
@@ -64,6 +64,11 @@
 			if(!kind){
 				for(const key of fields)field(key).value=result.client[key];
 				get('client-title').textContent=result.client.name;
+				get('client-created-at').textContent=`Дата создания: ${formatAdminDateTime(result.client.created_at)}`;
+				get('client-created-at').hidden=false;
+				get('client-free-settings').hidden=false;
+				get('client-free-reset').disabled=false;
+				get('client-free-limit').textContent=`Бесплатных записей: ${result.client.free_bookings_used}. Доступно новых: ${Math.max(0,result.client.free_bookings_allowed-result.client.free_bookings_used)}.`;
 				remove.hidden=false;
 				window.adminManualInvoice.mount(get('client-invoice-actions'),{
 					clientEmail:result.client.email,name:result.client.name,email:result.client.email,
@@ -79,6 +84,8 @@
 	function openClient(value=null){
 		detailGeneration++;email=value;visitsOffset=0;purchasesOffset=0;form.reset();
 		remove.hidden=true;remove.disabled=false;removing=false;
+		get('client-created-at').hidden=true;get('client-created-at').textContent='';
+		resetting=false;get('client-free-settings').hidden=true;get('client-free-status').textContent='';
 		get('client-invoice-actions').replaceChildren();
 		get('client-purchases-toggle').open=false;
 		get('client-visits-toggle').open=false;
@@ -92,7 +99,7 @@
 	get('client-close').addEventListener('click',()=>dialog.close());
 	remove.addEventListener('click',async()=>{
 		const save=form.querySelector('[type="submit"]');
-		if(!email||removing||save.disabled)return;
+		if(!email||removing||resetting||save.disabled)return;
 		if(!confirm(`Удалить клиента ${get('client-title').textContent} (${email}) из базы? История, счета и записи в календаре сохранятся. Встречи и автоматические отправки не отменяются.`))return;
 		const current=detailGeneration,selected=email;
 		removing=true;remove.disabled=true;save.disabled=true;
@@ -105,7 +112,29 @@
 		}catch(error){if(current===detailGeneration)setStatus('client-status',error);}
 		finally{if(current===detailGeneration){removing=false;remove.disabled=false;save.disabled=false;}}
 	});
-	dialog.addEventListener('close',()=>{detailGeneration++;email=null;form.reset();get('client-invoice-actions').replaceChildren();get('client-visits').replaceChildren();get('client-purchases').replaceChildren();});
+	get('client-free-reset').addEventListener('click',async()=>{
+		const save=form.querySelector('[type="submit"]');
+		if(!email||removing||resetting||save.disabled)return;
+		if(!confirm(`Разрешить еще одну бесплатную запись для ${email}?`))return;
+		const current=detailGeneration,selected=email;
+		resetting=true;save.disabled=true;remove.disabled=true;get('client-free-reset').disabled=true;
+		get('client-free-status').textContent='Сбрасываем лимит...';
+		try{
+			const result=await adminRequest('/api/admin/clients/reset-free-limit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:selected})});
+			if(current!==detailGeneration||!dialog.open)return;
+			if(result.ok!==true||!result.client)throw new Error('Сброс лимита не подтвержден.');
+			get('client-free-limit').textContent=`Бесплатных записей: ${result.client.free_bookings_used}. Доступно новых: ${Math.max(0,result.client.free_bookings_allowed-result.client.free_bookings_used)}.`;
+			get('client-free-status').textContent='Разрешена одна дополнительная бесплатная запись.';
+		}catch(error){if(current===detailGeneration)setStatus('client-free-status',error);}
+		finally{if(current===detailGeneration){resetting=false;save.disabled=false;remove.disabled=false;get('client-free-reset').disabled=false;}}
+	});
+	dialog.addEventListener('close',()=>{detailGeneration++;email=null;form.reset();get('client-free-settings').hidden=true;get('client-invoice-actions').replaceChildren();get('client-visits').replaceChildren();get('client-purchases').replaceChildren();});
+	for(const selected of ['paid','free'])get(`clients-tab-${selected}`).addEventListener('click',()=>{
+		if(group===selected)return;
+		group=selected;
+		for(const key of ['paid','free'])get(`clients-tab-${key}`).setAttribute('aria-pressed',String(key===group));
+		loadClients();
+	});
 	get('clients-add').addEventListener('click',()=>openClient());
 	get('clients-refresh').addEventListener('click',()=>loadClients());
 	get('clients-more').addEventListener('click',()=>loadClients(true));
@@ -113,7 +142,7 @@
 	for(const kind of ['visits','purchases'])get(`client-${kind}-more`).addEventListener('click',()=>loadDetail(kind));
 	form.addEventListener('submit',async event=>{
 		event.preventDefault();
-		if(removing)return;
+		if(removing||resetting)return;
 		const save=form.querySelector('[type="submit"]'),current=detailGeneration;
 		save.disabled=true;remove.disabled=true;get('client-status').textContent='Сохраняем клиента...';
 		try{
@@ -132,6 +161,8 @@
 	document.addEventListener('admin-login',()=>{if(!get('clients-section').hidden)loadClients();});
 	adminForm.addEventListener('submit',()=>{if(!get('clients-section').hidden)loadClients();});
 	document.addEventListener('admin-logout',()=>{
-		generation++;detailGeneration++;dialog.close();get('clients-list').replaceChildren();get('clients-status').textContent='';
+		generation++;detailGeneration++;group='paid';
+		for(const key of ['paid','free'])get(`clients-tab-${key}`).setAttribute('aria-pressed',String(key===group));
+		dialog.close();get('clients-list').replaceChildren();get('clients-status').textContent='';
 	});
 })();
