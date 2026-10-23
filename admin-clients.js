@@ -1,9 +1,11 @@
 (() => {
 	const get=id=>document.getElementById(id);
 	const form=get('client-form'),dialog=get('client-dialog');
+	const remove=get('client-delete');
 	const fields=['email','name','phone','contact','notes'];
 	const labels={single:'Индивидуальная консультация',five:'Пакет 5 встреч',ten:'Пакет 10 встреч'};
 	let generation=0,detailGeneration=0,offset=0,search='',email=null,visitsOffset=0,purchasesOffset=0;
+	let removing=false;
 	const text=(tag,value)=>{
 		const node=document.createElement(tag);node.textContent=value;return node;
 	};
@@ -62,6 +64,7 @@
 			if(!kind){
 				for(const key of fields)field(key).value=result.client[key];
 				get('client-title').textContent=result.client.name;
+				remove.hidden=false;
 				window.adminManualInvoice.mount(get('client-invoice-actions'),{
 					clientEmail:result.client.email,name:result.client.name,email:result.client.email,
 				});
@@ -75,6 +78,7 @@
 	}
 	function openClient(value=null){
 		detailGeneration++;email=value;visitsOffset=0;purchasesOffset=0;form.reset();
+		remove.hidden=true;remove.disabled=false;removing=false;
 		get('client-invoice-actions').replaceChildren();
 		get('client-purchases-toggle').open=false;
 		get('client-visits-toggle').open=false;
@@ -86,6 +90,21 @@
 		else field('email').focus();
 	}
 	get('client-close').addEventListener('click',()=>dialog.close());
+	remove.addEventListener('click',async()=>{
+		const save=form.querySelector('[type="submit"]');
+		if(!email||removing||save.disabled)return;
+		if(!confirm(`Удалить клиента ${get('client-title').textContent} (${email}) из базы? История, счета и записи в календаре сохранятся. Встречи и автоматические отправки не отменяются.`))return;
+		const current=detailGeneration,selected=email;
+		removing=true;remove.disabled=true;save.disabled=true;
+		try{
+			const result=await adminRequest(`/api/admin/clients?email=${encodeURIComponent(selected)}`,{method:'DELETE'});
+			if(current!==detailGeneration||!dialog.open)return;
+			if(result.ok!==true)throw new Error('Удаление клиента не подтверждено.');
+			dialog.close();
+			await loadClients();
+		}catch(error){if(current===detailGeneration)setStatus('client-status',error);}
+		finally{if(current===detailGeneration){removing=false;remove.disabled=false;save.disabled=false;}}
+	});
 	dialog.addEventListener('close',()=>{detailGeneration++;email=null;form.reset();get('client-invoice-actions').replaceChildren();get('client-visits').replaceChildren();get('client-purchases').replaceChildren();});
 	get('clients-add').addEventListener('click',()=>openClient());
 	get('clients-refresh').addEventListener('click',()=>loadClients());
@@ -94,8 +113,9 @@
 	for(const kind of ['visits','purchases'])get(`client-${kind}-more`).addEventListener('click',()=>loadDetail(kind));
 	form.addEventListener('submit',async event=>{
 		event.preventDefault();
+		if(removing)return;
 		const save=form.querySelector('[type="submit"]'),current=detailGeneration;
-		save.disabled=true;get('client-status').textContent='Сохраняем клиента...';
+		save.disabled=true;remove.disabled=true;get('client-status').textContent='Сохраняем клиента...';
 		try{
 			const payload=Object.fromEntries(fields.map(key=>[key,field(key).value.trim()]));
 			const result=await adminRequest('/api/admin/clients',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -106,7 +126,7 @@
 			if(loaded)get('client-status').textContent='Клиент сохранен.';
 			loadClients();
 		}catch(error){if(current===detailGeneration)setStatus('client-status',error);}
-		finally{if(dialog.open)save.disabled=false;}
+		finally{if(dialog.open){save.disabled=false;remove.disabled=false;}}
 	});
 	document.addEventListener('admin-clients-open',()=>loadClients());
 	document.addEventListener('admin-login',()=>{if(!get('clients-section').hidden)loadClients();});

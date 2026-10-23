@@ -4,6 +4,8 @@
 	const fields=['name','address','registration_code','phone','email','website','bank','swift','iban'];
 	const vat=form.elements.namedItem('vatRegistered'),vatNumber=form.elements.namedItem('vatNumber');
 	const gross=get('invoice-calculator-gross'),theme=get('invoice-theme');
+	const themeOptions=[...theme.querySelectorAll('input[type="radio"]')];
+	const selectedTheme=()=>themeOptions.find(option=>option.checked).value;
 	const sections=['list','company','design','products','email','automatic'],blocks=['estonian','russian','signature'];
 	const editors=blocks.map(key=>get(`invoice-email-${key}`));
 	const emailSource=get('invoice-email-source'),emailLanguage=get('invoice-email-language');
@@ -47,7 +49,8 @@
 		get('invoice-logo-file').disabled=!loaded||designBusy||logoBusy;
 		get('invoice-logo-reset').disabled=!loaded||designBusy||logoBusy;
 		get('invoice-logo-remove').disabled=!loaded||designBusy||logoBusy;
-		get('invoice-design-save').disabled=!loaded||designBusy||logoBusy;
+		get('invoice-design-save').disabled=!loaded||designBusy;
+		get('invoice-logo-save').disabled=!loaded||designBusy||logoBusy;
 		emailForm.querySelectorAll('input,button,select').forEach(el=>{el.disabled=!loaded||emailBusy;});
 		const editable=loaded&&!emailBusy&&selectedEmailSource==='custom';
 		get('invoice-email-subject').disabled=!editable;
@@ -84,7 +87,7 @@
 			try{
 				if(!gross.validity.valid)throw new Error('Для образца укажите корректную конечную цену.');
 				const details=panel==='company'?company():savedCompany;
-				const design=panel==='design'?{theme:theme.value,logo:draftLogo}:savedDesign;
+				const design=panel==='design'?{theme:selectedTheme(),logo:draftLogo}:savedDesign;
 				const result=await post('invoice-preview',{...details,...design,product:savedProducts.five,sessions:5,priceCents:Math.round(Number(gross.value)*100)});
 				if(current!==generation||version!==previewVersion)return;
 				if(result.ok!==true||typeof result.pdf!=='string'||!result.pdf.startsWith('JVBERi0'))throw new Error('Не удалось прочитать PDF предпросмотра.');
@@ -207,17 +210,23 @@
 		});
 	}
 	get('invoice-logo-preview').addEventListener('error',()=>status('invoice-logo-status','Не удалось отобразить логотип.'));
-	get('invoice-design-save').addEventListener('click',async()=>{
-		if(!loaded||designBusy||logoBusy)return;
-		const current=generation,input={theme:theme.value,logo:draftLogo};
-		designBusy=true;controls();status('invoice-design-status','Применяем оформление...');
+	async function saveDesign(part){
+		if(!loaded||designBusy||(part==='logo'&&logoBusy))return;
+		const current=generation,input=part==='theme'
+			?{theme:selectedTheme(),logo:savedDesign.logo}
+			:{theme:savedDesign.theme,logo:draftLogo};
+		const statusId=part==='theme'?'invoice-design-status':'invoice-logo-status';
+		designBusy=true;controls();status(statusId,'Применяем...');
 		try{
 			confirmSaved(await post('invoice-design',input));
 			if(current!==generation)return;
-			savedDesign=input;status('invoice-design-status','Оформление применено к новым заказам. Старые счета не изменены.');
-		}catch(error){if(current===generation)status('invoice-design-status',error.message);}
+			savedDesign=input;
+			status(statusId,`${part==='theme'?'Палитра применена':'Логотип применен'} к новым заказам. Старые счета не изменены.`);
+		}catch(error){if(current===generation)status(statusId,error.message);}
 		finally{if(current===generation){designBusy=false;controls();}}
-	});
+	}
+	get('invoice-design-save').addEventListener('click',()=>saveDesign('theme'));
+	get('invoice-logo-save').addEventListener('click',()=>saveDesign('logo'));
 	function readRuns(editor){
 		const runs=[];
 		const append=(text,format={bold:false,italic:false,underline:false})=>{
@@ -382,7 +391,8 @@
 			savedCompany=details;savedDesign=design;draftLogo=design.logo;replyTo=email.replyTo;
 			savedProducts=productSettings.products;showProducts(savedProducts);
 			for(const key of fields)form.elements.namedItem(key).value=details.issuer[key];
-			vat.checked=details.vatRegistered;vatNumber.value=details.vatNumber;theme.value=design.theme;
+			vat.checked=details.vatRegistered;vatNumber.value=details.vatNumber;
+			themeOptions.forEach(option=>{option.checked=option.value===design.theme;});
 			originalEmail=email.original;customEmail=email.custom;selectedEmailSource=email.source;
 			emailSource.value=email.source;emailLanguage.value=email.language;
 			loaded=true;showEmail(email.source==='original'?originalEmail:customEmail);showLogo();calculate();schedulePreview();

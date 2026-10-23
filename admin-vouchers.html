@@ -381,7 +381,7 @@
 			.gift-voucher-form { grid-template-columns: 1fr; }
 		}
 	</style>
-	<link rel="stylesheet" href="admin-invoices.css?v=202610221815">
+	<link rel="stylesheet" href="admin-invoices.css?v=202610231142">
 	<link rel="stylesheet" href="mobile-forms.css?v=202610221657">
 </head>
 <body>
@@ -431,7 +431,7 @@
 			</aside>
 			<p class="admin-sidebar-title">Панель управления</p>
 			<button id="section-calendar" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18M7 15h2M13 15h2"/></svg><span>Календарь</span></button>
-			<button id="section-vouchers" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 5v14M12 10h5M12 14h3"/></svg><span>Ваучера</span></button>
+			<button id="section-vouchers" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 5v14M12 10h5M12 14h3"/></svg><span>Ваучеры</span></button>
 			<button id="section-prices" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5a7.5 7.5 0 1 0 0 13M4 10h11M4 14h9"/></svg><span>Цены</span></button>
 			<button id="section-invoices" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v5h4M9 12h7M9 16h7"/></svg><span>Счета</span></button>
 			<button id="section-texts" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M12 5v15M8 20h8"/></svg><span>Текста</span></button>
@@ -471,6 +471,7 @@
 			<div class="calendar-card">
 				<h2>Клиенты</h2>
 				<p>Клиенты определяются по email, без учета регистра. Платные записи добавляют клиента автоматически, включая прежние записи. Бесплатные консультации и записи без email не добавляются.</p>
+				<p>Корзина рядом с «Сохранить клиента» в открытой карточке скрывает клиента из базы с подтверждением. История, счета и встречи сохраняются; автоматические отправки не отменяются. Чтобы вернуть клиента в список, добавьте его вручную с тем же email.</p>
 				<form id="clients-search-form" class="calendar-actions">
 					<label>Поиск по имени, email или телефону<input id="clients-search" type="search" maxlength="254"></label>
 					<button type="submit">Найти</button><button id="clients-refresh" type="button">Обновить</button>
@@ -490,7 +491,10 @@
 					<label>Телефон<input name="phone" type="tel" maxlength="80"></label>
 					<label>Контакты / мессенджеры<textarea name="contact" maxlength="1000" rows="3"></textarea></label>
 					<label>Заметки<textarea name="notes" maxlength="5000" rows="4"></textarea></label>
-					<button type="submit">Сохранить клиента</button>
+					<div class="calendar-actions">
+						<button type="submit">Сохранить клиента</button>
+						<button id="client-delete" type="button" aria-label="Удалить клиента" title="Удалить клиента" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg></button>
+					</div>
 				</form>
 				<div id="client-invoice-actions"></div>
 				<div id="client-history" hidden>
@@ -593,26 +597,29 @@
 				<button id="invoice-tab-automatic" type="button" role="tab" aria-controls="invoice-panel-automatic" aria-selected="false" tabindex="-1">Автоматическая отправка счетов</button>
 			</div>
 			<div id="invoice-panel-list" role="tabpanel" aria-labelledby="invoice-tab-list">
-				<div class="calendar-card">
-					<h2>Счета</h2>
+				<div id="invoice-list-card" class="calendar-card">
+					<div class="invoice-editor-heading"><h2>Счета</h2><button id="invoice-editor-add" type="button">Добавить+</button></div>
 					<form id="invoice-list-filter" class="invoice-list-filter">
 						<label>Клиент<input id="invoice-list-search" type="search" maxlength="254" placeholder="Имя или email клиента"></label>
 						<label>Дата с<input id="invoice-list-from" type="date" min="0001-01-01" max="9999-12-31"></label>
 						<label>Дата по<input id="invoice-list-through" type="date" min="0001-01-01" max="9999-12-31"></label>
-						<label>Дата выставления<select id="invoice-list-sort"><option value="desc">Сначала новые</option><option value="asc">Сначала старые</option></select></label>
+						<label>Дата счета<select id="invoice-list-sort"><option value="desc">Сначала новые</option><option value="asc">Сначала старые</option></select></label>
 						<button type="submit">Найти</button>
 						<button id="invoice-list-refresh" type="button">Обновить</button>
 						<button id="invoice-list-reset" type="button">Сбросить фильтры</button>
 					</form>
 					<div class="invoice-list-tools">
-						<label><input id="invoice-list-all" type="checkbox">Выбрать все результаты поиска</label>
-						<span id="invoice-list-selected" aria-live="polite">Выбрано: 0</span>
-						<button id="invoice-list-download" type="button" disabled>Скачать выбранные (ZIP)</button>
+						<button id="invoice-list-report" type="button" disabled>Скачать список PDF</button>
+						<div class="invoice-list-selection">
+							<button id="invoice-list-download" type="button" disabled>Скачать выбранные (ZIP)</button>
+							<label><input id="invoice-list-all" type="checkbox">Выбрать все результаты поиска</label>
+							<span id="invoice-list-selected" aria-live="polite">Выбрано: 0</span>
+						</div>
 					</div>
 					<p id="invoice-list-status" role="status"></p>
 					<div class="invoice-list-table-wrap">
 						<table class="invoice-list-table">
-							<thead><tr><th scope="col">Выбор</th><th scope="col">№</th><th scope="col">Имя клиента</th><th scope="col">Email</th><th scope="col">Сумма</th><th scope="col">Номер счета</th><th scope="col">Дата выставления</th><th scope="col">Действия</th><th scope="col">Отправка счетов</th></tr></thead>
+							<thead><tr><th scope="col">№</th><th scope="col">Имя клиента</th><th scope="col">Email</th><th scope="col">Номер счета</th><th scope="col" aria-label="Отправка" title="Был ли счет отправлен"><span class="invoice-sent-indicator" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 5h18v14H3zM3 5l9 7 9-7"/></svg></span></th><th scope="col">Сумма</th><th scope="col">Валюта</th><th scope="col">Дата счета</th><th scope="col" title="Оплачен">Опл</th><th scope="col">Выбор</th></tr></thead>
 							<tbody id="invoice-list-rows"></tbody>
 						</table>
 					</div>
@@ -624,12 +631,152 @@
 						<button id="invoice-list-last" type="button" aria-label="Последняя страница">»</button>
 					</div>
 					<p>Показаны только сформированные PDF-счета, включая архивные заказы. Скачивание не создает новых счетов и не отправляет письма.</p>
+					<p>«Удалить» скрывает счет из списка с подтверждением. PDF, номер и история отправок сохраняются; отправленное письмо не отзывается.</p>
+					<p>Нажмите на строку счета, чтобы открыть предпросмотр. Галочки выбирают счета для скачивания.</p>
+					<p>«Опл» — ручная отметка оплаты. Красным показаны только неоплаченные счета, срок которых истек. Последний день оплаты или действия предложения включен, время — Таллин.</p>
+					<p>Зеленый конверт означает хотя бы одну подтвержденную отправку; серый — отсутствие подтвержденных отправок. Последующие ошибки не сбрасывают зеленый индикатор.</p>
 					<p>Общая галочка выбирает результаты на всех страницах. Архивы больше 250 МБ скачивайте частями.</p>
+					<p>«Скачать список PDF» выгружает таблицу всех результатов текущего поиска и периода, независимо от страницы и галочек; отдельные счета в этот PDF не включаются.</p>
 					<p>Период учитывает дату выставления по времени Таллина, включая обе указанные даты. Можно заполнить только одну границу.</p>
 				</div>
+				<section id="invoice-editor" hidden aria-labelledby="invoice-editor-title">
+					<div class="invoice-editor-heading">
+						<div><h2 id="invoice-editor-title">Новый счет</h2><span id="invoice-editor-lock" role="status"></span></div>
+						<div class="invoice-editor-actions">
+							<button id="invoice-editor-new" type="button">+ Новый счет</button>
+							<button id="invoice-editor-pdf" type="button">Скачать PDF</button>
+							<button id="invoice-editor-paid" type="button">Пометить оплаченным</button>
+							<button id="invoice-editor-edit" type="button">Изменить</button>
+							<button id="invoice-editor-send" type="button">Отправить</button>
+							<button id="invoice-editor-delete" type="button">Удалить счет</button>
+							<button id="invoice-editor-save" type="submit" form="invoice-editor-form">Сохранить счет</button>
+							<button id="invoice-editor-back" type="button">← К счетам</button>
+						</div>
+					</div>
+					<p id="invoice-editor-status" role="status"></p>
+					<div id="invoice-editor-recovery" class="invoice-editor-actions" hidden></div>
+					<form id="invoice-editor-form">
+						<fieldset id="invoice-editor-fields">
+							<div class="invoice-editor-grid">
+								<section class="calendar-card">
+									<h3><span>01</span> Клиент</h3>
+									<label for="invoice-editor-client-search">Имя или название фирмы *</label>
+									<div class="invoice-editor-client-picker">
+										<div class="invoice-editor-client-input">
+											<input id="invoice-editor-client-search" name="name" maxlength="120" placeholder="Например, Mari Maasik OÜ" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="invoice-editor-client-dropdown" required>
+											<button id="invoice-editor-client-toggle" type="button" aria-label="Выбрать клиента" aria-expanded="false">⌄</button>
+											<button id="invoice-editor-client-edit" type="button" aria-label="Редактировать данные клиента">✎</button>
+										</div>
+										<small id="invoice-editor-client-address" hidden></small>
+										<div id="invoice-editor-client-dropdown" class="invoice-editor-client-dropdown" hidden>
+											<div id="invoice-editor-client-results" class="invoice-editor-client-results" aria-live="polite"></div>
+											<button id="invoice-editor-client-new" type="button">+ Добавить клиента</button>
+										</div>
+									</div>
+									<input name="buyerType" type="hidden" value="person">
+									<label id="invoice-editor-registration-field" hidden>Регистрационный код фирмы<input name="registrationCode" maxlength="40"></label>
+									<label class="invoice-editor-email">Email *<input name="email" type="email" maxlength="254" required></label>
+									<input name="address" type="hidden">
+									<input name="phone" type="hidden">
+								</section>
+								<section class="calendar-card">
+									<h3><span>02</span> Данные счета</h3>
+									<div class="invoice-editor-pair">
+										<div class="invoice-editor-number-group">
+											<label>Номер счета<input id="invoice-editor-number" maxlength="40" disabled></label>
+											<label class="invoice-editor-number-toggle"><input id="invoice-editor-custom-number" type="checkbox">Выбрать свой номер</label>
+										</div>
+										<label>Номер ссылки<input name="reference" maxlength="60"></label>
+									</div>
+									<label class="invoice-editor-condition">Условие<select name="dueKind"><option value="payment">Срок оплаты</option><option value="offer">Предложение действует до</option></select></label>
+									<div class="invoice-editor-pair invoice-editor-dates">
+										<label>Дата счета<input name="issued" type="date" min="1900-01-01" max="9999-12-01" required></label>
+										<label><span id="invoice-editor-due-label">Срок оплаты</span><input name="due" type="date" min="1900-01-01" max="9999-12-31" required></label>
+									</div>
+								</section>
+								<section class="calendar-card">
+									<h3><span>03</span> Доп. информация</h3>
+									<div class="invoice-editor-pair">
+										<label>Валюта<input value="EUR — Евро" disabled></label>
+										<label>Пеня (% в день)<input name="penalty" type="number" min="0" max="100" step="0.01" value="0.05" required></label>
+									</div>
+									<details id="invoice-editor-note">
+										<summary>Примечание в счете</summary>
+										<label><span class="invoice-editor-note-label">Текст примечания</span><textarea name="note" maxlength="2000" rows="4"></textarea></label>
+									</details>
+								</section>
+							</div>
+							<section class="calendar-card invoice-editor-services">
+								<div class="invoice-editor-heading"><h3><span>04</span> Товары и услуги</h3><div class="invoice-editor-actions">
+									<button id="invoice-editor-line-add" type="button">+ Добавить строку</button>
+									<button id="invoice-editor-product-add" type="button">+ Добавить товар/услугу</button>
+									<button id="invoice-editor-text-add" type="button">+ Добавить текстовую строку</button>
+								</div></div>
+								<div class="invoice-list-table-wrap"><table class="invoice-editor-table">
+									<colgroup><col class="invoice-col-article"><col><col class="invoice-col-quantity"><col class="invoice-col-unit"><col class="invoice-col-price"><col class="invoice-col-rate"><col class="invoice-col-rate"><col class="invoice-col-total"><col class="invoice-col-remove"></colgroup>
+									<thead><tr><th>Артикул</th><th>Описание</th><th>Количество</th><th>Единица</th><th>Цена</th><th>Скидка, %</th><th>НДС, %</th><th>Сумма, EUR</th><th></th></tr></thead>
+									<tbody id="invoice-editor-lines"></tbody>
+								</table></div>
+							</section>
+						</fieldset>
+					</form>
+					<div id="invoice-editor-totals" class="calendar-card invoice-editor-totals" aria-live="polite"></div>
+					<div class="invoice-editor-actions invoice-editor-history-actions">
+						<button id="invoice-editor-preview" type="button">Предпросмотр PDF</button>
+						<button id="invoice-editor-deliveries" type="button">История отправок</button>
+						<button id="invoice-editor-versions" type="button">История версий</button>
+					</div>
+					<div id="invoice-editor-version-list" class="calendar-card" hidden></div>
+				</section>
+				<dialog id="invoice-editor-client" class="invoice-client-dialog" aria-labelledby="invoice-editor-client-title">
+					<h2 id="invoice-editor-client-title">Новый клиент</h2>
+					<form id="invoice-editor-client-form">
+						<p>Тип клиента</p>
+						<div class="invoice-client-type" role="group" aria-label="Тип клиента">
+							<button type="button" data-buyer-type="person" aria-pressed="true">Частное лицо</button>
+							<button type="button" data-buyer-type="company" aria-pressed="false">Фирма</button>
+						</div>
+						<label><span id="invoice-editor-client-name-label">Имя и фамилия</span><input name="name" maxlength="120" required></label>
+						<label>Адрес<input name="address" maxlength="500"></label>
+						<label id="invoice-editor-client-registration" hidden>Регистрационный код<input name="registrationCode" maxlength="40"></label>
+						<label>Номер ссылки (Viitenumber)<input name="reference" maxlength="60"></label>
+						<label>Телефон (не включается в PDF)<input name="phone" type="tel" maxlength="80"></label>
+						<label>Электронная почта<input name="email" type="email" maxlength="254" required></label>
+						<p id="invoice-editor-client-status" role="status"></p>
+						<div class="invoice-editor-actions"><button id="invoice-editor-client-close" type="button">× Отмена</button><button type="submit">Сохранить клиента</button></div>
+					</form>
+				</dialog>
+				<dialog id="invoice-editor-product" class="invoice-client-dialog" aria-labelledby="invoice-editor-product-title">
+					<h2 id="invoice-editor-product-title">Добавить артикул</h2>
+					<form id="invoice-editor-product-form" class="calendar-form">
+						<label>Артикул<input name="article" maxlength="30" pattern="[A-Za-zА-Яа-яЁё0-9._\-]+" required></label>
+						<label>Название<input name="name" maxlength="200" required></label>
+						<label>Единица<input name="unit" maxlength="20" value="tk" required></label>
+						<label>Цена для клиента, EUR<input name="price" type="number" min="0" max="100000" step="0.01" required></label>
+						<div class="invoice-editor-actions">
+							<button id="invoice-editor-product-delete" type="button" hidden>Удалить артикул</button>
+							<button id="invoice-editor-product-close" type="button">Отмена</button>
+							<button type="submit">Сохранить</button>
+						</div>
+						<p id="invoice-editor-product-status" role="status"></p>
+					</form>
+				</dialog>
 				<dialog id="invoice-list-preview" class="invoice-list-preview" aria-labelledby="invoice-list-preview-title">
-					<div class="invoice-list-preview-heading"><h3 id="invoice-list-preview-title">Предпросмотр счета</h3><button id="invoice-list-preview-close" type="button" aria-label="Закрыть предпросмотр">×</button></div>
+					<div class="invoice-list-preview-heading">
+						<h3 id="invoice-list-preview-title">Предпросмотр счета</h3>
+						<div class="invoice-list-preview-actions">
+							<button id="invoice-list-preview-download" type="button" disabled>Скачать</button>
+							<button id="invoice-list-preview-paid" type="button" disabled>Пометить оплаченным</button>
+							<button id="invoice-list-preview-send" type="button" disabled>Отправить</button>
+							<button id="invoice-list-preview-delete" type="button" disabled>Удалить</button>
+							<button id="invoice-list-preview-history" type="button" disabled>История отправок</button>
+							<button id="invoice-list-preview-edit" type="button" hidden>Открыть редактор</button>
+							<button id="invoice-list-preview-close" type="button" aria-label="Закрыть предпросмотр">×</button>
+						</div>
+					</div>
 					<p id="invoice-list-preview-status" role="status"></p>
+					<p id="invoice-list-preview-action-status" role="status"></p>
+					<p>«Отправить» отправляет сохраненный PDF на email из счета с подтверждением. Повторная отправка сохраняется в истории.</p>
 					<div id="invoice-list-preview-pages" class="invoice-pdf-pages"></div>
 				</dialog>
 			</div>
@@ -669,22 +816,48 @@
 			<div id="invoice-panel-design" role="tabpanel" aria-labelledby="invoice-tab-design" class="invoice-workbench" hidden>
 				<div class="calendar-card calendar-form">
 					<h2>Оформление счета</h2>
-					<p>Заливки и разделительные линии меняются вместе. Настройки применяются только к новым заказам после нажатия «Применить».</p>
-					<label>Цветовая палитра<select id="invoice-theme" disabled>
-						<option value="beige">Бежевый (исходный)</option>
-						<option value="green">Светло-зеленый</option>
-						<option value="blue">Светло-голубой</option>
-						<option value="purple">Светло-фиолетовый</option>
-					</select></label>
-					<h3>Логотип в PDF-счетах</h3>
+					<p>Заливки и разделительные линии меняются вместе. Палитра и логотип сохраняются отдельно кнопкой «Применить» в своем разделе и используются только для новых заказов.</p>
+					<details id="invoice-palette-section" class="invoice-design-section" open>
+						<summary>Цветовая палитра</summary>
+						<div class="invoice-design-section-body">
+					<fieldset id="invoice-theme" class="invoice-theme-picker" disabled>
+						<legend>Цветовая палитра</legend>
+						<p>Выберите готовую палитру. Цвета сразу отобразятся в предпросмотре.</p>
+						<div class="invoice-theme-options">
+							<label class="invoice-theme-card">
+								<input type="radio" name="invoice-theme" value="beige" checked>
+								<span class="invoice-theme-content"><span class="invoice-theme-swatches invoice-theme-beige" aria-hidden="true"><i></i><i></i><i></i></span><span>Бежевая (исходная)</span></span>
+							</label>
+							<label class="invoice-theme-card">
+								<input type="radio" name="invoice-theme" value="green">
+								<span class="invoice-theme-content"><span class="invoice-theme-swatches invoice-theme-green" aria-hidden="true"><i></i><i></i><i></i></span><span>Светло-зеленая</span></span>
+							</label>
+							<label class="invoice-theme-card">
+								<input type="radio" name="invoice-theme" value="blue">
+								<span class="invoice-theme-content"><span class="invoice-theme-swatches invoice-theme-blue" aria-hidden="true"><i></i><i></i><i></i></span><span>Светло-голубая</span></span>
+							</label>
+							<label class="invoice-theme-card">
+								<input type="radio" name="invoice-theme" value="purple">
+								<span class="invoice-theme-content"><span class="invoice-theme-swatches invoice-theme-purple" aria-hidden="true"><i></i><i></i><i></i></span><span>Светло-фиолетовая</span></span>
+							</label>
+						</div>
+					</fieldset>
+					<button id="invoice-design-save" class="invoice-design-apply" type="button" disabled>Применить</button>
+					<p id="invoice-design-status" role="status"></p>
+						</div>
+					</details>
+					<details id="invoice-logo-section" class="invoice-design-section">
+						<summary>Логотип в PDF-счетах</summary>
+						<div class="invoice-design-section-body">
 					<p>Отдельно от логотипа сайта. PNG, JPEG или WebP до 5 МБ. Изображение уменьшается до 512 x 512 пикселей с сохранением пропорций. Выбор, удаление и возврат логотипа сначала меняют только предпросмотр.</p>
 					<img id="invoice-logo-preview" src="images/logo.png" alt="Предпросмотр логотипа PDF-счета" style="display:block;max-width:200px;max-height:140px;object-fit:contain">
 					<label>Новый логотип для PDF<input id="invoice-logo-file" type="file" accept="image/png,image/jpeg,image/webp" disabled></label>
 					<button id="invoice-logo-remove" type="button" disabled>Удалить логотип из счетов</button>
 					<button id="invoice-logo-reset" type="button" disabled>Вернуть исходный логотип</button>
 					<p id="invoice-logo-status" role="status"></p>
-					<button id="invoice-design-save" type="button" disabled>Применить</button>
-					<p id="invoice-design-status" role="status"></p>
+					<button id="invoice-logo-save" class="invoice-design-apply" type="button" disabled>Применить</button>
+						</div>
+					</details>
 				</div>
 				<div class="calendar-card invoice-preview">
 					<h3>Предпросмотр оформления</h3>
@@ -1781,8 +1954,9 @@
 	<script src="site-logo.js"></script>
 	<script src="invoice-zip.js?v=202610221815"></script>
 	<script src="admin-invoice-delivery.js?v=202610222130"></script>
-	<script src="admin-invoice-list.js?v=202610222130"></script>
-	<script src="admin-invoices.js?v=202610222140"></script>
+	<script src="admin-invoice-list.js?v=202610231140"></script>
+	<script src="admin-invoice-editor.js?v=202610231139"></script>
+	<script src="admin-invoices.js?v=202610231035"></script>
 	<script src="admin-voucher-email.js?v=202610220809"></script>
 	<script src="admin-booking-email.js"></script>
 	<script src="admin-calendar-link-email.js?v=202610220807"></script>
@@ -1790,6 +1964,6 @@
 	<script src="admin-manual-invoice.js?v=202610221900"></script>
 	<script src="admin-auto-invoices.js?v=202610222150"></script>
 	<script src="admin-calendar.js?v=202610222130"></script>
-	<script src="admin-clients.js?v=202610221955"></script>
+	<script src="admin-clients.js?v=202610231042"></script>
 </body>
 </html>
