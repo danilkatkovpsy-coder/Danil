@@ -26,6 +26,14 @@
 			productsForm.elements.namedItem(`${key}Article`).value=products[key].article;
 		}
 	};
+	function showProductPrices(prices){
+		if(!prices||!['single','five','ten'].every(key=>Number.isSafeInteger(prices[key])&&prices[key]>=0))throw new Error('Не удалось прочитать цены товаров.');
+		for(const key of ['single','five','ten']){
+			const input=productsForm.elements.namedItem(`${key}Price`);
+			input.value=new Intl.NumberFormat('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(prices[key]/100);
+			input.disabled=true;
+		}
+	}
 	const status=(id,message)=>{get(id).textContent=message;};
 	const post=(path,input)=>adminRequest(`/api/admin/${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
 	const confirmSaved=result=>{if(result.ok!==true)throw new Error('Сервер не подтвердил сохранение.');};
@@ -39,6 +47,7 @@
 			const editing=editingProducts.has(key),card=get(`invoice-product-${key}-title`).closest('article');
 			card.dataset.locked=String(!editing);
 			for(const suffix of ['Name','Article'])productsForm.elements.namedItem(`${key}${suffix}`).disabled=!loaded||productsBusy||!editing;
+			productsForm.elements.namedItem(`${key}Price`).disabled=true;
 			get(`invoice-product-${key}-edit`).hidden=editing;
 			get(`invoice-product-${key}-cancel`).hidden=!editing;
 			card.querySelector('[type="submit"]').hidden=!editing;
@@ -378,7 +387,7 @@
 		const current=++generation;loading=true;controls();status('invoice-settings-status','Загружаем настройки счета...');
 		status('invoice-products-status','Загружаем товары...');
 		try{
-			const [details,design,email,productSettings]=await Promise.all(['invoice-settings','invoice-design','invoice-email','invoice-products'].map(path=>adminRequest(`/api/admin/${path}`)));
+			const [details,design,email,productSettings,priceSettings]=await Promise.all(['invoice-settings','invoice-design','invoice-email','invoice-products','prices'].map(path=>adminRequest(`/api/admin/${path}`)));
 			if(current!==generation)return;
 			if(!productSettings.products||!['single','five','ten'].every(key=>productSettings.products[key]&&
 				['name','article'].every(field=>typeof productSettings.products[key][field]==='string'))||
@@ -389,7 +398,7 @@
 				!['both','estonian','russian'].includes(email.language)||
 				![email.original,email.custom].every(template=>template&&blocks.every(key=>Array.isArray(template[key]))))throw new Error('Не удалось прочитать настройки счета.');
 			savedCompany=details;savedDesign=design;draftLogo=design.logo;replyTo=email.replyTo;
-			savedProducts=productSettings.products;showProducts(savedProducts);
+			savedProducts=productSettings.products;showProducts(savedProducts);showProductPrices(priceSettings.prices);
 			for(const key of fields)form.elements.namedItem(key).value=details.issuer[key];
 			vat.checked=details.vatRegistered;vatNumber.value=details.vatNumber;
 			themeOptions.forEach(option=>{option.checked=option.value===design.theme;});
@@ -402,6 +411,7 @@
 		finally{if(current===generation){loading=false;controls();}}
 	}
 	document.addEventListener('admin-login',()=>{if(!get('invoices-section').hidden)load();});
+	document.addEventListener('admin-prices-changed',event=>{if(loaded)showProductPrices(event.detail);});
 	document.addEventListener('admin-logout',()=>{
 		generation++;logoSelection++;loaded=false;loading=false;logoBusy=false;designBusy=false;companyBusy=false;emailBusy=false;productsBusy=false;savedProducts=null;
 		savedCompany=null;savedDesign=null;draftLogo='default';activeEditor=null;replyTo='';

@@ -1170,6 +1170,7 @@
 			if(result.ok!==true)throw new Error('Сервер не подтвердил сохранение цен.');
 			if(current===pricesGeneration){
 				savedPrices={...savedPrices,[key]:cents};editingPrices.delete(key);field.value=(cents/100).toFixed(2);
+				document.dispatchEvent(new CustomEvent('admin-prices-changed',{detail:{...savedPrices}}));
 				status.textContent='Цена сохранена. Применяется к новым заказам и счетам.';
 			}
 		}catch(error){if(current===pricesGeneration)status.textContent=error.message;}

@@ -97,6 +97,7 @@
 .invoice-email-toolbar button[aria-pressed="true"] { background: #ede4d8; color: #292621; border-color: #a4927e; }
 .invoice-email-editor[contenteditable="false"] { cursor: default; }
 main:has(#invoice-editor:not([hidden])) { margin-bottom: 8px; }
+#invoice-products-form input[readonly]:disabled { background: #e1ddd6; color: #625b53; opacity: 1; cursor: not-allowed; }
 .invoice-editor-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
 .invoice-editor-heading h2 { margin: 0; }
 .invoice-editor-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }

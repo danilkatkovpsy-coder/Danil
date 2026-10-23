@@ -381,7 +381,7 @@
 			.gift-voucher-form { grid-template-columns: 1fr; }
 		}
 	</style>
-	<link rel="stylesheet" href="admin-invoices.css?v=202610231142">
+	<link rel="stylesheet" href="admin-invoices.css?v=202610231158">
 	<link rel="stylesheet" href="mobile-forms.css?v=202610221657">
 </head>
 <body>
@@ -877,6 +877,7 @@
 					<h3 id="invoice-product-single-title">Товар (индивидуальная консультация)</h3>
 					<label>Название / описание в счете<input name="singleName" maxlength="120" required disabled></label>
 					<label>Артикул<input name="singleArticle" maxlength="20" required disabled></label>
+					<label>Цена, EUR<input name="singlePrice" disabled readonly></label>
 					<div class="calendar-actions">
 					<button id="invoice-product-single-edit" type="button" disabled>Изменить</button>
 					<button type="submit" data-product="single" disabled hidden>Сохранить</button>
@@ -888,6 +889,7 @@
 					<h3 id="invoice-product-five-title">Товар (пакет 5)</h3>
 					<label>Название / описание в счете<input name="fiveName" maxlength="120" required disabled></label>
 					<label>Артикул<input name="fiveArticle" maxlength="20" required disabled></label>
+					<label>Цена, EUR<input name="fivePrice" disabled readonly></label>
 					<div class="calendar-actions">
 					<button id="invoice-product-five-edit" type="button" disabled>Изменить</button>
 					<button type="submit" data-product="five" disabled hidden>Сохранить</button>
@@ -899,6 +901,7 @@
 					<h3 id="invoice-product-ten-title">Товар (пакет 10)</h3>
 					<label>Название / описание в счете<input name="tenName" maxlength="120" required disabled></label>
 					<label>Артикул<input name="tenArticle" maxlength="20" required disabled></label>
+					<label>Цена, EUR<input name="tenPrice" disabled readonly></label>
 					<div class="calendar-actions">
 					<button id="invoice-product-ten-edit" type="button" disabled>Изменить</button>
 					<button type="submit" data-product="ten" disabled hidden>Сохранить</button>
@@ -1956,14 +1959,14 @@
 	<script src="admin-invoice-delivery.js?v=202610222130"></script>
 	<script src="admin-invoice-list.js?v=202610231140"></script>
 	<script src="admin-invoice-editor.js?v=202610231139"></script>
-	<script src="admin-invoices.js?v=202610231035"></script>
+	<script src="admin-invoices.js?v=202610231156"></script>
 	<script src="admin-voucher-email.js?v=202610220809"></script>
 	<script src="admin-booking-email.js"></script>
 	<script src="admin-calendar-link-email.js?v=202610220807"></script>
 	<script src="admin-texts.js?v=202610220911"></script>
 	<script src="admin-manual-invoice.js?v=202610221900"></script>
 	<script src="admin-auto-invoices.js?v=202610222150"></script>
-	<script src="admin-calendar.js?v=202610222130"></script>
+	<script src="admin-calendar.js?v=202610231156"></script>
 	<script src="admin-clients.js?v=202610231042"></script>
 </body>
 </html>
