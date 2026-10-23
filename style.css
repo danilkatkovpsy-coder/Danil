@@ -1807,3 +1807,15 @@ h1 {
 	.hero-benefits .icon svg { width: 22px; height: 22px; }
 	.hero-benefits span { display: block; width: 100%; min-width: 0; text-wrap: balance; }
 }
+
+@media (min-width: 1729px) {
+	.header { padding-right: calc((100% - 1728px) / 2 + 28px); padding-left: calc((100% - 1728px) / 2 + 28px); }
+	.hero { min-height: min(100svh, 1000px); }
+	.hero-photo { right: calc((100% - 1728px) / 2); max-width: 1728px; }
+	.hero-copy, .hero-benefits { left: calc((100% - 1728px) / 2 + 124.416px); }
+	.hero-copy { margin-top: clamp(112px, 18.5svh, 185px); }
+	.about-page, .services-page, .approach-page, .reviews-page { width: calc(1728px - 13cm) !important; }
+	#contact.contact-page { padding-left: calc((100% - 1728px) / 2 + 6.5cm) !important; padding-right: calc((100% - 1728px) / 2 + 100px) !important; }
+	.footer-content { width: calc(1728px - 10cm); }
+	.footer-bottom { padding-left: calc((100% - 1728px) / 2 + 68px); padding-right: calc((100% - 1728px) / 2 + 68px); }
+}
