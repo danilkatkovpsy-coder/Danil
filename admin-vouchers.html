@@ -138,7 +138,7 @@
 		#calendar-section[hidden], #vouchers-section[hidden] { display: none; }
 		.admin-sidebar { display: grid; align-content: start; gap: 8px; margin: 0 0 24px; padding: 16px; border-radius: 6px; background: #1d2c27; }
 		.admin-sidebar-title { margin: 0 10px 12px; color: #bacbc2; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-		.admin-sidebar-brand { display: flex; align-items: center; gap: 12px; margin: 0 10px 12px; padding-bottom: 18px; border-bottom: 1px solid #bdb2a840; color: #bdb2a8; font-size: 23px; font-weight: 700; letter-spacing: .04em; text-decoration: none; }
+		.admin-sidebar-brand { display: flex; align-items: center; gap: 12px; margin: 0 10px 8px; padding-bottom: 6px; border-bottom: 1px solid #bdb2a840; color: #bdb2a8; font-size: 23px; font-weight: 700; letter-spacing: .04em; text-decoration: none; }
 		.admin-sidebar-brand img { width: 42px; height: 42px; padding: 3px; object-fit: contain; border-radius: 50%; background: #201b16; }
 		.admin-sidebar > button { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: transparent; color: #e6eee9; text-align: left; }
 		.admin-sidebar > button[aria-pressed="true"] { background: #1f4034; color: #fff; box-shadow: inset 3px 0 #b7cfb6; }
@@ -147,7 +147,8 @@
 		.admin-sidebar svg { flex: 0 0 20px; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 		@media (min-width: 761px) {
 			main:has(#admin-workspace:not([hidden])) { width: auto; margin: 28px 32px 40px 264px; }
-			.admin-sidebar { position: fixed; inset: 0 auto 0 0; width: 232px; margin: 0; padding: 28px 12px; border-radius: 0; overflow-y: auto; }
+			.admin-sidebar { position: fixed; inset: 0 auto 0 0; width: 232px; margin: 0; padding: 16px 12px; border-radius: 0; overflow-y: auto; }
+			.admin-sidebar-brand { padding-bottom: 18px; }
 		}
 		#calendar-status.is-error { color: #8a3b33; }
 		.calendar-navigation { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
