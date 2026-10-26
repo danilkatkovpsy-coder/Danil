@@ -140,8 +140,12 @@
 			}
 		} finally { if (current === generation) { busy = false; controls(); } }
 	}
-	async function sendInvoice(invoice) {
-		if (busy || loading || !confirm(`Отправить сохраненный счет № ${invoice.invoice_number} на ${invoice.email}? Если счет уже отправлялся, клиент получит его повторно.`)) return;
+	async function sendInvoice(invoice, corrected = false) {
+		if (busy || loading) return false;
+		const prompt=corrected
+			? `Новая версия счета № ${invoice.invoice_number} сохранена. Отправить ее на ${invoice.email}?`
+			: `Отправить сохраненный счет № ${invoice.invoice_number} на ${invoice.email}? Если счет уже отправлялся, клиент получит его повторно.`;
+		if(!confirm(prompt))return false;
 		const current = generation; busy = true; controls();
 		const message = value => {
 			status.textContent = value;
@@ -164,10 +168,14 @@
 			if (current !== generation) return;
 			if (result.ok !== true || result.invoiceEmailSent !== true) throw new Error('Отправка не подтверждена.');
 			sessionStorage.removeItem(pendingKey(invoice.id)); pendingSends.delete(invoice.id);
-			invoice.invoice_sent = true; render();
+			invoice.invoice_sent = true;
+			const listed=invoices.find(item=>item.id===invoice.id);if(listed)listed.invoice_sent=true;
+			render();
 			message(`Счет отправлен на ${invoice.email}. Отправка сохранена в истории.`);
+			return true;
 		} catch (error) {
 			if (current === generation) message(`${error.message} Если запрос уже ушел, нажмите «Отправить» снова: сохраненный запрос будет повторен без нового письма. После 23 часов проверьте статус в Resend.`);
+			return false;
 		} finally { if (current === generation) { busy = false; controls(); } }
 	}
 	async function hideInvoice(invoice) {

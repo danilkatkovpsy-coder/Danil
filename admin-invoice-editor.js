@@ -121,9 +121,15 @@
 	function draft(){
 		const data=Object.fromEntries([...['name','email','phone','address','issued','due','dueKind','reference','note'].map(key=>[key,field(key).value.trim()]),
 			['buyerType',field('buyerType').value],['registrationCode',field('registrationCode').value.trim()],
-			['penalty',Number(field('penalty').value)],['vatRegistered',vatRegistered],['lines',items]]);
+			['penalty',field('dueKind').value==='payment'?Number(field('penalty').value):0],['vatRegistered',vatRegistered],['lines',items]]);
 		if(customNumber.checked)data.customNumber=numberInput.value.trim();
 		return data;
+	}
+	function updateDueKind(){
+		const payment=field('dueKind').value==='payment',penalty=field('penalty');
+		if(!payment)penalty.value='0';
+		penalty.disabled=!payment;
+		get('invoice-editor-due-label').textContent=payment?'Срок оплаты':'Действие предложения';
 	}
 	function showClientAddress(address){
 		const hint=get('invoice-editor-client-address');
@@ -131,12 +137,12 @@
 	}
 	function fill(data){
 		for(const key of ['name','email','phone','address','buyerType','registrationCode','issued','due','dueKind','reference','note','penalty'])field(key).value=String(data[key]);
+		updateDueKind();
 		showClientAddress(data.address);
 		get('invoice-editor-registration-field').hidden=data.buyerType!=='company';
 		items=data.lines.map(line=>({...line}));vatRegistered=data.vatRegistered;
 		customNumber.checked=Boolean(data.customNumber);
 		numberInput.value=current?.invoice_number||data.customNumber||nextNumber;
-		get('invoice-editor-due-label').textContent=data.dueKind==='payment'?'Срок оплаты':'Предложение действует до';
 		renderLines();
 	}
 	async function refreshNumber(){
@@ -260,6 +266,7 @@
 	}
 	form.addEventListener('submit',async event=>{
 		event.preventDefault();if(!ready||busy||locked||(!pending&&!form.reportValidity()))return;
+		const revised=Boolean(current);
 		const version=generation;busy=true;controls();message('Сохраняем счет и PDF...');
 		try{
 			if(!pending){
@@ -276,7 +283,15 @@
 			current=saved.invoice;pending=null;sessionStorage.removeItem(pendingKey);locked=true;dirty=false;fill(current.custom_data);
 			await paymentStatus();if(version!==generation)return;
 			get('invoice-editor-title').textContent=`Счет № ${current.invoice_number}`;
-			message('Счет сохранен и заблокирован. Письмо не отправлялось.');await window.adminInvoiceList.refresh();
+			await window.adminInvoiceList.refresh();if(version!==generation)return;
+			if(revised){
+				message('Новая версия счета сохранена. Подтвердите ее повторную отправку.');
+				const sent=await window.adminInvoiceList.send(invoice(),true);
+				if(version!==generation)return;
+				message(sent
+					? `Новая версия счета № ${current.invoice_number} сохранена и отправлена на ${current.email}.`
+					: `Новая версия счета № ${current.invoice_number} сохранена, но не отправлена. ${get('invoice-list-status').textContent}`);
+			}else message('Счет сохранен и заблокирован. Письмо не отправлялось.');
 		}catch(error){
 			if(version!==generation)return;
 			if(error.status===400||error.status===409){pending=null;sessionStorage.removeItem(pendingKey);}
@@ -322,7 +337,7 @@
 	for(const [key,text] of [['line-add',false],['text-add',true]])get(`invoice-editor-${key}`).addEventListener('click',()=>{
 		if(items.length>=50){message('В одном счете можно добавить до 50 строк.');return;}items.push(blankLine(text));dirty=true;renderLines();
 	});
-	field('dueKind').addEventListener('change',()=>{get('invoice-editor-due-label').textContent=field('dueKind').value==='payment'?'Срок оплаты':'Предложение действует до';});
+	field('dueKind').addEventListener('change',updateDueKind);
 	form.addEventListener('input',()=>{if(!locked&&!busy)dirty=true;});
 	const dropdown=get('invoice-editor-client-dropdown');
 	function showDropdown(show){
