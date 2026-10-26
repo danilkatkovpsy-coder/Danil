@@ -119,9 +119,12 @@
 	}
 	function blankLine(text=false){return {article:'',name:'',unit:'tk',quantity:1,priceCents:0,discount:0,vat:vatRegistered?24:0,text};}
 	function draft(){
-		const data=Object.fromEntries([...['name','email','phone','address','issued','due','dueKind','reference','note'].map(key=>[key,field(key).value.trim()]),
+		const dueKind=field('dueKind').value;
+		const note=field('note').value.trim();
+		const data=Object.fromEntries([...['name','email','phone','address','issued','due','dueKind','reference'].map(key=>[key,field(key).value.trim()]),
 			['buyerType',field('buyerType').value],['registrationCode',field('registrationCode').value.trim()],
-			['penalty',field('dueKind').value==='payment'?Number(field('penalty').value):0],['vatRegistered',vatRegistered],['lines',items]]);
+			['note',dueKind==='offer'?note.split(/\r?\n/).filter(line=>!/\bViivis\s*:/i.test(line)).join('\n').trim():note],
+			['penalty',dueKind==='payment'?Number(field('penalty').value):0],['vatRegistered',vatRegistered],['lines',items]]);
 		if(customNumber.checked)data.customNumber=numberInput.value.trim();
 		return data;
 	}
