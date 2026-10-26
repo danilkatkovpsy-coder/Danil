@@ -7,15 +7,17 @@
 	const node=(tag,text='')=>{const element=document.createElement(tag);element.textContent=text;return element;};
 	function mount(container,source){
 		container.replaceChildren();
-		const reveal=node('button','Создать счет');reveal.type='button';
+		const reveal=node('button','+ Создать счет');reveal.type='button';
+		reveal.title='Создать счет';
 		const form=node('form');form.className='calendar-form manual-invoice-form';form.hidden=true;
-		const recipient=node('p',`Получатель: ${source.name} · ${source.email || 'Email не указан'}`);
 		const label=node('label','Товар'),select=node('select');select.required=true;label.append(select);
-		const note=node('p','Отправляется только счет. Ваучер и сессии не выдаются.');
-		const submit=node('button','Отправить');submit.type='submit';submit.disabled=true;
+		const submit=node('button');submit.type='submit';submit.disabled=true;
+		submit.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg><span>Отправить</span>';
+		submit.setAttribute('aria-label','Создать и отправить счет');
+		submit.title='Создать и отправить счет';
 		const another=node('button','Создать еще счет');another.type='button';another.hidden=true;
 		const status=node('p');status.setAttribute('role','status');
-		form.append(recipient,label,note,submit,another,status);container.append(reveal,form);
+		form.append(label,submit,another,status);container.append(reveal,form);
 		const identity=source.appointmentId?`appointment:${source.appointmentId}`:`client:${source.clientEmail}`;
 		const storageKey=prefix+identity;
 		let state=states.get(identity),prices=null,loading=false;
@@ -38,6 +40,12 @@
 							typeof state.requestId!=='string'||!/^[a-f0-9-]{36}$/i.test(state.requestId)){
 							throw new Error('Повреждены данные незавершенного счета. Проверьте раздел «Счета» перед новой отправкой.');
 						}
+						if((state.emailTemplate!==undefined&&(!state.emailTemplate||typeof state.emailTemplate.subject!=='string'||
+							!['estonian','russian','signature'].every(key=>Array.isArray(state.emailTemplate[key])&&
+								state.emailTemplate[key].length&&state.emailTemplate[key].every(run=>run&&typeof run.text==='string'&&typeof run.bold==='boolean'))))||
+							(state.emailLanguage!==undefined&&!['both','estonian','russian'].includes(state.emailLanguage))){
+							throw new Error('Поврежден текст незавершенной отправки. Проверьте раздел «Счета» перед повтором.');
+						}
 						state.pending=true;
 					}else state={};
 					states.set(identity,state);
@@ -51,6 +59,7 @@
 					const option=node('option',`${labels[key]} · ${window.servicePricing.money(prices[key])} · ${product.article} — ${product.name}`);
 					option.value=key;select.append(option);
 				}
+				const otherOption=node('option','Другое…');otherOption.value='other';select.append(otherOption);
 				if(state.pending){
 					select.options[keys.indexOf(state.product)].textContent=`${labels[state.product]} · ${window.servicePricing.money(state.priceCents)} · Незавершенная отправка`;
 				}
@@ -67,6 +76,19 @@
 		another.addEventListener('click',()=>{
 			state={};states.set(identity,state);load();
 		});
+		function openOtherInvoice(){
+			if(!source.email){status.textContent='Для создания счета у клиента должен быть email.';return;}
+			if(typeof window.adminInvoiceEditor?.openManual!=='function'){
+				status.textContent='Редактор счетов недоступен. Обновите страницу и попробуйте снова.';
+				return;
+			}
+			window.adminInvoiceEditor.openManual({name:source.name,email:source.email});
+		}
+		select.addEventListener('change',()=>{
+			if(select.value!=='other')return;
+			openOtherInvoice();
+			select.value=state?.product||keys[0];
+		});
 		if(!source.email){reveal.disabled=true;reveal.title='Для создания счета у клиента должен быть email.';}
 		form.addEventListener('submit',async event=>{
 			event.preventDefault();
@@ -74,14 +96,22 @@
 			const current=generation;
 			try{
 				if(!state.pending){
-					state.product=select.value;state.priceCents=prices[select.value];state.requestId=crypto.randomUUID();
-					sessionStorage.setItem(storageKey,JSON.stringify({product:state.product,priceCents:state.priceCents,requestId:state.requestId}));
+					const product=select.value,priceCents=prices[product],requestId=crypto.randomUUID();
+					const email=await window.adminInvoiceList.composeEmail({
+						id:requestId,name:source.name,email:source.email,invoice_editable:true,
+					});
+					if(current!==generation||!email)return;
+					state.product=product;state.priceCents=priceCents;state.requestId=requestId;
+					state.emailTemplate=email.template;state.emailLanguage=email.language;
+					sessionStorage.setItem(storageKey,JSON.stringify({product:state.product,priceCents:state.priceCents,
+						requestId:state.requestId,emailTemplate:state.emailTemplate,emailLanguage:state.emailLanguage}));
 					state.pending=true;
 				}
 				state.busy=true;controls();status.textContent='Создаем PDF и отправляем счет...';
 				const result=await adminRequest('/api/admin/invoices/send',{
 					method:'POST',headers:{'Content-Type':'application/json'},
 					body:JSON.stringify({requestId:state.requestId,product:state.product,priceCents:state.priceCents,
+						...(state.emailTemplate?{template:state.emailTemplate,language:state.emailLanguage}:{}),
 						...(source.appointmentId?{appointmentId:source.appointmentId}:{clientEmail:source.clientEmail})}),
 				});
 				if(current!==generation)return;
@@ -91,7 +121,9 @@
 				status.textContent=`Счет № ${result.invoiceNumber} отправлен на ${source.email} и сохранен в разделе «Счета».`;
 			}catch(error){
 				if(current!==generation)return;
-				if(error.status===409){sessionStorage.removeItem(storageKey);state.pending=false;}
+				if([400,409].includes(error.status)){
+					sessionStorage.removeItem(storageKey);state={};states.set(identity,state);
+				}
 				status.textContent=error.message;
 			}finally{state.busy=false;if(current===generation)controls();}
 		});

@@ -184,7 +184,7 @@
 		catalog.push(...result.customProducts);serverPending=result.pending;return result.vatRegistered;
 	}
 	function canLeave(){return !pending&&(!dirty||confirm('Есть несохраненные изменения. Отменить их?'));}
-	async function open(id=null,recover=null){
+	async function open(id=null,recover=null,prefill=null){
 		if(busy||(!editor.hidden&&!canLeave()))return;
 		const version=++generation;
 		nextNumber='';numberError='';numberLoading=false;numberVersion++;numberInput.setCustomValidity('');
@@ -226,12 +226,29 @@
 				const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Tallinn',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 				const due=new Date(`${today}T12:00:00Z`);due.setUTCDate(due.getUTCDate()+14);
 				fill({name:'',email:'',phone:'',address:'',buyerType:'person',registrationCode:'',issued:today,due:due.toISOString().slice(0,10),dueKind:'payment',penalty:0.05,reference:'',note:'',vatRegistered,lines:[blankLine()]});
+				if(prefill){
+					field('name').value=String(prefill.name||'');
+					field('email').value=String(prefill.email||'');
+				}
 				await refreshNumber();if(version!==generation)return;
 				if(!numberError)message('');
 			}
 			get('invoice-editor-version-list').hidden=true;get('invoice-editor-client-results').replaceChildren();
 		}catch(error){if(version===generation){ready=false;message(error.message);}}
 		finally{if(version===generation){busy=false;controls();}}
+	}
+	async function openManual(client){
+		if(busy)return false;
+		if(!editor.hidden){
+			if(!canLeave())return false;
+			editor.hidden=true;get('invoice-list-card').hidden=false;dirty=false;
+		}
+		for(const id of ['client-dialog','calendar-details']){
+			const dialog=get(id);if(dialog?.open)dialog.close();
+		}
+		get('section-invoices').click();
+		await open(null,null,client);
+		return true;
 	}
 	async function savedAction(action){
 		if(busy||!current||!locked)return;
@@ -490,5 +507,5 @@
 		if(clientDialog.open)clientDialog.close();clientForm.reset();selectedClient=null;ready=false;showDropdown(false);
 		for(const modal of [clientForm,productForm])modal.querySelectorAll('input,button').forEach(el=>{el.disabled=false;});
 	});
-	window.adminInvoiceEditor={open,totals};
+	window.adminInvoiceEditor={open,openManual,totals};
 })();

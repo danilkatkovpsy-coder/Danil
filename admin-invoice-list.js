@@ -2,12 +2,14 @@
 	const get = id => document.getElementById(id);
 	const rows = get('invoice-list-rows'), status = get('invoice-list-status'), all = get('invoice-list-all');
 	const dialog = get('invoice-list-preview'), previewPages = get('invoice-list-preview-pages');
+	const sendDialog = get('invoice-send-dialog'), sendForm = get('invoice-send-form');
 	const pageSize = 50, selected = new Set(), excluded = new Set();
 	let page = 0, total = 0, search = '', sort = 'desc', from = '', through = '', invoices = [];
 	let loaded = false, loading = false, busy = false, allSelected = false, generation = 0, previewVersion = 0;
 	let previewInvoice = null;
 	const pendingSends = new Map();
 	const pendingKey = id => `admin-invoice-resend:${id}`;
+	let sendTarget = null, sendResolve = null, sendSettings = null, sendLocked = false, sendBaseline = null, composeOnly = false;
 	const isSelected = id => allSelected ? !excluded.has(id) : selected.has(id);
 	const selectedCount = () => allSelected ? Math.max(0, total - excluded.size) : selected.size;
 	const listUrl = offset => `/api/admin/invoices?${new URLSearchParams({ search, sort, from, through, offset: String(offset) })}`;
@@ -140,44 +142,186 @@
 			}
 		} finally { if (current === generation) { busy = false; controls(); } }
 	}
-	async function sendInvoice(invoice, corrected = false) {
-		if (busy || loading) return false;
-		const prompt=corrected
-			? `Новая версия счета № ${invoice.invoice_number} сохранена. Отправить ее на ${invoice.email}?`
-			: `Отправить сохраненный счет № ${invoice.invoice_number} на ${invoice.email}? Если счет уже отправлялся, клиент получит его повторно.`;
-		if(!confirm(prompt))return false;
+	const validEmailTemplate = template => template && typeof template === 'object' &&
+		typeof template.subject === 'string' && ['estonian','russian','signature'].every(key =>
+			Array.isArray(template[key]) && template[key].length > 0 &&
+			template[key].every(run => run && typeof run.text === 'string' && typeof run.bold === 'boolean'));
+	const defaultManualEmail = signature => ({
+		subject: 'Arve {{invoice_number}}',
+		estonian: [{ text: 'Tere, {{name}}!\n\nSaadame teile arve nr {{invoice_number}}. Arve on lisatud kirjale.', bold: false }],
+		russian: [{ text: 'Здравствуйте, {{name}}!\n\nНаправляем счет № {{invoice_number}} во вложении.', bold: false }],
+		signature,
+	});
+	function pendingSend(invoice) {
+		const stored = pendingSends.get(invoice.id) || sessionStorage.getItem(pendingKey(invoice.id));
+		if (!stored) return null;
+		if (typeof stored === 'object') return stored;
+		try {
+			const parsed = JSON.parse(stored);
+			if (parsed && typeof parsed === 'object' && typeof parsed.deliveryId === 'string') return parsed;
+		} catch {}
+		return { deliveryId: stored, legacy: true };
+	}
+	function setComposerTemplate(template) {
+		get('invoice-send-subject').value = template.subject;
+		for (const key of ['estonian','russian','signature']) {
+			get(`invoice-send-${key}`).value = template[key].map(run => run.text).join('');
+		}
+	}
+	function composerTemplateFor(source) {
+		if (source === 'automatic') return sendTarget?.invoice_editable === true ? sendSettings.manual : sendSettings.template;
+		return sendSettings[source];
+	}
+	function currentComposerTemplate() {
+		return {
+			subject: get('invoice-send-subject').value.trim(),
+			...Object.fromEntries(['estonian','russian','signature'].map(key =>
+				[key, [{ text: get(`invoice-send-${key}`).value, bold: false }]])),
+		};
+	}
+	function sameEmailText(left, right) {
+		return left.subject === right.subject &&
+			['estonian','russian','signature'].every(key =>
+				left[key].map(run => run.text).join('') === right[key].map(run => run.text).join(''));
+	}
+	function composerLanguage() {
+		const language = get('invoice-send-language').value;
+		get('invoice-send-estonian-label').hidden = language === 'russian';
+		get('invoice-send-russian-label').hidden = language === 'estonian';
+	}
+	function composerControls() {
+		sendForm.querySelectorAll('input,select,textarea').forEach(element => { element.disabled = busy || sendLocked; });
+		get('invoice-send-close').disabled = busy;
+		get('invoice-send-submit').disabled = busy;
+	}
+	async function sendInvoice(invoice, corrected = false, options = {}) {
+		if (busy || (loading && options.composeOnly !== true) || sendDialog.open) return false;
 		const current = generation; busy = true; controls();
 		const message = value => {
 			status.textContent = value;
 			if (previewInvoice?.id === invoice.id) get('invoice-list-preview-action-status').textContent = value;
 		};
+		message('Загружаем шаблоны письма...');
+		try {
+			const settings = await adminRequest('/api/admin/invoice-email');
+			if (current !== generation) return false;
+			if (settings && !settings.manual && validEmailTemplate(settings.template)) {
+				settings.manual = defaultManualEmail(settings.template.signature);
+			}
+			if (!settings || !validEmailTemplate(settings.template) || !validEmailTemplate(settings.manual) ||
+				!validEmailTemplate(settings.original) || !validEmailTemplate(settings.custom) ||
+				!['original','custom'].includes(settings.source) || !['both','estonian','russian'].includes(settings.language)) {
+				throw new Error('Не удалось прочитать шаблоны письма.');
+			}
+			sendSettings = settings; sendTarget = invoice; sendLocked = false;
+			composeOnly = options.composeOnly === true;
+			get('invoice-send-title').textContent = composeOnly ? 'Подготовить письмо к новому счету' :
+				corrected ? 'Отправить новую версию счета' : 'Отправить счет по email';
+			const saved = pendingSend(invoice);
+			const source = 'automatic';
+			get('invoice-send-source').value = source;
+			get('invoice-send-language').value = saved?.language || settings.language;
+			const initialTemplate = saved?.template && validEmailTemplate(saved.template) ? saved.template : composerTemplateFor(source);
+			setComposerTemplate(initialTemplate);
+			sendBaseline = { source, language: saved?.language || settings.language, template: initialTemplate };
+			sendLocked = Boolean(saved);
+			if (saved?.language && ['both','estonian','russian'].includes(saved.language)) {
+				get('invoice-send-language').value = saved.language;
+			}
+			get('invoice-send-status').textContent = saved
+				? 'Есть незавершенная отправка. Повтор будет выполнен с тем же сохраненным запросом.'
+				: corrected ? 'Новая версия счета уже сохранена. Проверьте текст и подтвердите отправку.' : '';
+			get('invoice-send-submit').textContent = saved ? 'Повторить отправку' : 'Отправить письмо';
+			composerLanguage();
+			busy = false; controls();
+			composerControls();
+			sendDialog.showModal();
+			return await new Promise(resolve => { sendResolve = resolve; });
+		} catch (error) {
+			if (current === generation) message(error.message);
+			return false;
+		} finally { if (current === generation) { busy = false; controls(); composerControls(); } }
+	}
+	async function deliverInvoice() {
+		if (!sendTarget || busy) return;
+		if (!sendForm.reportValidity()) return;
+		const invoice = sendTarget, current = generation;
+		const message = value => {
+			get('invoice-send-status').textContent = value;
+			status.textContent = value;
+			if (previewInvoice?.id === invoice.id) get('invoice-list-preview-action-status').textContent = value;
+		};
+		let saved = pendingSend(invoice);
+		let template = saved?.template && validEmailTemplate(saved.template) ? saved.template : currentComposerTemplate();
+		let language = saved?.language || get('invoice-send-language').value;
+		const useOverride = saved ? saved.override === true : get('invoice-send-source').value !== 'automatic' ||
+			language !== sendBaseline?.language || !sameEmailText(template, sendBaseline?.template || template);
+		if (composeOnly) {
+			sendResolve?.({ template, language });
+			sendDialog.close();
+			return;
+		}
+		if (!saved) {
+			saved = { deliveryId: crypto.randomUUID(), template, language, override: useOverride };
+			sessionStorage.setItem(pendingKey(invoice.id), JSON.stringify(saved));
+		}
+		if (typeof saved.deliveryId !== 'string' ||
+			!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(saved.deliveryId)) {
+			message('Некорректный идентификатор сохраненной отправки. Обратитесь к администратору.');
+			return;
+		}
+		template = saved.template && validEmailTemplate(saved.template) ? saved.template : template;
+		language = saved.language || language;
+		if (!['both','estonian','russian'].includes(language)) {
+			message('Выберите корректный язык письма.');
+			return;
+		}
+		saved = { deliveryId: saved.deliveryId, template, language, override: useOverride };
+		pendingSends.set(invoice.id, saved);
+		sessionStorage.setItem(pendingKey(invoice.id), JSON.stringify(saved));
+		sendLocked = true; busy = true; composerControls();
 		message('Отправляем счет...');
 		try {
-			let deliveryId = pendingSends.get(invoice.id) || sessionStorage.getItem(pendingKey(invoice.id));
-			if (!deliveryId) {
-				deliveryId = crypto.randomUUID();
-				sessionStorage.setItem(pendingKey(invoice.id), deliveryId);
-			}
-			if (!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(deliveryId)) {
-				throw new Error('Некорректный идентификатор сохраненной отправки. Обратитесь к администратору.');
-			}
-			pendingSends.set(invoice.id, deliveryId);
 			const result = await adminRequest(`/api/admin/invoices/${encodeURIComponent(invoice.id)}/send`, {
-				method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deliveryId }),
+				method: 'POST', headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ deliveryId: saved.deliveryId, ...(useOverride ? { template, language } : {}) }),
 			});
 			if (current !== generation) return;
 			if (result.ok !== true || result.invoiceEmailSent !== true) throw new Error('Отправка не подтверждена.');
 			sessionStorage.removeItem(pendingKey(invoice.id)); pendingSends.delete(invoice.id);
 			invoice.invoice_sent = true;
-			const listed=invoices.find(item=>item.id===invoice.id);if(listed)listed.invoice_sent=true;
+			const listed = invoices.find(item => item.id === invoice.id); if (listed) listed.invoice_sent = true;
 			render();
 			message(`Счет отправлен на ${invoice.email}. Отправка сохранена в истории.`);
-			return true;
+			const resolve = sendResolve; sendResolve = null; sendTarget = null;
+			resolve?.(true); sendDialog.close();
 		} catch (error) {
-			if (current === generation) message(`${error.message} Если запрос уже ушел, нажмите «Отправить» снова: сохраненный запрос будет повторен без нового письма. После 23 часов проверьте статус в Resend.`);
-			return false;
-		} finally { if (current === generation) { busy = false; controls(); } }
+			if (current === generation) {
+				if (error.status === 400 && useOverride) {
+					sessionStorage.removeItem(pendingKey(invoice.id)); pendingSends.delete(invoice.id);
+				}
+				message(error.status === 400 && useOverride
+					? 'Одноразовый шаблон еще не поддерживается сервером. Выберите «Автоматический шаблон» без изменений или обновите серверные функции. Письмо не отправлено.'
+					: `${error.message} Повтор отправит тот же сохраненный запрос. После 23 часов проверьте статус в Resend.`);
+				sendLocked = error.status !== 400;
+			}
+		} finally {
+			if (current === generation) { busy = false; controls(); composerControls(); }
+		}
 	}
+	get('invoice-send-source').addEventListener('change', () => {
+		if (!sendLocked && sendSettings) setComposerTemplate(composerTemplateFor(get('invoice-send-source').value));
+	});
+	get('invoice-send-language').addEventListener('change', composerLanguage);
+	sendForm.addEventListener('submit', event => { event.preventDefault(); deliverInvoice(); });
+	get('invoice-send-close').addEventListener('click', () => sendDialog.close());
+	sendDialog.addEventListener('close', () => {
+		const resolve = sendResolve; sendResolve = null; sendTarget = null; sendLocked = false; sendBaseline = null;
+		composeOnly = false;
+		get('invoice-send-status').textContent = '';
+		resolve?.(false);
+	});
+	sendDialog.addEventListener('cancel', event => { if (busy) event.preventDefault(); });
 	async function hideInvoice(invoice) {
 		if (busy || loading || !confirm(`Удалить счет № ${invoice.invoice_number} из списка? PDF и история отправок сохранятся. Отправленное письмо не отзывается.`)) return;
 		const current = generation; busy = true; controls(); status.textContent = 'Удаляем счет из списка...';
@@ -344,12 +488,15 @@
 	document.addEventListener('admin-logout', () => {
 		generation++; previewVersion++; loaded = false; loading = false; busy = false;
 		pendingSends.clear();
+		if (sendDialog.open) sendDialog.close();
 		page = 0; total = 0; invoices = []; search = ''; sort = 'desc'; from = ''; through = ''; resetSelection();
 		get('invoice-list-filter').reset(); rows.replaceChildren(); status.textContent = '';
 		if (dialog.open) dialog.close();
 		previewPages.replaceChildren(); controls();
 	});
-	window.adminInvoiceList = { load, paid: markPaid, send: sendInvoice, download: downloadOne, remove: hideInvoice, preview: showPreview,
+	window.adminInvoiceList = { load, paid: markPaid, send: sendInvoice,
+		composeEmail: invoice => sendInvoice(invoice, false, { composeOnly: true }),
+		download: downloadOne, remove: hideInvoice, preview: showPreview,
 		refresh: () => { resetSelection(); return load(true); } };
 	controls();
 })();

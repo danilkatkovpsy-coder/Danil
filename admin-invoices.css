@@ -44,6 +44,38 @@
 .invoice-list-row-actions button { padding: 6px 8px; font-size: 12px; }
 .invoice-list-preview { width: min(850px, calc(100% - 24px)); max-height: calc(100dvh - 24px); padding: 16px; border: 1px solid #ded5cb; border-radius: 8px; background: #fffdfa; color: #292621; overscroll-behavior: contain; }
 .invoice-list-preview::backdrop { background: rgba(16,24,20,.56); }
+.invoice-send-dialog { box-sizing: border-box; width: min(900px, calc(100% - 24px)); max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain; }
+.invoice-send-dialog > p { overflow-wrap: anywhere; }
+.invoice-send-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.invoice-send-header h2 { margin: 0; }
+.invoice-send-actions { display: flex; align-items: center; gap: 8px; }
+.invoice-send-actions #invoice-send-close { width: 36px; height: 36px; padding: 0; background: #fffdfa; color: #315f4f; font-size: 26px; line-height: 1; }
+.invoice-send-dialog .calendar-form { display: grid; gap: 9px; }
+.invoice-send-settings { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr); gap: 10px; }
+.invoice-send-settings label, .invoice-send-language-fields label, .invoice-send-signature { min-width: 0; display: grid; gap: 4px; font-size: 13px; }
+.invoice-send-dialog .calendar-form > p { margin: 0; font-size: 12px; }
+.invoice-send-dialog select, .invoice-send-dialog input, .invoice-send-dialog textarea { box-sizing: border-box; width: 100%; min-width: 0; padding: 7px 9px; border: 1px solid #d7cec5; border-radius: 4px; background: #fff; color: #292621; font: inherit; }
+.invoice-send-dialog select, .invoice-send-dialog input { min-height: 36px; }
+.invoice-send-dialog textarea { min-height: 54px; resize: vertical; }
+.invoice-send-hint { grid-column: 1 / -1; }
+.invoice-send-language-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.invoice-send-language-fields [hidden] { display: none; }
+.invoice-send-signature { max-width: 100%; }
+#invoice-send-status { min-height: 18px; margin: 0; color: #8a3b33; }
+#client-dialog #client-form > .calendar-actions { align-items: center; }
+#client-dialog #client-invoice-actions { display: contents; }
+#client-dialog #client-invoice-actions > button:first-child { margin-left: auto; }
+#client-dialog #client-invoice-actions > .manual-invoice-form { flex: 1 0 100%; }
+#client-dialog #client-invoice-actions > .manual-invoice-form[hidden] { display: none; }
+#client-dialog #client-invoice-actions > .manual-invoice-form select { width: min(100%, 360px); }
+.manual-invoice-form > button[type="submit"] { display: inline-flex; align-items: center; justify-content: center; gap: 7px; width: fit-content; min-width: 0; padding: 8px 12px; }
+.manual-invoice-form > button[type="submit"] svg { display: block; }
+@media (max-width: 680px) {
+	.invoice-send-settings, .invoice-send-language-fields { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-height: 560px) {
+	.invoice-send-dialog { max-height: calc(100dvh - 12px); }
+}
 .invoice-list-preview-heading { position: sticky; top: -16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; background: #fffdfa; }
 .invoice-list-preview-heading h3 { margin: 0; }
 .invoice-list-preview-heading { flex-wrap: wrap; z-index: 1; }
