@@ -316,6 +316,15 @@
 		.calendar-mini .calendar-day small { min-height: 5px; height: 5px; overflow: hidden; font-size: 0; }
 		.calendar-mini .calendar-day small:not(:empty)::after { content: ''; display: block; width: 4px; height: 4px; margin: auto; border-radius: 50%; background: #315f4f; }
 		.calendar-mini .calendar-weekdays { font-size: 11px; }
+		@media (min-width: 761px) {
+			.admin-sidebar { gap: 6px; padding-top: 8px; padding-bottom: 14px; }
+			.admin-sidebar-brand { margin-bottom: 6px; padding-bottom: 8px; }
+			.admin-sidebar-title { margin-bottom: 8px; }
+			.admin-sidebar .calendar-mini { margin-bottom: 10px; padding: 6px; }
+			.admin-sidebar #calendar-add { margin-bottom: 4px; }
+			.admin-sidebar .calendar-grid { gap: 3px; }
+			.admin-sidebar .calendar-day { min-height: 30px; }
+		}
 		.calendar-journal-panel { min-width: 0; }
 		.calendar-journal-panel h2 { margin: 0; font-size: 22px; }
 		.calendar-journal-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
